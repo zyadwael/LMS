@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+            background-color: #f9f9f9;
+        }
+        .header {
+            width: 100%;
+            background-color: #2196F3;
+            color: #fff;
+            border-bottom: 2px solid #1976D2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        .header .title {
+            font-size: 24px;
+        }
+        .header .profile {
+            display: flex;
+            align-items: center;
+        }
+        .header .profile img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px;
+        }
+        .container h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group .options-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .form-group .options-group input {
+            flex: 1;
+        }
+        .form-group input[type="submit"] {
+            background-color: #2196F3;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-group input[type="submit"]:hover {
+            background-color: #1976D2;
+        }
+        .footer {
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            background-color: #2196F3;
+            color: #fff;
+            border-top: 2px solid #1976D2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">Create Questions</div>
+        <div class="profile">
+            <div>{{user}}</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Add Questions to Your Quiz</h1>
+        <form id="quiz-form">
+            <div class="form-group">
+                <label for="num-questions">Number of Questions</label>
+                <input type="number" id="num-questions" name="num-questions" min="1" required>
+            </div>
+            <div id="questions-container">
+                <!-- Questions will be generated here -->
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create Quiz">
+            </div>
+        </form>
+    </div>
+
+    <div class="footer">
+        Institute: 13 - Al-Alamiya Modern International School | Period: 1 - Academic Year 2024-2025<br>
+        Powered by: LMS | Version: 0.1
+    </div>
+
+    <script>
+        document.getElementById('num-questions').addEventListener('change', function() {
+            const numQuestions = parseInt(this.value);
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.innerHTML = ''; // Clear previous questions
+
+            for (let i = 1; i <= numQuestions; i++) {
+                const questionGroup = document.createElement('div');
+                questionGroup.classList.add('form-group');
+                questionGroup.innerHTML = `
+                    <label for="question-text-${i}">Question ${i} Text</label>
+                    <textarea id="question-text-${i}" name="question-text-${i}" rows="3" required></textarea>
+                    <label for="question-type-${i}">Question Type</label>
+                    <select id="question-type-${i}" name="question-type-${i}">
+                        <option value="multiple-choice">Multiple Choice</option>
+                        <option value="true-false">True/False</option>
+                        <option value="short-answer">Short Answer</option>
+                    </select>
+                    <div class="form-group">
+                        <label>Options (for Multiple Choice)</label>
+                        <div class="options-group">
+                            <input type="text" name="option1-${i}" placeholder="Option 1">
+                            <input type="text" name="option2-${i}" placeholder="Option 2">
+                        </div>
+                        <div class="options-group">
+                            <input type="text" name="option3-${i}" placeholder="Option 3">
+                            <input type="text" name="option4-${i}" placeholder="Option 4">
+                        </div>
+                    </div>
+                `;
+                questionsContainer.appendChild(questionGroup);
+            }
+        });
+    </script>
+
+</body>
+</html>

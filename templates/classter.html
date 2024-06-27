@@ -1,0 +1,3707 @@
+
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <title>
+
+        Classter | Dashboard
+    </title>
+
+
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack-extra.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@1.1.2/dist/gridstack.all.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <link href="/Bundles/mainCSS?v=3jT6hc6Qhf6ZhyxwpMX6rceIPW2oyyZeySUZb7jFC0E1" rel="stylesheet"/>
+
+
+
+    <link href="/Bundles/plugins/dataTables/dataTablesCSS?v=BlDt8Fj2tnl698Htj78Ffi6NiGXBpRdULqErowUV6FE1" rel="stylesheet"/>
+
+    <link href="/Bundles/plugins/FormsCSS?v=5Oj5niqP1uowZrYGlmkiEBFw6cNQVHkz_seU_2kA_Io1" rel="stylesheet"/>
+
+    <link href="/Bundles/devCSS?v=AkkHPxWTg8J0Lm18OL91TaJrwidZ9bddG6i9kCN2uPE1" rel="stylesheet"/>
+
+    <link href="/Bundles/plugins/FileInputCSS?v=cClerRnXTHys9dj402RDnYNZy7PhHoIb23psM-mAiAU1" rel="stylesheet"/>
+
+
+
+
+
+
+    <link href="/Bundles/plugins/GraphsCSS?v=s4FHGRBG_gOhGdp_sIx4VqYYANmrpl8_Zhmmxd_iy0o1" rel="stylesheet"/>
+
+    <link href="/Bundles/plugins/fullcalendar/fullcalendarCSS" rel="stylesheet"/>
+
+    <link href="/Content/plugins/notifyme/notifyme.css" rel="stylesheet" />
+
+    <style>
+        .stepwizard-step p {
+            margin-top: 10px;
+        }
+
+        .stepwizard-row {
+            display: table-row;
+        }
+
+        .stepwizard {
+            display: table;
+            width: 100%;
+            position: relative;
+        }
+
+        .stepwizard-step button[disabled] {
+            opacity: 1 !important;
+            filter: alpha(opacity=100) !important;
+        }
+
+        .stepwizard-row:before {
+            top: 14px;
+            bottom: 0;
+            position: absolute;
+            content: " ";
+            width: 100%;
+            height: 1px;
+            background-color: #ccc;
+            z-order: 0;
+        }
+
+        .stepwizard-step {
+            display: table-cell;
+            text-align: center;
+            position: relative;
+        }
+
+        .btn-circle {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            padding: 6px 0;
+            font-size: 12px;
+            line-height: 1.428571429;
+            border-radius: 15px;
+        }
+
+        /*This is the div within which the signature canvas is fitted*/
+        #signature {
+            border: 2px dotted black;
+            background-color: lightgrey;
+        }
+
+        .quizzes-modal-body {
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+    </style>
+
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/jquery.sidr/2.2.1/stylesheets/jquery.sidr.dark.min.css">
+
+
+
+
+
+
+
+
+    <script src="/Bundles/main?v=bdKtlff5atvpENm-GBI_y66e88vnTmHdDs2cOEXwygw1"></script>
+
+    <script src="/Bundles/plugins/dataTables?v=Vl9dOLfqG2QCl9g8m4ZzCHe2zzaXa8xA7JvJXYGCBwM1"></script>
+
+    <script src="/Bundles/plugins/Forms?v=TQWIx8zZ9SrrTYhFjG1WvMRyemm46rkE5Cr8BtQ7Tp81"></script>
+
+    <script src="/Bundles/dev?v=LmDKGIqw33lPNjUt45zw0nhIaS8155y5I74daZB6jbA1"></script>
+
+    <script src="/Bundles/plugins/FileInputJS?v=5hu6ZnZYvoT7m25bt4Qpn2L8JLq13PhzOILWVMxOmXk1"></script>
+
+
+
+
+    <script src="//cdn.jsdelivr.net/jquery.sidr/2.2.1/jquery.sidr.min.js"></script>
+    <script>
+        window.CKEDITOR_BASEPATH = '/Scripts/plugins/ckeditor/';
+        //xrisimopoiountai stin function checkFileSize
+        var largeFileTitle = "Warning";
+        var largFileBody = "The file size is more than 150 KB. Please use a smaller one";
+
+        $(document).on('preInit.dt', function (e, settings) {
+            var allowTeachersToExportPrintListData = true;
+            var allowUsersToExportPrintListData = true;
+            if (allowTeachersToExportPrintListData == false) {
+                $('.buttonsToHide').remove();
+            }
+            if (allowUsersToExportPrintListData == false) {
+                $('.buttonsToHide').remove();
+            }
+        });
+    </script>
+
+
+
+
+
+
+
+
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
+    <script src="/Scripts/plugins/dataTables/buttons.bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.print.min.js"></script>
+
+    <style>
+        .modal.left .modal-dialog,
+        .modal.right .modal-dialog {
+            position: fixed;
+            margin: auto;
+            width: 380px;
+            height: 100%;
+            -webkit-transform: translate3d(0%, 0, 0);
+            -ms-transform: translate3d(0%, 0, 0);
+            -o-transform: translate3d(0%, 0, 0);
+            transform: translate3d(0%, 0, 0);
+        }
+
+        /*Left*/
+        .modal.left.fade .modal-dialog {
+            left: -380px;
+            -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+            -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+            -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+            transition: opacity 0.3s linear, left 0.3s ease-out;
+        }
+
+        .modal.left.fade.in .modal-dialog {
+            left: 0;
+        }
+
+        /*Right*/
+        .modal.right.fade .modal-dialog {
+            right: -380px;
+            -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+            -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+            -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+            transition: opacity 0.3s linear, right 0.3s ease-out;
+        }
+
+        .modal.right.fade.in .modal-dialog {
+            right: 0;
+        }
+
+        .grab-column {
+            cursor: grab;
+        }
+
+        .ui-sortable {
+            padding-left: 0;
+        }
+
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .button-copy-institute-info {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 7pt;
+            color: #000000;
+            margin-left: 10px;
+        }
+
+            .button-copy-institute-info:hover,
+            .button-copy-institute-info:focus {
+                outline: none;
+            }
+
+                .button-copy-institute-info:hover i,
+                .button-copy-institute-info:focus {
+                    color: green !important;
+                }
+
+        .copied-text {
+            display: none;
+            margin-left: 10px;
+            color: green;
+            font-size: 10px;
+        }
+
+            .copied-text.visible {
+                display: inline;
+            }
+    </style>
+
+</head>
+
+
+<body class="fixed-sidebar  ">
+
+        <input type="hidden" id="noMaps" value="Before using the map, make sure you have checked the relevant settings" />
+
+    <div id="reportModalContainer"></div>
+
+    <div id="wrapper">
+
+        <input id="user" name="user" type="hidden" value="awaelahmed2@amsis" />
+        <input id="userType" name="userType" type="hidden" value="Student" />
+
+
+        <input id="companyCode" name="companyCode" type="hidden" value="13" />
+        <input id="periodCode" name="periodCode" type="hidden" value="7" />
+        <input id="ciid" name="ciid" type="hidden" value="b8ed7b64-aee5-420b-aad4-92ebd312278c" />
+        <input id="FinancialDecimalPlaces" name="FinancialDecimalPlaces" type="hidden" value="2" />
+        <input id="CurrencySymbol" name="CurrencySymbol" type="hidden" value="£" />
+        <input id="currentCulture" name="currentCulture" type="hidden" value="en-GB" />
+        <input id="currentCultureDecimalPoint" name="currentCultureDecimalPoint" type="hidden" value="." />
+        <input id="currentDateFormat" name="currentDateFormat" type="hidden" value="DD/MM/YYYY" />
+        <input id="currentDateTimeFormat" name="currentDateTimeFormat" type="hidden" value="DD/MM/YYYY HH:MM" />
+        <input id="currentDatepickerFormat" name="currentDatepickerFormat" type="hidden" value="dd/mm/yyyy" />
+        <input type="hidden" value="Manage Columns" id="manageColumns" />
+        <input type="hidden" value="Collapse / Expand" id="manageCollapse" />
+        <input type="hidden" value="Collapsed" id="collapsedOrder" />
+        <input type="hidden" value="Expanded" id="expandedOrder" />
+        <input type="hidden" value="Collapse All" id="collapseAllLayout" />
+        <input type="hidden" value="Expand All" id="expandAllLayout" />
+        <input type="hidden" value="Hidden" id="hiddenLayout" />
+        <input type="hidden" value="Visible" id="visibleLayout" />
+        <!-- Navigation -->
+
+
+<style>
+    .nav-linear:after {
+        content: ' ';
+        border-bottom: 100px solid #ba212b;
+        border-right: 210px solid transparent;
+        width: 0;
+        position: absolute;
+        bottom: 0;
+    }
+</style>
+
+
+
+    <nav class="navbar-default navbar-static-side box-shadow-menu" role="navigation" >
+
+
+        <div class="sidebar-collapse">
+            <ul class="nav classter-side-nav " id="side-menu">
+                <li class="nav-header no-hide">
+                    <div class="logo-element">
+                    </div>
+                </li>
+                <li class="no-hide margin-bottom-5 padding-left-15 padding-right-15">
+                    <form autocomplete="off" action="">
+                        <input class="form-control text-box single-line dashboard-search" style="padding-left:5px!important" type="text" value="" placeholder="Search..." id="searchMenu" />
+                    </form>
+                </li>
+
+<li class="" data-ctest="Menu_1" id="Menu_1"><a alt="Dashboard" href="/"><i class="fas fa-laptop fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Dashboard"></i><span class="nav-label">Dashboard</span></a></li><li class="" data-ctest="Menu_12" id="Menu_12"><a alt="Timetable" href="/Student/StudentTimeTable"><i class="fad fa-calendar-alt fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Timetable"></i><span class="nav-label">Timetable</span></a></li><li class="" data-ctest="Menu_2" id="Menu_2"><a alt="My Subjects" href="/MyCourses"><i class="fad fa-book-open fa-lg fa-fw fa-menu" data-toggle="tooltip" title="My Subjects"></i><span class="nav-label">My Subjects</span></a></li><li class="" data-ctest="Menu_15" id="Menu_15"><a alt="My Teachers" href="/Teacher/GetStudentTeachersGrid"><i class="fad fa-user-friends fa-lg fa-fw fa-menu" data-toggle="tooltip" title="My Teachers"></i><span class="nav-label">My Teachers</span></a></li><li class="" data-ctest="Menu_13" id="Menu_13"><a alt="Attendance" href="/ParentAbsences"><i class="fad fa-user-times fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Attendance"></i><span class="nav-label">Attendance</span></a></li><li class="" data-ctest="Menu_21" id="Menu_21"><a alt="Sessions" href="#"><i class="fad fa-chalkboard-teacher fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Sessions"></i><span class="nav-label">Sessions</span><span class="fa arrow classter-menu-arrows"></span></a><ul class="nav  collapse classter-side-nav child-menu"><li class="" data-ctest="Menu_23" id="Menu_23"><a alt="Sessions" href="/Sessions/DailySession"><i class="" data-toggle="tooltip" title="Sessions"></i><span class="nav-label">Sessions</span></a></li><li class="" data-ctest="Menu_22" id="Menu_22"><a alt="Sessions&#39; Marks" href="/Sessions/DailyEvaluation"><i class="" data-toggle="tooltip" title="Sessions&#39; Marks"></i><span class="nav-label">Sessions' Marks</span></a></li></ul></li><li class="" data-ctest="Menu_5" id="Menu_5"><a alt="Assessments &amp; Assignments" href="/StudentExamination"><i class="fad fa-edit fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Assessments &amp; Assignments"></i><span class="nav-label">Assessments & Assignments</span></a></li><li class="" data-ctest="Menu_11" id="Menu_11"><a alt="Remarks &amp; Actions" href="/Remarks"><i class="fad fa-random fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Remarks &amp; Actions"></i><span class="nav-label">Remarks & Actions</span></a></li><li class="" data-ctest="Menu_66" id="Menu_66"><a alt="Quizzes/Surveys" href="/Quiz"><i class="fad fa-ballot-check fa-lg fa-fw fa-menu" data-toggle="tooltip" title="Quizzes/Surveys"></i><span class="nav-label">Quizzes/Surveys</span></a></li>
+
+                <li>&nbsp;</li>
+
+                <li id="customMenu" class="custom-menu-style">
+                    <a href="#">
+                        <i class="fad fa-link"></i> <span class="nav-label">Useful Links</span> <span class="fa arrow classter-menu-arrows"></span>
+                    </a>
+                    <ul id="customUL" class="nav nav-second-level collapse classter-side-nav margin-bottom-15 "></ul>
+                </li>
+                <li></li>
+            </ul>
+
+        </div>
+    </nav>
+    <script>
+    jQuery('#customMenu').hide();
+
+    var company = $('#companyCode').val();
+        var period = $('#periodCode').val();
+
+        if (sessionStorage.getItem('hideFinancialMenu') != null) {
+            if (sessionStorage.getItem('hideFinancialMenu') == 1) {
+                $('#Menu_5').hide();
+            } else {
+                $('#Menu_5').show();
+            }
+        }
+
+    //if (company != null && company != '' && period != null && period != '') {
+    //    new ajaxCall({
+    //        showLoader: false,
+    //        url: '/Home/CustomButtonsMenu',
+    //        onSuccess: function (customButtonsList) {
+    //            if (customButtonsList.ajaxData != null && customButtonsList.ajaxData.length > 0) {
+    //                jQuery('#customMenu').show();
+
+    //                var customUL = jQuery('#customUL');
+
+    //                var list = customButtonsList.ajaxData;
+    //                for (var i = 0; i < list.length; i++) {
+    //                    var item = list[i];
+
+    //                    var newLI = jQuery('<li>');
+
+    //                    var anchor = jQuery('<a>');
+    //                    if (item.URL != "CustomHtmlForm") {
+    //                        anchor.attr('href', item.URL);
+
+    //                        var target = "_blank";
+    //                        if (item.target == 1)
+    //                            target = "_self";
+    //                        else if (item.target == 2)
+    //                            target = "_parent";
+
+    //                        anchor.attr('target', target);
+    //                    }
+    //                    else {
+    //                        anchor.attr('href', '/Home/Custom?code=' + item.code);
+    //                        anchor.attr('target', '_self');
+    //                    }
+
+    //                    anchor.text(item.title);
+
+    //                    newLI.append(anchor);
+    //                    customUL.append(newLI);
+    //                }
+
+    //                jQuery('#customMenu').show();
+    //                setNavigationForCustomButtonMenu();
+    //            }
+    //            else {
+    //                jQuery('#customMenu').hide();
+    //            }
+    //        }
+    //    }).post();
+    //}
+
+    function setNavigationForCustomButtonMenu() {
+        var path = window.location.href;
+        path = path.replace(/\/$/, "");
+
+        path = decodeURIComponent(path);
+        jQuery('#customUL a').each(function () {
+            var href = jQuery(this).attr('href');
+            if (path.indexOf(href) !== -1) {
+                var thisLI = jQuery(this).closest('li');
+                thisLI.addClass('active');
+                var thisUL = thisLI.parent();
+                thisUL.addClass("in");
+                var menuLI = thisUL.parent();
+                menuLI.addClass('active');
+
+                jQuery('.bread-head-title').text(jQuery(this).text());
+            }
+        });
+    }
+
+    jQuery('.nav-header').click(function () {
+        window.location = '/Home';
+    });
+
+    jQuery('.nav-header').hover(function () {
+        $(this).css('cursor', 'pointer');
+    });
+
+    jQuery('#searchMenu').keyup(function () {
+        searchMenuItems(jQuery('#searchMenu').val());
+        sessionStorage.setItem('searchMenu', jQuery('#searchMenu').val());
+    });
+
+    var selectedMenus = ["Menu_1"];
+
+    jQuery(document).ready(function () {
+        if (selectedMenus != null) {
+            if (selectedMenus.length > 0) {
+                jQuery.each(selectedMenus, function (index, value) {
+                    jQuery('#' + value).closest('ul').addClass('collapse in')
+                    jQuery('#' + value).addClass('active');
+                });
+            }
+        }
+
+        var searchMenu = sessionStorage.getItem('searchMenu');
+        if (searchMenu != null) {
+            if (searchMenu.length > 0) {
+                jQuery('#searchMenu').val(searchMenu).trigger('keyup');
+            }
+        }
+    });
+
+    function searchMenuItems(searchMenu) {
+        jQuery('#searchMenu').closest('ul').find("li").each(function (index, element) {
+            if (searchMenu == '') {
+                jQuery(element).show();
+            }
+            else {
+                if (jQuery(element).html().toLocaleLowerCase().indexOf(searchMenu.toLocaleLowerCase()) == -1 && !jQuery(element).hasClass('no-hide')) {
+                    jQuery(element).hide();
+                }
+                else {
+                    jQuery(element).show();
+                }
+            }
+        });
+    }
+
+    if (false) {
+        getCollapsedMenu();
+    }
+
+    </script>
+
+        <!-- Page wraper -->
+        <div id="page-wrapper" class="gray-bg">
+            <!-- Top Navbar -->
+
+
+
+<div class="row">
+    <nav class="navbar navbar-static-top" role="navigation">
+        <div class="col-xs-2  col-sm-4 col-md-5 no-padding">
+            <a class="navbar-minimalize minimalize-styl-2 cl-red" href="#" data-ctest="DashboardNavigationBarMinimizeButton"><i class="fa fa-bars"></i> </a>
+
+
+                <div class="">
+                    <div class=" hidden-xs hidden-sm">
+                        <span class="pull-left margin-right-5 hidden-xs"><img src="" id="schoollogo" alt="-" hidden="hidden" style="max-width:200px;max-height:50px;width: auto;"></span>
+                    </div>
+                    <div class="minimalize-styl-br margin-left-5 hidden-xs hidden-sm hidden-md">
+                        <span class="font-14px" id="schoolname" data-ctest="SchoolName"> </span>
+                        <br />
+                        <span class="breadcrumb color-light font-small" id="schoolAddress" data-ctest="SchoolAddress"></span>
+                    </div>
+                </div>
+
+                    <script type="text/javascript">
+                        jQuery(document)
+                            .ready(function () {
+                                new ajaxCall({
+                                    url: "/Dashboard/GetCompanyData",
+                                    showLoader: false,
+                                    onSuccess: function (data) {
+                                        $('#schoolname').text(data.ajaxData.Title);
+                                        $('#schoolAddress').text(data.ajaxData.Address);
+                                        if (data.ajaxData.ImageUrl != null) {
+                                            $('#schoollogo').attr('src', data.ajaxData.ImageUrl);
+                                            $('#schoollogo').show();
+                                        }
+                                        else {
+                                            $('#schoollogo').hide();
+                                        }
+
+                                        $('#schoolnameds').text(data.ajaxData.Title);
+                                        $('#schoolAddressds').text(data.ajaxData.Address);
+                                        if (data.ajaxData.ImageUrl != null) {
+                                            $('#schoollogods').attr('src', data.ajaxData.ImageUrl);
+                                            $('#schoollogods').show();
+                                        }
+                                        else {
+                                            $('#schoollogods').hide();
+                                        }
+                                    }
+                                }).post();
+                            });
+                    </script>
+
+
+
+        </div>
+        <div class="col-xs-10 col-sm-8 col-md-7 no-padding-left">
+
+
+
+<style>
+    .font-bold {
+        font-weight: bold;
+    }
+</style>
+
+
+
+    <div class="navbar-right pull-right">
+        <ul class="nav navbar-top-links navbar-right" style="margin-top:10px">
+            <li data-ctest="ChangeCompanyButton">
+
+            </li>
+                    <li class="dropdown" style="" data-ctest="PeriodsDropdownButton">
+                        <a data-toggle="dropdown" style="min-height:38px!important;" role="button" aria-haspopup="true" aria-expanded="false" data-container="body" data-placement="top">
+                            <span class="btn btn-sm btn-white-gray   hidden-sm  hidden-xs">
+                                Academic Year 2023-2024
+                                &nbsp;<span class="caret gray-caret"></span>
+                            </span>
+
+                            <span class="btn btn-sm btn-white-gray hidden-md  hidden-lg">
+                                <i class="fa fa-clock-o margin-right-0" data-toggle="tooltip" title="Academic Year 2023-2024"></i>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu  classter-scrollable-menu">
+                                <li>
+                                    <a class="changePeriodBtn currentPeriodClass" code="7" href="/Home/changePeriod?periodCode=7">
+                                        Academic Year 2023-2024
+                                    </a>
+                                </li>
+                        </ul>
+                    </li>
+
+
+
+
+
+
+
+
+
+
+
+                <li class="dropdown">
+                    <a data-toggle="dropdown" style="min-height:38px!important;" role="button" aria-haspopup="true" aria-expanded="false" data-container="body" data-placement="top" data-content="Office365 Apps.">
+                        <span><img src="/img/365.png" width="24" height="24" /></span>
+                        <span class="caret red-caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-lang" style="width: 200px">
+                        <li>
+                            <a href="https://outlook.office365.com/owa/?exsvurl=1&ll-cc=1033&modurl=0" target="_blank" data-toggle="tooltip" title="Microsoft365 e-mail">
+                                <span style="color: darkorange !important; font-size: 22px;" class="text-warning"></span>
+                                &nbsp; My e-mail
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://outlook.office365.com/owa/?exsvurl=1&ll-cc=1033&modurl=1" target="_blank" data-toggle="tooltip" title="Microsoft365 Calendar">
+                                <span style="font-size: 22px;" class=" text-danger"></span>
+                                &nbsp; My Calendar
+                            </a>
+                        </li>
+
+                    </ul>
+                </li>
+            <li class="dropdown" data-ctest="LanguageSelectionWidget">
+                <a data-toggle="dropdown" role="button" style="min-height:38px!important;" aria-haspopup="true" aria-expanded="false" data-container="body" data-placement="top" title="Languages"
+                   data-content="It will be available soon.">
+                    <span class="fal fa-flag fa-lg  font-20px"></span>
+
+                </a>
+                <ul class="dropdown-menu dropdown-menu-lang col">
+                                            <li class="dropdown">
+                            <a href="/Home/SetCulture?culture=en-GB" class="culture" data-culture="en-GB" title="English (UK)">
+                                <span>English (UK)</span>
+                            </a>
+                        </li>
+                                                                <li class="dropdown">
+                            <a href="/Home/SetCulture?culture=de-DE" class="culture" data-culture="de-DE" title="Deutsch">
+                                <span>Deutsch</span>
+                            </a>
+                        </li>
+                                            <li class="dropdown">
+                            <a href="/Home/SetCulture?culture=fr-FR" class="culture" data-culture="fr-FR" title="Français">
+                                <span>Français</span>
+                            </a>
+                        </li>
+                                                                                                                                                                                        <li class="dropdown">
+                            <a href="/Home/SetCulture?culture=ar-EG" class="culture" data-culture="ar-EG" title="العربية – مصر">
+                                <span>العربية-  مصر</span>
+                            </a>
+                        </li>
+                                                                                    <li class="dropdown">
+                            <a href="/Home/SetCulture?culture=mk-MK" class="culture" data-culture="mk-MK" title="македонски">
+                                <span>македонски</span>
+                            </a>
+                        </li>
+
+                </ul>
+            </li>
+
+
+            <li class="dropdown announcements-menu" data-ctest="DropdownAnnouncemenetsWidget">
+                <a href="/Announcement" class="count-info" style="min-height:38px!important;" data-placement="bottom" title="View Announcements">
+                    <i class="fal fa-bell fa-lg  font-20px"></i>
+                    <span id="announcementsCounter" class="label label-warning" style=" border: 2px solid #e2dfdf;font-weight:700"></span>
+                </a>
+            </li>
+
+
+                <li class="dropdown messaging-menu" data-ctest="DropdownMessagingMenuWidget">
+                    <a class="dropdown-toggle count-info" style="min-height:38px!important;" data-toggle="dropdown" href="#" aria-expanded="false" data-placement="bottom" title="Messages">
+                        <i class="fal fa-envelope fa-lg  font-20px"></i> <span id="messagesCounter" class="label  label-warning" style=" border: 2px solid #e2dfdf;font-weight:700" data-ctest="MessagesCounter"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-messages dropdown-left margin-pull-left-if-small" style="" data-ctest="DropdownMessagingMenuList">
+                    </ul>
+                </li>
+
+
+
+
+
+
+
+
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle-profile" style="min-height:38px!important;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="hidden-xs hidden-sm hidden-md">Ahmed Wael Ahmed Abdelhamid Kadah  </span>
+                    <span class="caret red-caret"></span>
+                        <img class="img-circle prof_img" id="userImage" src="https://fs001.classter.com/amsis/13/7/2024/5/Photo/userprofile-27292-79e1baf4-acda-45f5-9719-bdc37397d19b.jpg" alt="Profile image">
+                </a>
+                <ul class="dropdown-menu dropdown-left" style="min-width: 300px">
+                    <li>
+                        <div class="col-lg-12  border-bottom ibox-content-default-padding">
+
+
+                            <div class="pull-right row">
+                                <a href="javascript:document.getElementById('logoutForm').submit()" id="logout-btn" class="btn btn-sm btn-link ">
+                                    <i class="fad fa-sign-out text-warning "></i> Sign out
+                                </a>
+                            </div>
+
+                            <div class="clearfix">&nbsp;</div>
+
+                            <div class="display-flex">
+                                <div class="pull-left margin-right-15">
+                                        <img class="img-circle circle-name-metro-medium" id="sUserImage" src="https://fs001.classter.com/amsis/13/7/2024/5/Photo/userprofile-27292-79e1baf4-acda-45f5-9719-bdc37397d19b.jpg" alt="Profile image">
+
+                                </div>
+                                <div class=" ">
+                                    <span class=" font-bold">Ahmed Wael Ahmed Abdelhamid Kadah  </span>
+                                        <br />
+                                        <span>ahmed.w.kadah@ams-benha.com</span>
+
+                                    <br />
+
+                                    <a href="/Profile" class="btn btn-sm btn-link  margin-top-5 no-padding text-left">
+                                        My Profile
+                                    </a>
+                                    <br />
+                                            <a href="/HowTo" class="btn btn-sm btn-link  margin-top-5 no-padding text-left">  Manuals & Videos</a>
+                                            <br />
+
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                </ul>
+            </li>
+
+        </ul>
+    </div>
+<form action="/Home/Logout" id="logoutForm" method="post"><input name="__RequestVerificationToken" type="hidden" value="HCvGHXJd1ff4yE9u0sYi5XjL20x-k17BjEE1wBXrXiOSPoCeICp5ajsHjElHASTP5BqOVE0Y4Hny-9f-oBusTpERz6f3xIiS3AhPEUrXSojw91ey0" /></form>    <script type="text/javascript">
+
+        var hasCalendaringAndEventsAnnouncements = true;
+
+        // Open close right sidebar
+        $('#right-sidebar-toggle').click(function (e) {
+            e.preventDefault();
+            $('#right-sidebar').toggleClass('sidebar-open');
+        });
+
+        jQuery('#logout-btn').click(function () {
+            sessionStorage.clear();
+            CacheService.cleanUp()();
+
+            $(window).unbind('beforeunload');
+        });
+
+        jQuery('.changePeriodBtn').click(function() {
+            sessionStorage.clear();
+            CacheService.cleanDB();
+        });
+
+    var hasMessagingRights = true;
+
+    $(".changePeriodBtn, .culture").on("click", function () {
+        CacheService.cleanDB();
+    })
+
+    function smartNotificationMessage(data) {
+        if (localStorage.getItem("smartNotificationMessage") == null || localStorage.getItem("smartNotificationMessage") == "null" || localStorage.getItem("smartNotificationMessage") - Date.now() > 1000 * 60 * 29) {
+            localStorage.setItem("smartNotificationMessage", Date.now());
+        } else {
+            return;
+        }
+
+        if (data == "True") {
+            toastr.clear();
+            window["toastr"].options = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right",
+                "preventDuplicates": true,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "10000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+            window["toastr"].info(
+                "Information",
+                "There are Students that have assigned Classes and are registered but their type indicates they are not admitted yet."
+            );
+        }
+    }
+
+    function HomeCustomButtonsMenu(customButtonsList) {
+        if (customButtonsList.ajaxData != null && customButtonsList.ajaxData.length > 0) {
+            jQuery('#customMenu').show();
+
+            var customUL = jQuery('#customUL');
+
+            jQuery('#customUL > li').remove();
+
+            var list = customButtonsList.ajaxData;
+            for (var i = 0; i < list.length; i++) {
+                var item = list[i];
+
+                var newLI = jQuery('<li>');
+
+                var anchor = jQuery('<a>');
+                if (item.URL != "CustomHtmlForm") {
+                    anchor.attr('href', item.URL);
+
+                    var target = "_blank";
+                    if (item.target == 1)
+                        target = "_self";
+                    else if (item.target == 2)
+                        target = "_parent";
+
+                    anchor.attr('target', target);
+                } else {
+                    anchor.attr('href', '/Home/Custom?code=' + item.code);
+                    anchor.attr('target', '_self');
+                }
+
+                anchor.text(item.title);
+
+                newLI.append(anchor);
+                customUL.append(newLI);
+            }
+
+            jQuery('#customMenu').show();
+            setNavigationForCustomButtonMenu();
+        } else {
+            jQuery('#customMenu').hide();
+        }
+    }
+
+    function InternalMessagesUnReadCounter() {
+        if ($('#periodCode').val() != '') {
+            new ajaxCall({
+                showLoader: false,
+                url: '/InternalMessaging/UnReadCounter',
+                onSuccess: function (data) {
+                    $('#messagesCounter').html(data.ajaxData.counter);
+                    localStorage.setItem("InternalMessagesUnReadCounter", data.ajaxData.counter);
+                },
+                onError: function (msg) {
+                    $('#messagesCounter').html('');
+                }
+            }).post();
+
+            new ajaxCall({
+                showLoader: false,
+                url: '/InternalMessaging/GetLatestMessages',
+                onPartial: function (data) {
+                    jQuery('.dropdown-messages').html(data);
+                    localStorage.setItem("InternalMessagesGetLatestMessages", data);
+                }
+            }).post();
+        }
+    }
+
+    function AnnouncementUnReadCounter() {
+        if ($('#periodCode').val() != '') {
+            new ajaxCall({
+                showLoader: false,
+                url: '/Announcement/UnReadCounter',
+                onSuccess: function (data) {
+                    $('#announcementsCounter').html(data.ajaxData.counter);
+                    localStorage.setItem("AnnouncementUnReadCounter", data.ajaxData.counter);
+                },
+                onError: function (msg) {
+                    $('#announcementsCounter').html(0);
+                }
+            }).post();
+        }
+    }
+
+    var cc = jQuery('#currentCulture').val();
+    if (jQuery('.culture[data-culture="' + cc + '"]').length == 0) {
+        jQuery('.culture[data-culture="en-GB"]').addClass('font-bold');
+        jQuery('#currentCulture').val('en-GB');
+        jQuery('#currentCultureDecimalPoint').val('.');
+        jQuery('#currentDateFormat').val('DD/MM/YYYY');
+        jQuery('#currentDateTimeFormat').val('DD/MM/YYYY HH:MM');
+        jQuery('#currentDatepickerFormat').val('dd/mm/yyyy');
+    } else {
+        jQuery('.culture[data-culture="' + cc + '"]').addClass('font-bold');
+    }
+
+    //if (hasMessagingRights) {
+    //    new ajaxCall({
+    //        showLoader: false,
+    //        url: '/InternalMessaging/UnReadCounter',
+    //        onSuccess: function (data) {
+    //            $('#messagesCounter').html(data.ajaxData.counter);
+    //        },
+    //        onError: function (msg) {
+    //            $('#messagesCounter').html('');
+    //        }
+    //    }).post();
+
+    //    new ajaxCall({
+    //        showLoader: false,
+    //        url: '/InternalMessaging/GetLatestMessages',
+    //        onPartial: function (data) {
+    //            jQuery('.dropdown-messages').html(data);
+    //        }
+    //    }).post();
+    //}
+
+    var isFullScreen = false;
+
+    $('#fullScreen').click(function() {
+        if (isFullScreen)
+            closeFullScreen();
+        else
+            openFullScreen();
+
+        isFullScreen = !isFullScreen;
+    });
+
+    var selectedSendTypeFromLoginPartial = 0;
+
+    $(document).off('click', '.composeNewMessage');
+    $(document).on('click', '.composeNewMessage', function () {
+        if (jQuery('#messageComposerDIV').length == 0) {
+            selectedSendTypeFromLoginPartial = jQuery(this).data('type');
+            var draftId = $(this).data('draftId');
+            sessionStorage.setItem("stayOnPage", true);
+            var functionOnSave = $(this).data('functionOnSave');
+            var data = { showAdvanceCompose: false, selectedSendTypeFromLoginPartial: selectedSendTypeFromLoginPartial, draftId: draftId, functionOnSave: functionOnSave, funcName: "ComposeMessageMainFromLoginPartial" };
+            Ajax.loadModal("/ModalData/SendEmailLoginPartial", data);
+        }
+    });
+
+    var elem = document.documentElement;
+    function openFullScreen() {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) { /* Firefox */
+            elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE/Edge */
+            elem.msRequestFullscreen();
+        }
+    }
+
+    function closeFullScreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { /* Firefox */
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE/Edge */
+            document.msExitFullscreen();
+        }
+    }
+
+
+
+
+
+</script>
+
+        </div>
+
+
+    </nav>
+</div>
+
+
+
+
+            <!-- Main view -->
+            <div>
+
+
+
+
+
+
+
+
+
+<script id="upcomingExaminationsTemplate" type="text/template">
+
+
+
+    <div class="clearfix"></div>
+
+    <div class="">
+        <p>
+            <%= item.course.description %> - <small class=""><%= item.teacher.fullName %></small>
+            <small class="pull-right color-light"> <%= moment(item.examinationDate).format(getLocaleDateStringForMoment() + " " + "HH:mm") %> </small>
+        </p>
+
+
+
+        <% if (showStudentNameForEachItem) { %>
+        <% var stuName = "" %>
+        <% if (item.student != null) { stuName = item.student.fullName} %>
+        <div class="font-small" style="position:absolute;right:15px;top:10px">
+            <span title="<%= stuName %>">
+                <%= stuName %>
+            </span>
+        </div>
+        <% } %>
+
+        <span class="badge badge-tag">
+            <small>
+                <%= item.examType %>
+            </small>
+        </span>&nbsp;
+
+        <% if( !_.isEmpty(item.examStatus)) {%>
+        <span class="badge badge-tag">
+            <%= item.examStatus %>
+        </span>&nbsp;
+        <% } %>
+
+        <% if (item.isSynoptic ?? false) { %>
+        <span class="badge badge-warning">
+            Synoptic
+        </span>
+        <% } %>
+
+        <% if (discussionBoard != null) { %>
+        <span class="badge badge-info">
+            Discussion Board
+        </span>
+        <% } %>
+
+        <% if(item.showActions) { %>
+        <% if (discussionBoard != null) { %>
+        <span class="btn btn-sm btn-link pull-right'">
+            <span class="discussionBoardBtn"  data-exam-code="<%= item.code %>" data-code="<%= discussionBoard.code %>">Post Comment</span>
+        </span>
+        <% } else { %>
+        <span class="btn btn-sm btn-link pull-right'">
+            <span class="js-modalUpcomingExamination" data-code="<%= item.code %>" data-type="<%= item.calendarEntityType %>">Details</span>
+        </span>
+        <% } %>
+        <% } %>
+
+        <% if (showMarkButton && jQuery('#Menu_13').length > 0) { %>
+        <span class="btn btn-sm btn-link pull-right'">
+            <a href="/ExamScheduling/MarkExam?code=<%= item.code %>&markReviewerCode=0&fromEntranceAssessments=False">Marking</a>
+        </span>
+        <% } %>
+
+    </div>
+
+
+
+</script>
+
+<div id="modalPlaceholder"></div>
+
+<script>
+	$(document).off('click', '.js-modalUpcomingExamination');
+	$(document).on('click','.js-modalUpcomingExamination',function () {
+		var examCode = $(this).data('code');
+		var type = $(this).data('type');
+		new ajaxCall({
+			url: '/Calendar/GetCalendarEvent',
+			data: { code: examCode, type: type },
+			onPartial: function (data) {
+				$('#modalPlaceholder').html(data);
+				$('#EventModal').modal('show');
+			}
+		}).post();
+    });
+
+    jQuery(document).off('click', '.discussionBoardBtn');
+    jQuery(document).on('click', '.discussionBoardBtn', function (e) {
+        var exCode = $(this).data('examCode');
+        var code = $(this).data('code');
+        var type = 'Assessment';
+        window.open(
+            `/DiscussionBoard/ViewDiscussionBoard?code=${code}&type=${type}&entityCode=${exCode}&asView=True`,
+            '_blank'
+        );
+    });
+</script>
+
+
+<script src="/Bundles/plugins/Graphs?v=IbDt759hNmz4USnAJ9E6pzUT2IHfFV8gcFXIwv17EsU1"></script>
+
+<script src="/Bundles/plugins/fullcalendar?v=4a2GLeNUi5dizoWXDos6u9RPI_NiMyGK0AvdvrC6vzA1"></script>
+
+<script src="/Bundles/plugins/ckeditor?v=6QAtekEdMhuIBHsnCzMl0I2MCBxlmKmlAwTRXAH6Zqg1"></script>
+
+
+
+
+
+
+        <div class="row">
+            <div class="col-sm-12 margin-top-15">
+                <div id="centralAnnouncementsContainer"></div>
+            </div>
+        </div>
+
+
+
+
+
+
+<style>
+    .fa-menu{font-size:17px!important}
+
+    .fc-scroller { /* */
+        min-height: 560px !important;
+    }
+
+    .fc-time-grid .fc-event, .fc-time-grid .fc-bgevent {
+        min-height: 10px;
+    }
+
+    .classter-list-scroll {
+        max-height: 600px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #ccc transparent !important;
+    }
+
+        .classter-list-scroll::-webkit-scrollbar {
+            width: 0.4em;
+        }
+
+        .classter-list-scroll::-webkit-scrollbar-track {
+            /*-webkit-box-shadow: inset 0 0 6px #ddd;*/
+        }
+
+        .classter-list-scroll::-webkit-scrollbar-thumb {
+            background-color: #e2d9d9;
+            /*  outline: 1px solid;*/
+        }
+
+    .divBox .classter-tile{
+        margin-bottom:5px;
+    }
+    .circle-name-metro {
+        height: 80px !important;
+        width: 80px !important;
+        line-height: 80px !important;
+    }
+
+    .classter-tile-header {
+        font-size: 15px;
+    }
+</style>
+
+<div class="row">
+    <div class="row border-bottom-light white-bg hidden-md hidden-lg">
+        <div class="display-flex justify-content-center">
+            <div class="pull-left margin-right-5">
+                <span class=""><img src="" id="schoollogods" hidden="hidden" alt="-" class="img-rounded" style="max-width:250px;max-height:80px;"></span>
+            </div>
+            <div class="minimalize-styl-br">
+                <span class="bread-head-title-br " id="schoolnameds"> </span>
+                <br />
+                <span class="breadcrumb" id="schoolAddressds"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-5">
+        <div id="entityCountWidget">
+                <div class="row margin-top-15 margin-bottom-15" id="entityCountWidget">
+                    <div class="row text-center">
+                        <div class="col-lg-4 col-xs-4 b-r-b">
+                            <div class="databox-number-green" data-ctest="DataBoxNumberGreenStudentGroups"> <span class="data-groups"></span></div>
+                            <div class="font-14px" data-ctest="DataBoxNumberGreenStudentGroupsLiteral">Classes</div>
+                                <a href="javascript://" data-toggle="modal" data-target="#studentEnrollmentsModal" data-ctest="DataBoxNumberGreenStudentGroupsLink">
+                                    Enrollments &nbsp; <i class="fal fa-long-arrow-right"></i>
+                                </a>
+                        </div>
+
+                        <div class="col-lg-4 col-xs-4 b-r-b">
+                            <div class="databox-number-blue" data-ctest="DataBoxNumberBlueStudentCourses"> <span class="data-courses"></span></div>
+                            <div class="font-14px" data-ctest="DataBoxNumberBlueStudentCoursesLiteral">Subjects</div>
+                                <a href="/MyCourses" data-ctest="DataBoxNumberBlueStudentCoursesLink">
+                                    My Subjects &nbsp; <i class="fal fa-long-arrow-right"></i>
+                                </a>
+                        </div>
+
+                        <div class="col-lg-4 col-xs-4">
+                            <div class="databox-number-red" data-ctest="DataBoxNumberRedStudentsTeachers"> <span class="data-teachers"></span></div>
+                            <div class="font-14px" data-ctest="DataBoxNumberRedStudentsTeachersLiteral">Teachers</div>
+                                <a href="/Teacher/GetStudentTeachersGrid" data-ctest="DataBoxNumberRedStudentsTeachersLink">
+                                    My Teachers &nbsp; <i class="fal fa-long-arrow-right"></i>
+                                </a>
+                        </div>
+                    </div>
+                </div>
+            <br />
+        </div>
+
+
+
+
+
+        <div id="notificationsAreaDIV"></div>
+
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <div id="divtimeline" class="category-title-mid text-left"> Timeline View</div>
+                    <div class="row classter-list-scroll">
+                        <div id="vertical-timeline" class="vertical-container light-timeline no-padding"></div>
+                        <div class="col-sm-12">
+                            <div id="vertical-timeline-message" class="text-center white-bg" style="display: none;">
+                                <div class="classter-body">
+                                    <div class="text-center margin-top-15">
+                                        <img class="classter-img-empty" src="/img/Empty_Timeline.png" style="height:120px;width:auto" />
+                                        <br />
+                                        You don&#39;t have any notifications
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <span class="category-title-mid text-left margin-top-30"> Quick Actions</span>
+        <div class="row">
+
+            <div id="custom-buttons"></div>
+
+                <div class="col-lg-6 col-sm-6 col-xs-6 center-version text-center margin-bottom-5" style="padding-right: 5px;">
+                    <button onclick="location.href = '/InternalMessaging?posted=False'" class="btn btn-white  btn-block btn-float btn-float-lg min-height-80 " type="button"><i class="fal fa-envelope-open-text fa-2x text-warning" style="opacity:0.8"></i><br /> <span>Message Center </span></button>
+                </div>
+
+
+
+                <div class="col-lg-6 col-sm-6 col-xs-6 center-version text-center margin-bottom-5" style="padding-right: 5px;">
+                    <button onclick="location.href = '/Sessions/DailySession'" class="btn btn-white   btn-block btn-float btn-float-lg min-height-80" type="button"><i class="fal fa-chalkboard-teacher fa-2x text-navy" style="opacity:0.8"></i> <br /><span>Sessions</span></button>
+                </div>
+
+                <div class="col-lg-6 col-sm-6 col-xs-6 center-version text-center margin-bottom-5" style="padding-right: 5px;">
+                    <button type="button" class="btn btn-white   btn-block btn-float btn-float-lg min-height-80" data-toggle="modal" data-target="#myProfilePageModal" data-code="20975">
+                        <i class="fal fa-fill-drip text-success fa-2x" style="opacity:0.8"></i> <br /><span> Profile Page</span>
+                    </button>
+
+                </div>
+
+                <div class="col-lg-6 col-sm-6 col-xs-6 center-version text-center margin-bottom-5" style="padding-right: 5px;">
+                    <button type="button" class="btn btn-white   btn-block btn-float btn-float-lg min-height-80" data-toggle="modal" data-target="#classmatesModal" data-stucode=""
+                            onclick='Ajax.loadModalFromGetData("/Home/GetClassMates", {data:null}, "/ModalData/ClassmatesModal").send();'>
+                        <i class="fal fa-users-class text-purple fa-2x" style="opacity:0.8"></i> <br /><span> Class Mates</span>
+                    </button>
+
+                </div>
+
+
+
+                                <div class="col-lg-6 col-sm-6 col-xs-6 center-version text-center margin-bottom-5" style="padding-right: 5px;">
+                        <div class="lightgray-bg" id="MyTeachers">
+
+                            <div id="studentTeachersTable"></div>
+                        </div>
+                    </div>
+
+        </div>
+
+
+
+
+
+
+        <div class="clearfix">&nbsp;</div>
+
+    </div>
+
+    <div class="col-lg-8 col-md-7">
+
+
+
+
+<style>
+    /* Frame */
+
+    .frame {
+        /*  height: 100px;
+        line-height: 100px;*/
+        overflow: hidden;
+        /* border-bottom: 1px solid #f1f1f1;
+        border-top: 1px solid #f1f1f1;*/
+        background-color: transparent;
+        /* box-shadow: 1px 1px 3px 0 #bfbfbf1a;*/
+    }
+
+        .frame ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-size: 12px;
+        }
+
+            .frame ul li {
+                float: left;
+                width: 227px;
+                /* height: 100%; */
+                /*    margin: 1px 1px 1px 5px;*/
+                padding: 5px;
+                /* background: #333; */
+                /* text-align: center; */
+                cursor: pointer;
+                color: #6d6c6c;
+                background: #fff;
+                /* border-right: 1px solid #efefef;*/
+            }
+
+                .frame ul li.active {
+                    color: #6d6c6c;
+                    background: #f5f5f5;
+                }
+
+
+    /* Scrollbar */
+
+    .scrollbar {
+        margin: 0 0 0.5em 0;
+        height: 1px;
+        background: #eee;
+        line-height: 0;
+    }
+
+        .scrollbar .handle {
+            width: 100px;
+            height: 100%;
+            background: #292a33;
+            cursor: pointer;
+        }
+
+            .scrollbar .handle .mousearea {
+                position: absolute;
+                top: -9px;
+                left: 0;
+                width: 100%;
+                height: 10px;
+            }
+
+
+    /* Pages */
+
+    .pages {
+        list-style: none;
+        margin: 5px 0;
+        padding: 0;
+        text-align: center;
+    }
+
+        .pages li {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin: 0 2px;
+            text-indent: -999px;
+            border-radius: 5px;
+            cursor: pointer;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2);
+        }
+
+            .pages li:hover {
+                background: #aaa;
+            }
+
+            .pages li.active {
+                background: #ddd;
+            }
+
+
+    /* Controls */
+
+    .controls {
+        margin: 25px 0;
+        text-align: center;
+    }
+
+
+    /* One Item Per Frame example*/
+
+    .oneperframe {
+        height: 300px;
+        line-height: 300px;
+    }
+
+        .oneperframe ul li {
+            width: 1140px;
+        }
+
+            .oneperframe ul li.active {
+                background: #333;
+            }
+
+
+    /* Crazy example */
+
+    .crazy ul li:nth-child(2n) {
+        width: 100px;
+        margin: 0 4px 0 20px;
+    }
+
+    .crazy ul li:nth-child(3n) {
+        width: 300px;
+        margin: 0 10px 0 5px;
+    }
+
+    .crazy ul li:nth-child(4n) {
+        width: 400px;
+        margin: 0 30px 0 2px;
+    }
+
+    .custom-datepicker .input-group-addon {
+        background-color: #fff;
+        border: none;
+        font-size: 12px;
+        font-weight: 400;
+        padding: 3px 8px;
+    }
+
+    .custom-datepicker .max-width-input-group-addon {
+        /* width: 100px !important;*/
+    }
+
+    .custom-datepicker .form-control {
+        box-shadow: none;
+    }
+
+    .custom-datepicker .form-control {
+        border: none;
+        border-radius: 0;
+    }
+
+    .custom-datepicker .input-group {
+        width: 215px !important;
+    }
+
+    .custom-datepicker .form-control {
+        height: 25px
+    }
+
+    .custom-datepicker .form-control {
+        background-color: #FFFFFF;
+        background-image: none;
+        border: none;
+        border-radius: 0;
+        padding: 1px 2px;
+        font-size: 12px;
+    }
+
+    #classter-container {
+        display: flex; /* establish flex container */
+        flex-direction: row; /* default value; can be omitted */
+        flex-wrap: nowrap; /* default value; can be omitted */
+        justify-content: space-between; /* switched from default (flex-start, see below) */
+    }
+
+        #classter-container > div {
+        }
+</style>
+
+
+<div class="row">
+    <div class="acme-news-ticker-label ">
+
+
+
+
+
+
+        <div class="col-xs-12" id="classter-container">
+
+            <div>
+                <span class="category-title-mid"> Timetable</span>
+            </div>
+
+            <div class=" text-center">
+                <div class="custom-datepicker margin-bottom-5">
+                    <div class="input-group " style="width:100%;border:1px solid #efefef">
+                        <div class="input-group-addon">
+                            <span style="cursor:pointer" id="previousDate" class="fal fa-chevron-left changeDate" data-date="2024-06-08"> </span>
+                        </div>
+                        <input class="form-control datepicker max-width-input-group-addon" style=" text-align: center;" name="tdate" id="tdate" value="09/06/2024">
+                        <div class="input-group-addon">
+                            <span style="cursor:pointer" id="nextDate" class="fal fa-chevron-right changeDate" data-date="2024-06-10"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        <div>
+                    <a href="/Student/StudentTimeTable" class="btn btn-sm btn-white-gray btn-outline no-borders hidden-xs" title="Timetable">Scheduling</a>
+
+                    <a href="/Sessions/DailySession" class="btn btn-sm btn-white-gray btn-outline no-borders  hidden-xs" title="Session List">Sessions</a>
+        </div>
+
+        </div>
+    </div>
+
+
+
+</div>
+<div class="clearfix"></div>
+<div class="scrollbar" style="display: none;">
+    <div class="handle">
+        <div class="mousearea"></div>
+    </div>
+</div>
+<div id="dailyProgramContainer">
+
+<div class="frame  margin-bottom-15" id="basic">
+        <ul class="clearfix">
+                <li class="classter-tile " style="margin-right: 8px; margin-bottom: 1px!important;">
+                    <div >
+                        <p class="font-bold font-13px text-elipsis" title="G11-A"> G11-A</p>
+                        <p> English Language Arts</p>
+                        <p class="color-light font-small" style="min-height:15px" > G11-A</p>
+                        <p class="">
+                            <span class=" text-navy"> 09:00</span> - <span class=" text-danger"> 09:50</span>
+
+                            <span class="pull-right">
+
+                                                            </span>
+                        </p>
+                    </div>
+                </li>
+                <li class="classter-tile " style="margin-right: 8px; margin-bottom: 1px!important;">
+                    <div >
+                        <p class="font-bold font-13px text-elipsis" title="G11-A"> G11-A</p>
+                        <p> Computer</p>
+                        <p class="color-light font-small" style="min-height:15px" > Computer Lab 2</p>
+                        <p class="">
+                            <span class=" text-navy"> 09:50</span> - <span class=" text-danger"> 10:15</span>
+
+                            <span class="pull-right">
+
+                                                            </span>
+                        </p>
+                    </div>
+                </li>
+                <li class="classter-tile " style="margin-right: 8px; margin-bottom: 1px!important;">
+                    <div >
+                        <p class="font-bold font-13px text-elipsis" title="G11-A"> G11-A</p>
+                        <p> Mathematics </p>
+                        <p class="color-light font-small" style="min-height:15px" > </p>
+                        <p class="">
+                            <span class=" text-navy"> 10:40</span> - <span class=" text-danger"> 11:31</span>
+
+                            <span class="pull-right">
+
+                                                            </span>
+                        </p>
+                    </div>
+                </li>
+                <li class="classter-tile " style="margin-right: 8px; margin-bottom: 1px!important;">
+                    <div >
+                        <p class="font-bold font-13px text-elipsis" title="G11-A"> G11-A</p>
+                        <p> German</p>
+                        <p class="color-light font-small" style="min-height:15px" > </p>
+                        <p class="">
+                            <span class=" text-navy"> 11:55</span> - <span class=" text-danger"> 12:20</span>
+
+                            <span class="pull-right">
+
+                                                            </span>
+                        </p>
+                    </div>
+                </li>
+                <li class="classter-tile " style="margin-right: 8px; margin-bottom: 1px!important;">
+                    <div >
+                        <p class="font-bold font-13px text-elipsis" title="G11-A"> G11-A</p>
+                        <p> Islamic Religion</p>
+                        <p class="color-light font-small" style="min-height:15px" > G11-A</p>
+                        <p class="">
+                            <span class=" text-navy"> 12:45</span> - <span class=" text-danger"> 13:10</span>
+
+                            <span class="pull-right">
+
+                                                            </span>
+                        </p>
+                    </div>
+                </li>
+        </ul>
+
+</div>
+
+<ul class="pages"></ul>
+
+<script src="/Scripts/plugins/sly/darsa.js"></script>
+<script src="/Scripts/plugins/sly/sly.min.js"></script>
+<script src="/Scripts/plugins/sly/scroller.js"></script>
+
+<script>
+
+</script>
+</div>
+<div class="controls center" style="display:none">
+    <button class="btn prevPage"><i class="icon-chevron-left"></i><i class="icon-chevron-left"></i> page</button>
+    <button class="btn prev"><i class="icon-chevron-left"></i> item</button>
+    <button class="btn backward"><i class="icon-chevron-left"></i> move</button>
+
+    <div class="btn-group">
+        <button class="btn toStart">toStart</button>
+        <button class="btn toCenter">toCenter</button>
+        <button class="btn toEnd">toEnd</button>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn toStart" data-item="10"><strong>10</strong> toStart</button>
+        <button class="btn toCenter" data-item="10"><strong>10</strong> toCenter</button>
+        <button class="btn toEnd" data-item="10"><strong>10</strong> toEnd</button>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn add"><i class="icon-plus-sign"></i></button>
+        <button class="btn remove"><i class="icon-minus-sign"></i></button>
+    </div>
+
+    <button class="btn forward">move <i class="icon-chevron-right"></i></button>
+    <button class="btn next">item <i class="icon-chevron-right"></i></button>
+    <button class="btn nextPage">page <i class="icon-chevron-right"></i><i class="icon-chevron-right"></i></button>
+</div>
+
+
+
+
+
+<script src="/Scripts/plugins/bootbox/bootbox.all.min.js"></script>
+<script>
+
+    $(document).off('click', '#previousDate');
+    $(document).on('click', '#previousDate', function() {
+        var date = $('#tdate').datepicker('getDate', '-1d');
+        date.setDate(date.getDate()-1);
+        $('#tdate').datepicker('setDate', date);
+    });
+
+    $(document).off('click', '#nextDate');
+    $(document).on('click', '#nextDate', function () {
+        var date = $('#tdate').datepicker('getDate', '+1d');
+        date.setDate(date.getDate() + 1);
+        $('#tdate').datepicker('setDate', date);
+    });
+
+    initDatepicker('#tdate')
+        .on('changeDate', function (e) {
+            new ajaxCall({
+                url: '/Home/GetDailyProgram',
+                data: { date: dateFromInput('tdate') },
+                onPartial: function (data) {
+                    $('#dailyProgramContainer').html(data);
+                    liPagesManager();
+                }
+            }).post();
+        });
+
+
+
+    $(document).off('click', '.timetableid');
+    $(document).on('click', '.timetableid', function () {
+        var helper = {
+            timetableSessionCode: $(this).attr('data-id'),
+            selectedDate: dateFromInput('tdate')
+        };
+
+        new ajaxCall({
+            url: '/Home/ConvertTimetableToSession',
+            data: { helper: helper },
+            onSuccess: function (d) {
+                window.location.href = "/Sessions/GetSessionView?code=" + d.ajaxData + "&forPartial=False";
+            },
+            onError: function (error) {
+                bootbox.alert({
+                    title: 'Info',
+                    message: error
+                });
+            }
+        }).post();
+    });
+
+    function liPagesManager() {
+        var liLength = $('.pages li').length;
+        if (liLength <= 1)
+            $('.pages').hide();
+        else
+            $('.pages').show();
+    }
+
+    $(document).ready(function() {
+        liPagesManager();
+    });
+</script>
+
+            <div id="dailyCalendarContainer"></div>
+
+
+
+
+<style>
+    .fc-day-grid-event {
+        padding: 5px !important;
+    }
+</style>
+
+<div id="modalContainer"></div>
+
+
+
+
+
+
+
+
+
+<div id="calendar" class="fc fullcalendar-event-colors fc-ltr fc-unthemed "></div>
+
+
+
+
+<link href="/content/plugins/fullcalendar420/core/main.css" rel="stylesheet" />
+<link href='/content/plugins/fullcalendar420/daygrid/main.css' rel='stylesheet' />
+<link href='/content/plugins/fullcalendar420/timegrid/main.css' rel='stylesheet' />
+<link href='/content/plugins/fullcalendar420/list/main.css' rel='stylesheet' />
+<link href='/content/plugins/fullcalendar420/timeline/main.css' rel='stylesheet' />
+<link href='/content/plugins/fullcalendar420/resource-timeline/main.css' rel='stylesheet' />
+
+<script src="/scripts/plugins/fullcalendar420/core/main.js"></script>
+<script src='/scripts/plugins/fullcalendar420/interaction/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/daygrid/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/timegrid/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/list/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/timeline/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/resource-common/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/resource-timeline/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/resource-daygrid/main.js'></script>
+<script src='/scripts/plugins/fullcalendar420/core/locales-all.js'></script>
+
+<style>
+    .sweet-alert .cancel {
+        background-color: #D0d0d0 !important;
+    }
+</style>
+
+<script src="/Scripts/plugins/jqueryPrint/printThis.js"></script>
+
+<script id="legendsTemplate" type="text/template">
+    <% _.each(filtered, function(legend) { %>
+    <div class="external-event" style="position: relative; background-color: <%= legend.color %>; color: white; border-radius: 12px; cursor: default;"><%= legend.categoryDescription %></div>
+    <% }) %>
+</script>
+
+<script>
+    //$(document).ready(function () { if (window.innerWidth < 765) $(".fc-timeGridDay-button.fc-button.fc-button-primary").click() });
+
+    var forStudent = false;
+    var stuCodeCalendar = 0;
+
+    var hasCalendaringAndEventsAnnouncements = true;
+    var myCalendar = false;
+
+    var fromPublicSearch = false;
+    var timetableEvents;
+    var holidayEvents;
+    var showTimetableEvents = false;
+    var calendarObject = null;
+
+    var isSelectable = false;
+    var viewEvents = [];
+    var publicEvents = [];
+    var listViewDataTimetable = [];
+    var lang = $("#currentCulture").val();
+    var duration = 60;
+
+    var headerButtons = myCalendar ? 'calPrintBtn timeGridDay,timeGridWeek,dayGridMonth,listYear' : 'timeGridDay,timeGridWeek,dayGridMonth';
+
+    moment.locale($('#currentCulture').val())
+
+    var calendarElement = document.getElementById('calendar');
+    calendarObject = new FullCalendar.Calendar(calendarElement,
+        {
+            plugins: ['dayGrid', 'timeGrid', 'resourceTimeline', 'list', 'interaction', 'resourceDayGrid', 'resourceTimeGrid'],
+            editable: false,
+            aspectRatio: 1.8,
+            slotDuration: { minutes: 5 },
+            slotLabelInterval: { minutes: duration } ,
+            defaultView: 'timeGridWeek',
+            customButtons: {
+                calPrintBtn: {
+                    text: 'Print',
+                    click: function () {
+                        $('#calendar').printThis();
+                    }
+                }
+            },
+		    header: {
+			    left: 'today prev,next',
+			    center: 'title',
+			    right: headerButtons
+		    },
+		    views: {
+			    resourceTimeGridDay: {
+				    type: 'resourceTimeGrid',
+				    duration: { days: 1 }
+			    }
+		    },
+		    locale: lang,
+		    eventSources: [
+			    {
+				    events: function(info, callback) {
+					    callback(viewEvents);
+				    }
+			    }
+		    ],
+            eventClick: function (calEvent) {
+
+                console.log(calEvent.event.extendedProps.multi);
+
+                if (calEvent.event.extendedProps.multi == 7) {
+	                return false;
+                }
+
+			    if (calEvent.event.extendedProps.multi != -1) {
+				    new ajaxCall({
+					    url: '/Calendar/GetCalendarEvent',
+                        data: { code: calEvent.event.id, type: calEvent.event.extendedProps.multi, forStudent: forStudent, stuCode: stuCodeCalendar },
+                        onPartial: function (data) {
+                            var modalContainer = !forStudent ? 'modalContainer' : 'modalContainerForCalendar';
+                            jQuery('#' + modalContainer).html(data);
+                            jQuery("#EventModal").modal({ backdrop: "static" }, "show");
+					    },
+					    onError: function(message) {
+						    fastAlertDialog('Info',
+							    message,
+							    'warning',
+							    'OK');
+                        }
+                    }).post();
+                    //jQuery('#modalContainer').load("/Calendar/GetCalendarEvent?code=" + calEvent.event.id + "&type=" + calEvent.event.extendedProps.multi, function () {
+                    //    jQuery("#EventModal").modal({ backdrop: "static" }, "show");
+                    //});
+                } else {
+                    jQuery("#TimetableModalContent").html( calEvent.event.extendedProps.externalObject);
+                    jQuery("#TimetableModal").modal("show");
+                }
+            },
+            //eventMouseEnter: function (mouseEnterInfo) {
+            //    mouseEnterInfo.el.title = mouseEnterInfo.event.title;
+            //},
+        selectable : isSelectable,
+        select: function (eventObject) {
+
+            var options = {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric',
+                hour12: false
+            };
+
+            consoleLog(eventObject.start);
+            var formatedDate = FullCalendar.formatDate(event.start, 'MM-dd-yyyy');
+
+            var dStart = moment(eventObject.start).format(getLocaleDateStringForMoment() + " HH:mm:ss"); // new Date(eventObject.start).toISOString();
+            consoleLog(dStart);
+            var dEnd = moment(eventObject.end).format(getLocaleDateStringForMoment() + " HH:mm:ss"); //new Date(eventObject.end).toISOString();
+
+            //var dateStart = new Intl.DateTimeFormat('en-US', options).format(eventObject.start);
+            //var dateEnd = new Intl.DateTimeFormat('en-US', options).format(eventObject.end);
+
+            if (hasCalendaringAndEventsAnnouncements) {
+                Ajax.loadModal("/ModalData/CreateEventModal", { fromDate: dStart, toDate: dEnd });
+                //CreateEventWithDate(dStart, dEnd);
+            }
+
+
+        },
+        allDaySlot: true,
+        slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            omitZeroMinute: false,
+            meridiem: 'short'
+        },
+        height: 600,
+        eventTimeFormat: {
+            hour: "numeric",
+            minute: "2-digit",
+            meridiem: false,
+        },
+            displayEventEnd: true,
+		schedulerLicenseKey: "0402153996-fcs-1561729498",
+        eventRender: function (eventObject) {
+            if (!eventObject.event.allDay) {
+                var popOverContent = `
+                            <div><span class="font-bold">Start</span>: ${moment(eventObject.event.start).format('ddd Do, YYYY HH:mm')}</div>
+                            <div><span class="font-bold">End</span>: ${moment(eventObject.event.end).format('ddd Do, YYYY HH:mm')}</div>`;
+
+                if (!_.isEmpty(eventObject.event.extendedProps.actualStartTime) && !_.isEmpty(eventObject.event.extendedProps.actualEndTime)) {
+                    popOverContent = `
+                            <div><span class="font-bold">Start</span>: ${moment(eventObject.event.extendedProps.actualStartTime).format('ddd Do, YYYY HH:mm')}</div>
+                            <div><span class="font-bold">End</span>: ${moment(eventObject.event.extendedProps.actualEndTime).format('ddd Do, YYYY HH:mm')}</div>`;
+                }
+
+                $(eventObject.el).popover({
+                    title: `<span class="text-bold">${eventObject.event.title}</span>`,
+                    placement: 'top',
+                    trigger: 'hover',
+                    content: popOverContent,
+                    container: 'body',
+                    html: true
+                });
+            } else {
+                $(eventObject.el).popover({
+                    title: `<span class="text-bold">${eventObject.event.title}</span>`,
+                    placement: 'top',
+                    trigger: 'hover',
+                    content: `All day event - ${moment(eventObject.event.start).format('ddd Do, YYYY')}`,
+                    container: 'body',
+                    html: true
+                });
+            }
+
+
+            if (eventObject.event.extendedProps != null && eventObject.event.extendedProps.exceptions != null) {
+		        var eventStartDate = moment(eventObject.event.start);
+
+		        _.each(eventObject.event.extendedProps.exceptions,
+			        function(range) {
+				        var hideIt = (eventStartDate >= moment(range.fromDate) && eventStartDate <= moment(range.toDate));
+				        if (hideIt) {
+					        consoleLog(eventObject.event.title);
+					        jQuery(eventObject.event.el).hide();
+					        jQuery(eventObject.el).hide();
+				        }
+			        });
+
+	        }
+	        else {
+		        return true;
+	        }
+        },
+        datesRender: function (info) {
+
+            var dateStart = moment(info.view.currentStart);
+            var dateEnd = moment(info.view.currentEnd).subtract(1, 'day');
+
+            if (!fromPublicSearch) {
+                if (!_.isNull(calendarObject))
+                    calendarObject.removeAllEvents();
+
+                var helper = {
+                    dateFrom: dateStart.format(getLocaleDateStringForMoment()),
+                    dateTo: dateEnd.format(getLocaleDateStringForMoment()),
+                    showTimetable: showTimetableEvents,
+                    forStudent: forStudent,
+                    entityCode: stuCodeCalendar
+                }
+                getEv(helper);
+            }
+
+            //var now = new Date();
+            calendarObject.scrollToTime(moment().format('HH:mm'));
+
+        }
+
+	});
+
+    calendarObject.render();
+
+
+
+
+
+    function getEv(helper, showDaily) {
+        $('#external-events').empty();
+        if ($('#loadergif').length == 0) $('.fc-left').append('<span id="loadergif"><img src="/img/new-loader-gray.gif"/></span>');
+        $('#showTimetableToggle').prop('disabled', true);
+        new ajaxCall({
+            url: '/Calendar/GetCalendarEvents',
+            data: { helper: helper },
+            showLoader: false,
+            onSuccess: function(d) {
+                viewEvents = [];
+                var ve = d.ajaxData;
+                _.each(ve, function(element) { _.extend(element, { publicEvent: false }) });
+                viewEvents = ve;
+                viewEvents = _.union(viewEvents, publicEvents);
+				viewEvents = _.uniq(viewEvents, 'customIdentifier');
+                consoleLog(viewEvents);
+                calendarObject.refetchEvents();
+                if (myCalendar) {
+                    var legendTemplate = _.template($('#legendsTemplate').html());
+                    $('#external-events').html(legendTemplate({ filtered: getLegends() }));
+                }
+                if (showDaily && !myCalendar) {
+                    new ajaxCall({
+                        url: '/Timetable/GetDailyWeekProgram',
+                        showLoader: false,
+                        onPartial: function (data) {
+                            $('#dailyCalendarContainer').empty();
+                            $('#dailyCalendarContainer').addClass('m-b-md');
+                            $('#dailyCalendarContainer').html(data);
+                            $('#loadergif').remove();
+                            $('#showTimetableToggle').attr('disabled', false);
+                        }
+                    }).post();
+                } else{
+                    $('#showTimetableToggle').attr('disabled', false);
+                    $('#loadergif').remove();
+                }
+            }
+        }).post();
+
+    }
+
+    function CreateEventWithDate(fromDate, toDate) {
+
+        //new ajaxCall({
+        //    url: '/PublicEvent/CreateWithDate',
+        //    data : {
+        //        isAnnouncement: false,
+        //        fromDate : fromDate,
+        //        toDate : toDate
+        //    },
+        //    onPartial: function (data) {
+        //        $('#createEventContainer').empty();
+        //        $('#createEventContainer').html(data);
+        //        $('#createEventModal').modal('show');
+
+        //    }
+        //}).post();
+    }
+
+    //$(document).off('hidden.modal.bs', '#createEventModal');
+    //$(document).on('hidden.modal.bs', '#createEventModal', function(e) {
+    //    if (e.namespace == 'bs.modal') {
+    //        //var helper = {
+    //        //    dateFrom: moment(calendarObject.view.activeStart).format(getLocaleDateStringForMoment()),
+    //        //    dateTo: moment(calendarObject.view.activeEnd).format(getLocaleDateStringForMoment()),
+    //        //    showTimetable: showTimetableEvents
+    //        //}
+    //        //getEv(helper);
+    //    }
+    //});
+
+
+    function getLegends() {
+        return _.uniq(viewEvents, function(m) { return m.color });
+    }
+
+
+
+
+    $(document).off('hidden.bs.modal', '#EventModal');
+    $(document).on('hidden.bs.modal', '#EventModal', function (e) {
+        if (!($("#EventModal").data('bs.modal') || {}).isShown) {
+            if (e.namespace == 'bs.modal') {
+                //var helper = {
+                //    dateFrom: moment(calendarObject.view.activeStart).format(getLocaleDateStringForMoment()),
+                //    dateTo: moment(calendarObject.view.activeEnd).format(getLocaleDateStringForMoment()),
+                //    showTimetable: showTimetableEvents
+                //}
+                //getEv(helper);
+            }
+        }
+    });
+
+    //$(document).off('hidden.bs.modal', '#editEventModal');
+    //$(document).on('hidden.bs.modal', '#editEventModal', function (e) {
+    //    if (e.namespace == 'bs.modal') {
+    //        //var helper = {
+    //        //    dateFrom: moment(calendarObject.view.activeStart).format(getLocaleDateStringForMoment()),
+    //        //    dateTo: moment(calendarObject.view.activeEnd).format(getLocaleDateStringForMoment()),
+    //        //    showTimetable: showTimetableEvents
+    //        //}
+    //        //getEv(helper);
+    //    }
+    //});
+
+
+    $('#showPublicEvents').click(function () {
+        var categories = $('#calendarCategorySelect2').val();
+        var dateFrom = moment(calendarObject.view.currentStart).format(getLocaleDateStringForMoment());
+        var dateTo = moment(calendarObject.view.currentEnd).format(getLocaleDateStringForMoment())
+        viewEvents = _.filter(viewEvents, function (m) { return m.publicEvent == false });
+        calendarObject.removeAllEvents();
+
+        if (!_.isNull(categories) && categories.length > 0) {
+            var model = {
+                fromDate: dateFrom,
+                toDate: dateTo,
+                calendarCategories: categories
+            }
+
+            new ajaxCall({
+                url: '/Calendar/GetAllPublicEvents',
+                data: { helper: model },
+                onSuccess: function(data) {
+                    publicEvents = [];
+                    _.each(data.ajaxData,
+                        function(m) {
+                            m.publicEvent = true;
+                            publicEvents.push(m);
+                        });
+
+                    var helper = {
+                        dateFrom: dateFrom,
+                        dateTo: dateTo,
+                        showTimetable: showTimetableEvents
+                    }
+                    getEv(helper, true);
+                }
+            }).post();
+        } else {
+            publicEvents = [];
+            var helper = {
+                dateFrom: dateFrom,
+                dateTo: dateTo,
+                showTimetable: showTimetableEvents
+            }
+            getEv(helper, true);
+        }
+
+
+    });
+</script>            <div class="clearfix">&nbsp;</div>
+                    <div class="text-left">
+                <div class="category-title-mid"> My Subjects</div>
+                <div id="MySubjectsContainer"></div>
+                <div class="pull-right"> <a href="/MyCourses" class="btn btn-sm btn-link hidden-xs" title="View More Subjects">View More</a></div>
+            </div>
+            <div class="clearfix"></div>
+        <div class="text-left">
+            <style>
+
+    /*--------------------------------------owl-carousel-----------------------------------------------------*/
+
+    .navs-carousel .owl-nav button {
+        width: 20px !important;
+        height: 20px !important;
+        line-height: 0px !important;
+        font-size: 14px !important;
+        border-radius: 50% !important;
+        background-color: rgb(234 207 205) !important;
+        color: #867b7b !important;
+        margin: 1px 4px !important;
+    }
+
+    .owl-theme .owl-nav {
+        margin-top: 0px !important;
+        float: right !important;
+    }
+</style>
+
+
+
+<script id="announcementsTemplate" type="text/template">
+
+    <% var cnt = 0 %>
+    <% var categories = _.uniq(model, function(m){ return m.calendarCategory }) %>
+    <% if (!_.isNull(model) && model.length > 0) { %>
+
+    <div class="category-title-mid text-left">Announcements</div>
+
+
+
+    <div class="owl-carousel owl-theme  navs-carousel events">
+        <% _.each(model, function(m) { %>
+
+        <% _.each(m.announcementsPerPeriod, function(period) { %>
+
+        <div class="item">
+            <div class="classter-tile">
+                <div class="classter-body clearfix">
+
+                    <% if (period.isRead) { %>
+                    <i class="fal fa-envelope-open-text fa-fw fa-lg" title="Read" style="vertical-align:middle"></i>
+                    <% } else { %>
+                    <i class="fal fa-envelope fa-fw fa-lg" title="Unread" style="vertical-align:middle"></i>
+                    <% } %>
+
+                    <span class="font-bold">
+                        <%= period.subject %>
+                    </span>
+
+                    <% if (period.isHighImportance) { %>
+                    <span class="Font-14px text-danger font-bold">!</span>
+                    <% } %>
+
+                    <br />
+                    <small class="text-left font-color-light ">
+                        <%= !_.isNull(period.dateStart) ? moment(period.dateStart).format(getLocaleDateStringForMoment()) : '' %>
+                        -
+                        <%= !_.isNull(period.dateEnd) ? moment(period.dateEnd).format(getLocaleDateStringForMoment()) : '' %>
+                    </small>
+
+                    <br />    <br />
+                    <div class="d-flex">
+                        <div class="label label-tag text-elipsis" style="line-height:22px;"
+                             data-hash="#<%= (_.find(categories, function(category){ return m.calendarCategory == m.calendarCategory })).calendarCategory %>">
+                            <i class="fa fa-circle <%= m.color %>" style="color:<%= m.color %>"></i>
+                            <span title="<%= m.calendarDescription %>"> <%= m.calendarDescription %></span>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <small class="font-small flex-grow-1 align-self-center justify-content-center text-elipsis" title="<%= period.location %>" style="color: purple;"> <%= period.location %></small>
+                        &nbsp;
+                        <a class="subjectRow  btn btn-link btn-xs pull-right hidden-xs" data-code="<%= period.code %>"
+                           onclick='Ajax.loadModal("/ModalData/AnnouncementModal", { code: this.dataset.code });'>
+                            Read More
+                        </a>
+                    </div>
+                </div>
+                </div>
+        </div>
+        <% }) %>
+        <% }) %>
+    </div>
+    <% } %>
+
+</script>
+
+<script id="announcemantAdmissionUserTemplate" type="text/template">
+    <div class="owl-carousel owl-theme  navs-carousel events margin-top-5">
+        <% _.each(model, m => { %>
+        <div class="item">
+            <div class="classter-tile">
+                <div class="classter-body clearfix">
+                    <span>
+                        <%= m.subject %>
+                    </span>
+                    <br />
+                    <small class="text-left font-color-light ">
+                        <%= !_.isNull(m.dateStart) ? moment(m.dateStart).format(getLocaleDateStringForMoment()) : '' %>
+                        -
+                        <%= !_.isNull(m.dateEnd) ? moment(m.dateEnd).format(getLocaleDateStringForMoment()) : '' %>
+                    </small>
+
+                    <br />
+                    <div class="label label-tag line-height-30">
+                        <i class="fa fa-circle <%= m.calendarCategory.color %>" style="color: <%= m.calendarCategory.color %>"></i>
+                        <span> <%= m.calendarCategory.description %></span>
+                    </div>
+                    <div>
+                        <small class="font-small" style="color: purple;"> <%= m.location %></small>
+                        &nbsp;
+                        <% if (m.calendarCategory.code > 0) { %>
+                        <a class="subjectRow btn btn-link btn-xs pull-right hidden-xs readPublicEvent" data-subjectcode="<%= m.code %>">
+                            Read More
+                        </a>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+</script>
+
+<div id="modalContainer"></div>
+
+<script>
+
+
+
+
+    $(document).off('click', '.readPublicEvent');
+    $(document).on('click', '.readPublicEvent', function (e) {
+        var code = $(this).data('subjectcode')
+        new ajaxCall({
+            url: '/Calendar/GetCalendarEvent',
+            data: { code: code, type: 2 },
+            onPartial: function (data) {
+                $('#modalContainer').html(data);
+                $("#EventModal").modal({ backdrop: "static" }, "show");
+            }
+        }).post();
+    });
+
+</script>
+            <div id="AnnouncementTemplate"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="studentEnrollmentsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg inmodal" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Enrollments</h4>
+                <h5 class="modal-subtitle"></h5>
+            </div>
+            <div class="modal-body">
+                <div id="studentEnrollmentsModalContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white-gray btn-border-radius" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade inmodal" id="sessionModalModal" aria-labelledby="sessionModal">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="crmModalLabel">Sessions</h4>
+                <h5 class="modal-subtitle" id="calculateAnnualResultsLabel"></h5>
+            </div>
+            <div class="modal-body">
+                <div id="sessionModalContainer">
+
+                </div>
+            </div>
+            <div class="row"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white-gray btn-border-radius" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="myProfilePageModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog large-modal inmodal" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Profile Page</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class='modal fade inmodal' id='userFilesStudentModal'  role='dialog' aria-labelledby='userFilesStudentModalLabel'>
+                                <div class='modal-dialog inmodal large-modal' role='document'>
+                                    <div class='modal-content'>
+                                        <div class='modal-header'>
+                                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>
+                                            <h4 class='modal-title' id='userFilesStudentTitle'>User Files</h4>
+                                        </div>
+                                        <div class='modal-body'>
+                                            <div id='userFilesStudentContainer'></div>
+
+                                        </div>
+                                        <div class='modal-footer'>
+                                            <button type='button' class='btn btn-default' data-dismiss='modal'>OK</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+    <div class="modal fade inmodal " id=studentCourseBooksViewModal data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="studentCourseBooksViewModalLabel">
+        <div class="modal-dialog inmodal modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id='studentCourseBooksViewTitle'>Books</h4>
+                </div>
+                <div class="modal-body">
+                    <div id='studentCourseBooksViewContainer'></div>
+                </div>
+                    <div class="modal-footer">
+
+                                <button type='button' id="btnClosestudentCourseBooksView" class='btn btn-default' data-close data-dismiss="modal">Cancel</button>
+                                <button type='button' id="btnOkstudentCourseBooksView" class='btn btn-primary' data-dismiss="modal">OK</button>
+                                            </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+<script id="viewBookDistributionTemplate" type="text/template">
+
+
+    <div id="tableContainer" style="display: none;">
+
+    </div>
+
+</script>
+
+<script id="datatableTemplate" type="text/template">
+    <div class="table-responsive">
+        <table class="table Table-bordered-replace table-hover students-table" id="tableSubjectBookDistribution" width="100%">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Copies</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</script>
+
+<script>
+
+    var students;
+    var dataList = null;
+
+    function GetData(stucode) {
+        new ajaxCall({
+            url: '/Library/GetStudentBookDistribution',
+            data: { stucode: stucode },
+            onSuccess: function (data) {
+                dataList = data;
+                DrawGrid(data.ajaxData);
+            }
+        }).post();
+    }
+
+
+    $(document).off('show.bs.modal', '#studentCourseBooksViewModal');
+    $(document).on('show.bs.modal', '#studentCourseBooksViewModal', function (e) {
+        if (e.namespace == 'bs.modal') {
+            var temp = _.template($('#viewBookDistributionTemplate').html());
+            $('#studentCourseBooksViewContainer').html(temp());
+
+                    GetData(20975);
+
+        }
+    });
+
+    var table;
+    function DrawGrid(data) {
+        $('#tableContainer').empty();
+        var temp = _.template($('#datatableTemplate').html());
+        $('#tableContainer').html(temp());
+
+        table = initDataTable('tableSubjectBookDistribution',
+            {
+                dom: "<'row'<'pull-right hidden-xs'l>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                language: {
+                    "url": "/scripts/plugins/dataTables/lang/" + $("#currentCulture").val() + ".json"
+                },
+                data: data,
+                processing: true,
+                scrollX: true,
+                scrollY: "65vh",
+                scrollCollapse: true,
+                responsive: false,
+                pageLength: 100,
+                lengthMenu: [[100, 250, 500, 1000], [100, 250, 500, 1000]],
+                columnDefs: getColumnDefs(),
+                initComplete: function () {
+                    $('#tableContainer').show();
+                    table.columns.adjust().responsive.recalc();
+                }
+            });
+    }
+
+    function getColumnDefs() {
+        var columnDefs = [];
+
+        columnDefs.push({
+            targets: 0,
+            render: function(data, type, full, meta) {
+                return _.isNull(full.book) ? '' : full.book.title;
+            }
+        });
+
+        columnDefs.push({
+            targets: 1,
+            render: function(data, type, full, meta) {
+                return _.isNull(full.forStudentCourseBook.course) ? '' : full.forStudentCourseBook.course.description;
+            }
+        });
+
+        columnDefs.push({
+            targets: 2,
+            render: function(data, type, full, meta) {
+                return _.isEmpty(full.lending) ? '' : `<span class="barcodeRow" data-barcode="${full.lending.bookCopy.barcode}">${full.lending.bookCopy.barcode}</span>`;
+            }
+        });
+
+        columnDefs.push({
+            targets: 3,
+            render: function(data, type, full, meta) {
+                return _.isNull(full.forStudentCourseBook.status) ? '' : full.forStudentCourseBook.status.description;
+            }
+        });
+        return columnDefs;
+    }
+
+    $(document).off('click', '#searchGrid');
+    $(document).on('click', '#searchGrid', function() {
+        GetData($('#parentStudentsSelect2').val());
+    });
+</script>
+
+<script type="text/javascript">
+
+    if ("False" != "True" && "True" == "True") {
+        CacheService.CacheCallWithTargetDivTimeout("Dashboard", "StudentsDashboardMySubjects", "MySubjectsContainer", TimeVariables.hour);
+    }
+
+    var hasCalendaringAndEventsAnnouncements = true;
+
+    var studentCode = 20975;
+
+    $('#myProfilePageModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var userCode = button.data('code');
+
+        var modal = $(this);
+        var modalBody = modal.find('.modal-body');
+        modalBody.html('');
+
+        new ajaxCall({
+            url: '/Profile/GetProfilePage',
+            data: { stuCode: userCode },
+            onPartial: function(data) {
+                modalBody.html(data);
+            }
+        }).post();
+    });
+
+    $('#studentEnrollmentsModal').on('show.bs.modal', function (event) {
+        jQuery('#studentEnrollmentsModalContainer').html('');
+
+        new ajaxCall({
+            url: '/MyCourses/StudentEnrollments',
+            data: { stuCode: 0 },
+            onPartial: function(data) {
+                jQuery('#studentEnrollmentsModalContainer').html(data);
+            }
+        }).post();
+    });
+
+    jQuery(document).ready(function () {
+
+        var timelineEnumValue = '3';
+        var teachersEnumValue = '4';
+        var countersEnumValue = '2';
+
+        var hiddenElementsArray = [];
+            hiddenElementsArray.push('7');
+
+        var menuItem_15 = $('#Menu_15');
+
+        if (menuItem_15.length > 0 && hiddenElementsArray.indexOf(teachersEnumValue) == -1) {
+            new ajaxCall({
+                showLoader: false,
+                url: "/Dashboard/GetStudentTeachers",
+                onPartial: function (data) {
+                    jQuery('#studentTeachersTable').html(data);
+                }
+            }).post();
+        }
+        else {
+            var divMyTeachers = $('#MyTeachers');
+            divMyTeachers.remove();
+        }
+
+        if (hiddenElementsArray.indexOf(countersEnumValue) == -1) {
+            new ajaxCall({
+                showLoader: false,
+                url: "/Dashboard/GetEntityCount",
+                onSuccess: function (data) {
+                    jQuery('#entityCountWidget .data-teachers').html(data.ajaxData.teachersCount);
+                    jQuery('#entityCountWidget .data-groups').html(data.ajaxData.groupsCount);
+                    jQuery('#entityCountWidget .data-courses').html(data.ajaxData.coursesCount);
+
+                    $('.data-teachers, .data-groups, .data-courses').counterUp({
+                        delay: 10,
+                        time: 1000
+                    });
+                }
+            }).post();
+        }
+
+        if (hiddenElementsArray.indexOf(timelineEnumValue) == -1) {
+            new ajaxCall({
+                showLoader: false,
+                url: "/Dashboard/GetTimeLine",
+                onSuccess: function (data) {
+                    var container = jQuery("#vertical-timeline");
+                    if (data.ajaxData.length > 0) {
+                        console.log(data.ajaxData);
+                        jQuery.each(data.ajaxData, function (i, scenario) {
+                            container.append(getTimeLineScenario(scenario, UserType.Student));
+                        });
+                    } else {
+                        $('#vertical-timeline').hide();
+                        $('#vertical-timeline-message').show();
+                    }
+                }
+            }).post();
+        }
+
+        new ajaxCall({
+            showLoader: false,
+            url: "/Dashboard/GetPortalCustomButtons",
+            onSuccess: function (data) {
+                var container = jQuery("#custom-buttons");
+                if (data.ajaxData.length > 0) {
+                    jQuery("#custom-buttons-title").show();
+                    jQuery.each(data.ajaxData, function (i, customButton) {
+                        container.append(createCustomButton(customButton));
+                        if ((i + 1) % 2 == 0) {
+                            container.append('<div class="row"></div>');
+                        }
+                    });
+                    container.append('<div class="row"></div>');
+                } else {
+                    jQuery("#custom-buttons-title").show();
+                }
+            }
+        }).post();
+    });
+
+    $(document).off('click', '.showTimeline');
+    $(document).on('click', '.showTimeline', function () {
+        var sessionCode = $(this).data("code");
+        consoleLog(sessionCode);
+        $('#sessionModalContainer').empty();
+        new ajaxCall({
+            showLoader: false,
+            url: '/Sessions/GetSessionView',
+            data: { code: sessionCode, fromDashBoard : true } ,
+			onPartial: function (data) {
+                $('#sessionModalContainer').html(data);
+                $('#sessionModalModal').modal('show');
+            }
+        }).post();
+
+    });
+
+    $(document).off('show.bs.modal', '#userFilesStudentModal');
+    $(document).on('show.bs.modal', '#userFilesStudentModal', function (e) {
+        $('#userFilesStudentContainer').html('');
+        new ajaxCall({
+            showLoader: false,
+            url: '/Profile/GetUserFiles',
+            onPartial: function(data) {
+                $('#userFilesStudentContainer').html(data);
+            }
+        }).post();
+    });
+
+    $(document).off('hidden.bs.modal', '#userFilesStudentModal');
+    $(document).on('hidden.bs.modal', '#userFilesStudentModal', function (e) {
+        $('#userFilesStudentContainer').html('');
+    });
+
+    //$(document).on('click', 'a', function (e) {
+    //    if ($(this).attr('href').indexOf('#userFilesStudentModal') !== -1){
+    //        e.preventDefault();
+    //        $('#userFilesStudentModal').modal('show');
+    //    }
+    //});
+</script>
+
+            <script type="text/javascript">
+                jQuery(document)
+                    .ready(function () {
+                        //new ajaxCall({
+                        //    url: "/Dashboard/GetCompanyData",
+                        //    showLoader: false,
+                        //    onSuccess: function (data) {
+                        //        $('#schoolname').text(data.ajaxData.title);
+                        //        $('#schoolAddress').text(data.ajaxData.address);
+                        //        if (data.ajaxData.image != null) {
+                        //            $('#schoollogo').attr('src', "data:image;base64," + data.ajaxData.image);
+                        //        }
+                        //    }
+                        //}).post();
+
+                        new ajaxCall({
+                            showLoader: false,
+                            url: "Home/GetAllCentralAnnouncements",
+                            onPartial: function (data) {
+                                jQuery('#centralAnnouncementsContainer').html(data);
+                            }
+                        }).post();
+                    });
+            </script>
+
+<script src="/Bundles/plugins/Signature?v=tHosuptx30n0baTat6LBvFLXkW8OFgv9UGtcoUTNmPI1"></script>
+    <script src="/Scripts/plugins/Handlebars/handlebars-v4.0.11.js"></script>
+    <script src="/Scripts/dev/HandlebarsFunctions.js"></script>
+    <script src="/Scripts/plugins/notifyme/notifyme.js"></script>
+<link href="/Bundles/plugins/OwlCarousel.CSS?v=o_SaICeEW8rR_GxC77shiDNINr2_a_75Jt1IXhbZ9Hk1" rel="stylesheet"/>
+<script src="/Bundles/plugins/OwlCarousel.JS?v=X8Wy6mlT550YkQX6oApcAwfS2oXZMya4Krr5ZQQh7v41"></script>
+<script>
+        var company = $('#companyCode').val();
+        var period = $('#periodCode').val();
+        var cultureChanged = false;
+        var consentsCount = 0;
+
+        var hasCalendaringAndEventsAnnouncements = true;
+
+        //var cc = jQuery('#currentCulture').val();
+        //if (jQuery('.culture[data-culture="' + cc + '"]').length == 0) {
+        //    jQuery('.culture[data-culture="en-GB"]').addClass('font-bold');
+        //    jQuery('#currentCulture').val('en-GB');
+        //    jQuery('#currentCultureDecimalPoint').val('.');
+        //    jQuery('#currentDateFormat').val('DD/MM/YYYY');
+        //    jQuery('#currentDateTimeFormat').val('DD/MM/YYYY HH:MM');
+        //    jQuery('#currentDatepickerFormat').val('dd/mm/yyyy');
+        //} else {
+        //    jQuery('.culture[data-culture="' + cc + '"]').addClass('font-bold');
+        //}
+
+        var userMustChangePassword = false;
+
+        Handlebars.registerHelper("formatDate", function (datetime, format) {
+            return moment(datetime).format(getLocaleDateStringForMoment());
+        });
+
+        Handlebars.registerHelper("formatDateTime", function (datetime, format) {
+            return moment(datetime).format(getLocaleDateStringForMoment() + ' HH:mm');
+        });
+
+        Handlebars.registerHelper("formatTime", function (datetime, format) {
+            return moment(datetime).format('HH:mm');
+        });
+
+
+        sessionStorage.AllowUserToExport = true;
+
+
+    if (hasCalendaringAndEventsAnnouncements) {
+        //na min kalei to parakatw an einai admissionStudent i admissionParent
+
+                new ajaxCall({
+                    showLoader: false,
+                    url: '/Announcement/GetLastAnnouncementsPerCategory',
+                    onSuccess: function(data) {
+                        if (data.ajaxData.length > 0) {
+                            var announcementsTemplate = _.template($("#announcementsTemplate").html());
+                            $('#AnnouncementTemplate').html(announcementsTemplate({ model: data.ajaxData }));
+
+                            var responsive;
+                            if (true) {
+
+                                responsive = {
+                                    0: {
+                                        items: 1
+                                    },
+                                    600: {
+                                        items: 2
+                                    },
+                                    960: {
+                                        items: 2
+                                    },
+                                    1200: {
+                                        items: 2
+                                    },
+                                    1400: {
+                                        items: 3
+                                    }
+                                    ,
+                                    1700: {
+                                        items: 4
+                                    }
+                                }
+                            }
+                            else {
+                                responsive = {
+                                    0: {
+                                        items: 1
+                                    },
+                                    600: {
+                                        items: 1
+                                    },
+                                    960: {
+                                        items: 1
+                                    },
+                                    1200: {
+                                        items: 2
+                                    },
+                                    1600: {
+                                        items: 3
+                                    }
+                                }
+                            }
+
+                            var owl = $('.owl-carousel');
+                            owl.owlCarousel({
+                                loop: false,
+                                margin: 10,
+                                nav: true,
+                                responsiveClass: true,
+                                responsive: responsive
+                            });
+                        }
+                    }
+                }).post();
+
+
+        }
+
+
+
+
+
+        new ajaxCall({
+            url: '/Dashboard/GetUserNotifications',
+            showLoader: false,
+            onPartial: function(data) {
+                jQuery('#notificationsAreaDIV').html(data);
+            }
+        }).post();
+
+        //if (company != null && company != '' && period != null && period != '' && cultureChanged) {
+
+        //    new ajaxCall({
+        //        showLoader: false,
+        //        url: '/Home/CustomButtonsMenu',
+        //        data: { reload: true },
+        //        onSuccess: function(customButtonsList) {
+        //            if (customButtonsList.ajaxData != null && customButtonsList.ajaxData.length > 0) {
+        //                jQuery('#customMenu').show();
+
+        //                var customUL = jQuery('#customUL');
+
+        //                jQuery('#customUL > li').remove();
+
+        //                var list = customButtonsList.ajaxData;
+        //                for (var i = 0; i < list.length; i++) {
+        //                    var item = list[i];
+
+        //                    var newLI = jQuery('<li>');
+
+        //                    var anchor = jQuery('<a>');
+        //                    if (item.URL != "CustomHtmlForm") {
+        //                        anchor.attr('href', item.URL);
+
+        //                        var target = "_blank";
+        //                        if (item.target == 1)
+        //                            target = "_self";
+        //                        else if (item.target == 2)
+        //                            target = "_parent";
+
+        //                        anchor.attr('target', target);
+        //                    } else {
+        //                        anchor.attr('href', '/Home/Custom?code=' + item.code);
+        //                        anchor.attr('target', '_self');
+        //                    }
+
+        //                    anchor.text(item.title);
+
+        //                    newLI.append(anchor);
+        //                    customUL.append(newLI);
+        //                }
+
+        //                jQuery('#customMenu').show();
+        //                setNavigationForCustomButtonMenu();
+        //            } else {
+        //                jQuery('#customMenu').hide();
+        //            }
+        //        }
+        //    }).post();
+        //}
+
+        var navListItems = $('div.setup-panel div a');
+        var allWells = $('.setup-content');
+
+        allWells.hide();
+
+        navListItems.click(function(e) {
+            e.preventDefault();
+            var $target = $($(this).attr('href')),
+                $item = $(this);
+
+            navListItems.removeClass('btn-primary').addClass('btn-default');
+            $item.addClass('btn-primary').removeClass('btn-default');
+            allWells.hide();
+            $target.show();
+
+            var signDocs = $target.find('.signatureDoc');
+            if (signDocs != null && signDocs.length > 0) {
+                for (var i = 0; i < signDocs.length; i++) {
+                    var signDoc = $(signDocs[i]);
+                    try {
+                        signDoc.jSignature('getSettings');
+                    }
+                    catch (error) {
+                        signDoc.jSignature({ 'UndoButton': true });
+                    }
+                }
+            }
+        });
+
+        var $signature;
+        $('#SupportDocuments').on("shown.bs.modal",
+            function () {
+                $('.btn-primary.js-clickme').trigger('click');
+                $signature = $("#signature").jSignature({ 'UndoButton': true });
+
+                var firstNav = navListItems.first();
+                var $target = $(firstNav.attr('href'));
+
+                var signDocs = $target.find('.signatureDoc');
+                if (signDocs != null && signDocs.length > 0) {
+                    for (var i = 0; i < signDocs.length; i++) {
+                        var signDoc = $(signDocs[i]);
+                        try {
+                            signDoc.jSignature('getSettings');
+                        }
+                        catch (error) {
+                            signDoc.jSignature({ 'UndoButton': true });
+                        }
+                    }
+                }
+
+                //$(".signatureDoc").jSignature({ 'UndoButton': true });
+            });
+
+        $('#changePasswordDialog').on("hide.bs.modal", function () {
+            if ($('#ForceReregistrationnotification').length > 0) {
+                $('#ForceReregistrationnotification').modal('show');
+            }
+        });
+
+        $('#console').on('click',
+            function(e) {
+                e.preventDefault();
+                console.log()
+            });
+
+        $('.i-checks').iCheck({
+            checkboxClass: 'icheckbox_square-green',
+            radioClass: 'iradio_square-green'
+        });
+
+        jQuery(document).on("click",
+            ".removeFileLink",
+            function(e) {
+                e.preventDefault();
+                var button = jQuery(this);
+
+                swal({
+                        title: 'Warning',
+                        text: 'Are you sure you want to delete this file?',
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#BA212B", //#18A689
+                        confirmButtonText: 'Yes',
+                        cancelButtonText: 'No',
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    },
+                    function(isConfirm) {
+                        if (isConfirm) {
+                            var documentCode = button.closest('[id^="filenamePlaceholder"]').attr('id')
+                                .replace('filenamePlaceholder', '');
+                            removeFile(documentCode);
+                        } else {
+                            //swal("Cancelled", "Your imaginary file is safe :)", "error");
+                        }
+                    });
+
+                return false;
+            });
+
+        //$(document).on('click',
+        //    '.js-clickme',
+        //    function() {
+        //        var selectedStuCode = $(this).data("stucode");
+        //        $.each($('.js-studentCode'),
+        //            function(index, value) {
+        //                var findedStucode = $(this).data("code");
+        //                if (selectedStuCode == findedStucode)
+        //                    $(this).data("show", 'True');
+        //            });
+        //    });
+
+    if (consentsCount > 0)
+        $('#SupportDocuments').modal('show');
+    else
+        checkAndRedirectToOnlineEnrollments(false);
+
+    var forcedQuizzes = [];
+
+    $(document).off('shown.bs.modal', '#quizSelectionModal');
+    $(document).on('shown.bs.modal', '#quizSelectionModal', function (event) {
+        var button = $(event.relatedTarget);
+
+        var modal = $(this);
+        var modalBody = modal.find('.modal-body');
+
+        var surveysList = [];
+        for (var i = 0; i < forcedQuizzes.length; i++) {
+            surveysList.push({ id: forcedQuizzes[i].code, code: forcedQuizzes[i].receiverCode, text: forcedQuizzes[i].description });
+        }
+
+        $('#surveysList').select2({
+            data: surveysList,
+            width: '100%'
+        });
+
+        if (surveysList.length > 0)
+            showQuiz(surveysList[0]);
+    });
+
+    $('#surveysList').change(function (e) {
+        var thisQuiz = $(this).select2('data')[0];
+        showQuiz(thisQuiz);
+    });
+
+    function showQuiz(quiz) {
+        var quizContainer = $('#quizContainer');
+        quizContainer.html('');
+
+        new ajaxCall({
+            url: '/Quiz/View',
+            data: { code: quiz.id, receiverCode: quiz.code, asPartial: true, userId: '27405', forced: true },
+            onPartial: function (data) {
+                quizContainer.html(data);
+            }
+        }).post();
+    }
+
+    var hasQuizzes = false;
+    console.log("Quizzes = " + hasQuizzes);
+    if (hasQuizzes) {
+        $('#quizSelectionModal').modal('toggle');
+    }
+
+        function setNavigationForCustomButtonMenu() {
+            var path = window.location.href;
+            path = path.replace(/\/$/, "");
+
+            path = decodeURIComponent(path);
+            jQuery('#customUL a').each(function() {
+                var href = jQuery(this).attr('href');
+                if (path.indexOf(href) !== -1) {
+                    var thisLI = jQuery(this).closest('li');
+                    thisLI.addClass('active');
+                    var thisUL = thisLI.parent();
+                    thisUL.addClass("in");
+                    var menuLI = thisUL.parent();
+                    menuLI.addClass('active');
+
+                    jQuery('.bread-head-title').text(jQuery(this).text());
+                }
+            });
+        }
+
+        //var maxFiles = 0;
+        //var loadedFiles = 0;
+        //var maxFilesConsents = 0;
+        //var loadedFilesConsents = 0;
+        var genMaxFiles = 0;
+        var genLoadedFiles = 0;
+        var stuDocs = [];
+
+        $(document).on('click',
+            '#btnSave',
+            function() {
+                genMaxFiles = 0;
+                genLoadedFiles = 0;
+
+                jQuery('#errorSupportingDocsMessage').hide();
+
+                getSupportingDocumentsData();
+
+                if (stuDocs != null && stuDocs.length > 0) {
+                    BusyLayer.makeBusy();
+                    waitfor(function() { return genLoadedFiles == genMaxFiles },
+                        true,
+                        1000,
+                        0,
+                        '',
+                        function() {
+                            BusyLayer.makeLazy(true);
+
+                            var jsonData = JSON.stringify(stuDocs);
+                            var jsonLength = lengthInUtf8Bytes(stuDocs);
+
+                            var pinCode = $('#pinCode').val();
+
+                            var UseDigitalSignature = false;
+                            var sign = null;
+                            if (UseDigitalSignature) {
+                                if ($('#signature').jSignature("getData", 'native').length > 0) {
+                                    var signature = $signature.jSignature('getData', 'image');
+                                    sign = signature.join(',');
+                                }
+                            }
+
+                            var saveURL = '/Student/SaveConsent';
+
+                            var isTeacher = false;
+                            if (isTeacher) {
+                                saveURL = '/Teacher/SaveConsent';
+                            }
+
+                            if (jsonLength <= 5000000) {
+                                new ajaxCall({
+                                    url: saveURL,
+                                    data: { listOfSupportingDocuments: stuDocs, pinCode: pinCode, signature: sign },
+                                    onSuccess: function(data) {
+                                        $('#SupportDocuments').modal('toggle');
+                                        checkAndRedirectToOnlineEnrollments(true);
+                                        //window.location.href = "/Home";
+                                    },
+                                    onError: function(errorMessage) {
+                                        jQuery('#errorSupportingDocsMessage').text(errorMessage);
+                                        jQuery('#errorSupportingDocsMessage').show();
+                                    }
+                                }).post();
+                            } else {
+                                jQuery('#errorSupportingDocsMessage')
+                                    .text('The total files size can not exceed the limit of {0}MB.');
+                                jQuery('#errorSupportingDocsMessage').show();
+                            }
+
+                        });
+                } else {
+                    $('#SupportDocuments').animate({ scrollTop: 0 }, 300);
+                }
+
+            });
+
+        function getSupportingDocumentsData() {
+
+            stuDocs = [];
+
+            $.each($('.js-studentCode'), function (index, value) {
+                console.log(value.id);
+                var stuCode = $(this).data("code");
+
+                thisStudentCode = stuCode; //override thisStudentCode in _SupportingDocuments partial
+
+                var thisStudentDocs = getDocsData('consent');
+
+                if (thisStudentDocs != null && thisStudentDocs.length > 0) {
+                    for (var i = 0; i < thisStudentDocs.length; i++) {
+                        stuDocs.push(thisStudentDocs[i]);
+                    }
+                }
+            });
+            console.log(stuDocs);
+        }
+
+        function lengthInUtf8Bytes(str) {
+            // Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.
+            var m = encodeURIComponent(str).match(/%[89ABab]/g);
+            return str.length + (m ? m.length : 0);
+        }
+
+        jQuery('#sendPinCode').click(function (e) {
+            e.preventDefault();
+
+            new ajaxCall({
+                url: '/Actions/SendPinCode',
+                data: { twoFactorAuthenticationAction: 'Consents' },
+                onSuccess: function (data) {
+                    fastAlertDialog('Info',
+                        data.message,
+                        'info',
+                        'OK');
+                },
+                onError: function(errorMessage) {
+                    jQuery('#errorSupportingDocsMessage').text(errorMessage);
+                    jQuery('#errorSupportingDocsMessage').show();
+                }
+            }).post();
+        });
+
+    function checkAndRedirectToOnlineEnrollments(afterSupportingDocumentSave) {
+        var isStudent = true;
+        if (isStudent) {
+            new ajaxCall({
+                showLoader: false,
+                url: '/Home/CheckAndRedirectToOnlineEnrollments',
+                onSuccess: function (data) {
+                    var result = data.ajaxData;
+                    if (result) {
+                        window.location.href = "/OnlineRegistrations/OnlineEnrollments";
+                    } else {
+                        if (afterSupportingDocumentSave) {
+                            window.location.href = "/Home?initializePeriodSession=True";
+                        }
+                    }
+                }
+            }).post();
+        } else {
+            if (afterSupportingDocumentSave) {
+                window.location.href = "/Home?initializePeriodSession=True";
+            }
+        }
+    }
+
+    if (cultureChanged) {
+        resetDateStorage();
+    }
+
+    ExecuteFunctionAfterRedirect();
+</script>
+    <script>
+        var tempState = localStorage.getItem('state');
+        if (tempState !== null) {
+            localStorage.removeItem("state");
+        }
+    </script>
+
+
+                <div id="contentForModalPreview"></div>
+
+                <div class="hide-if-small hidden" id="small-chat" title="Feedback">
+                    <div class="dropup" style="margin-bottom: 40px;">
+                        <button id="feedbackbutton" class="dropdown-toggle open-small-chat-menu" type="button" id="menu1" data-toggle="dropdown">
+                            <i id="feedbackicon" class="fa fa-comments"></i>
+                        </button>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                                <li style="border-radius:50%" data-placement="left" data-toggle="tooltip">
+                                    <a class="" id="schoolfeedback">
+                                        <i id="schoolfeedbackicon" class="fal fa-commenting fa-2x text-danger"> </i>
+                                    </a>
+                                </li>
+
+                        </ul>
+                    </div>
+                </div>
+                <!-- Modal Column Order for Advanced Filters -->
+            </div>
+
+
+            <!-- Footer -->
+            <div class="row footer-slit-row"></div>
+
+            <footer class="footer fixed hidden-xs hidden-sm">
+                <div style="display: flex; align-items: center;">
+                    <div class="text-left font-small nowrap" id="companyPeriodNames">
+                    </div>
+                    <span id="copiedText" class="copied-text">Data copied to clipboard</span>
+                </div>
+
+                <div class="text-right font-small nowrap">
+                    <i class="fa fa-copyright"></i> Powered by:
+                    <a href="https://www.classter.com" target="_blank">
+                        The Classter Team
+                        <img alt="" class="classter-favicon" src="/img/favicon.ico" style="margin-top:-5px" />
+                    </a> | <span id="cl-version"> Version : 7.0.2024.10605</span>
+                </div>
+            </footer>
+        </div>
+
+
+        <div class="modal fade" tabindex="-1" role="dialog" id="previewMessageTemplateModal">
+            <div class="modal-dialog inmodal modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Preview</h4>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="editTemplateEditingFromModalBtn" class="btn btn-warning pull-left" style="display:none;">Edit</button>
+                        <button type="button" class="btn btn-default" id="cancelTemplateEditingFromModalBtn">Cancel</button>
+                        <button type="button" id="saveTemplateEditingFromModalBtn" class="btn btn-primary" style="display:none;">Save</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="createStudentDIVRightSidebar"></div>
+
+        <script id="columnsOrderTemplate" type="text/template">
+            <div id="columnsOrderDIV">
+                <ul id="orderList" class="no-padding-left" class="columnsOrderContainer">
+                    <% _.each(model.ordered, function(m) { %>
+                    <% if(!m.isGroupColumn) { %>
+
+                    <% if (!_.isEmpty(m.description) && !m.hideOnDragList) { %>
+                    <li class="dd-item" data-position="<%= m.position %>" data-description="<%= m.description %>">
+                        <div class="dd-handle-clean">
+                            <% if (model.canOrder) { %>
+                            <i class="fa fa-grip-vertical grab-column margin-right-5"></i>
+                            <% } %>
+                            <span class="float-right"> <%= m.description %> </span>
+                            <span class="pull-right">
+
+                                <% if (m.isVisible) { %>
+                                <span data-column="<%= m.position %>" data-status="1" title="Visible" class="showhide fal fa-eye text-success"></span>
+                                <% } else { %>
+                                <span data-column="<%= m.position %>" data-status="0" title="Hidden" class="showhide fal fa-eye-slash"></span>
+                                <% } %>
+                                <% if (model.canOrder) { %>
+                                <% if (m.expanded) { %>
+                                <span data-column="<%= m.position %>" data-expanded="1" title="Expanded" class="expanded fal fa-arrows-alt-h text-warning"></span>
+                                <% } else { %>
+                                <span data-column="<%= m.position %>" data-expanded="0" title="Collapsed" class="expanded fal fa-compress-alt text-danger"></span>
+                                <% } %>
+                                <% } %>
+                            </span>
+                        </div>
+                    </li>
+                    <% } else { %>
+                    <li class="dd-item" data-position="<%= m.position %>" data-description="<%= m.description %>" style="display:none;">
+                        <div class="dd-handle">
+                            <i class="fal fa-grip-vertical"></i>
+                            <span class="float-right"> <%= m.description %> </span>
+                        </div>
+                    </li>
+                    <% } %>
+                    <% } %>
+                    <% }) %>
+                </ul>
+            </div>
+        </script>
+
+        <!-- End page wrapper-->
+        <script type="text/javascript">
+
+
+
+            function showCopiedText() {
+                let copiedText = document.getElementById('copiedText');
+                copiedText.classList.add('visible');
+
+                setTimeout(function () {
+                    copiedText.classList.remove('visible');
+                }, 2000);
+
+                copyToClipboard();
+            }
+
+            function copyToClipboard() {
+                let companyData = document.getElementById('companyPeriodNames').innerText;
+                let versionData = document.getElementById('cl-version').innerText;
+                let splitHere = $('#infoSplitter')[0].innerHTML;
+
+                let instituteData = companyData.split(splitHere)[0].trim();
+                let periodData = companyData.split(splitHere)[1].trim();
+
+                let dataToCopy = instituteData + '\n' + periodData + '\n' + versionData.trim();
+
+                let textArea = document.createElement("textarea");
+                textArea.value = dataToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+
+                navigator.clipboard.writeText(dataToCopy)
+                    .then(() => {
+                        console.log('Text successfully copied.');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+
+                document.body.removeChild(textArea);
+            }
+
+            var domain = "amsisclasstercom";
+
+            var mainGridColumns = Storages.initNamespaceStorage(`StudentsMainGridColumns_${domain}_${$('#currentCulture').val()}`);
+            var gridColumnsStorage = mainGridColumns.localStorage;
+
+            function getColumnIndexByName(name) {
+                return dataTable.table.column(name + ':name').index();
+            }
+
+            jQuery('#resetColumnOrderingBtn').off('click');
+            jQuery('#resetColumnOrderingBtn').on('click', function(e) {
+                alertDialog({
+                        title: 'Warning',
+                        text: 'This action will reset this grid to its default column ordering/visibility. Are you sure?',
+                        showCancelButton: true,
+                        type: 'warning',
+                        confirmButtonColor: "#18A689", //#BA212B
+                        confirmButtonText: 'Yes',
+                        cancelButtonText: 'No',
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    },
+                    function() {
+                        jQuery('#columnOrderModal').modal('toggle');
+
+                        var tableName = dataTable.table.tables().nodes().to$().attr('id');
+
+                        if (tableName != 'editableStudentMainStudentTable') {
+                            //set original table columns in storage
+                            storageOrderedGroup.set(globalStorageOrder, tableColumns);
+                            gridHeaders = storageOrderedGroup.get(globalStorageOrder);
+
+                            //set default column ordering
+                            skipAjax = true;
+                            var originalColumnIndexes = gridHeaders.map(function(obj) { return obj.index; });
+                            dataTable.table.colReorder.order(originalColumnIndexes, true);
+
+                            //set default visibility
+                            $.each(gridHeaders,
+                                function(idx, elem) {
+                                    if (elem.showOnGrid != null && elem.showOnGrid)
+                                        dataTable.table.column(idx).visible(elem.visible);
+                                    else if (elem.showOnGrid == null)
+                                        dataTable.table.column(idx).visible(elem.visible);
+                                });
+
+                            var info = dataTable.table.page.info();
+                            if (!info.serverSide) {
+                                dataTable.initializeDataTable();
+                            }
+
+                            skipAjax = true;
+                            dataTable.table.draw();
+
+                            storageVisibleAll.set('storageVisibleAll_' + globalStorageOrder, true);
+                            storageExpandAll.set('storageExpandAll_' + globalStorageOrder, true);
+                            visibleAll = true;
+                            expandAll = true;
+                        } else {
+                            dataTable.table.colReorder.reset();
+                            gridColumnsStorage.set('columnsOrder', dataTable.table.colReorder.order());
+
+                            if (!gridColumnsStorage.isEmpty('Columns')) {
+                                var columns = gridColumnsStorage.get('Columns');
+                                var columnsVisibility = gridColumnsStorage.get('columnsVisibility');
+
+                                _.each(columns, function(m) {
+                                    dataTable.table.column(getColumnIndexByName(m.name)).visible(m.visible, false);
+                                    var cv = _.find(columnsVisibility, function (col) { return col.name == m.name });
+                                    cv.visible = m.visible;
+                                });
+                                dataTable.table.columns.adjust().draw();
+                                gridColumnsStorage.set('columnsVisibility', columnsVisibility);
+
+                            }
+                            dataTable.getData();
+                        }
+                    }
+                );
+            });
+
+
+            var storage = Storages.localStorage;
+            var themeLink;
+
+            var themes = {
+                Light: 0,
+                Dark: 1,
+                Blue: 2,
+                Red: 3,
+                Intense: 4,
+                Contrast: 5,
+                Enhanced : 6,
+                Midnight : 7,
+                Slime : 8
+            }
+
+            var themeArray = ["Light", "Dark", "Blue", "Red", "Intense", "Contrast","Enhanced","Midnight","Slime"]
+
+            function updateThemeButtons(themeid) {
+                _.each($('.themeButton'), function(item) {
+                    var theme = $(item).attr('data-theme');
+                    if (theme == themeid)
+                        $(item).find('.fathemecheck').removeClass('hidden');
+                })
+            }
+
+            function keepTheme(theme) {
+                console.log(theme)
+                _.each(themeArray, function(m) {
+                    if (theme != m) {
+                        $('#' + m.toLowerCase() + 'theme').remove();
+                    }
+
+                });
+            }
+
+            $('.themeButton').click(function() {
+                var theme = $(this).attr('data-theme');
+                $('.themeButton').removeClass('active');
+                $('.fathemecheck').addClass('hidden');
+                updateThemeButtons($(this).attr('data-theme'));
+                new ajaxCall({
+                    url: '/Home/SetActivetheme',
+                    data: { theme: theme },
+                    onSuccess: function () {
+                        switch (theme) {
+                        case 'Dark':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'darktheme', rel: 'stylesheet', href: '/Content/dev/classter-dark.css' });
+                            keepTheme(theme);
+                            break;
+                        case 'Blue':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'bluetheme', rel: 'stylesheet', href: '/Content/dev/classter-option1.css' });
+                            keepTheme(theme);
+                            break;
+                        case 'Red':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'redtheme', rel: 'stylesheet', href: '/Content/dev/classter-option2.css' });
+                            keepTheme(theme);
+                            break;
+                        case 'Intense':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'intensetheme', rel: 'stylesheet', href: '/Content/dev/intense.css' });
+                            keepTheme(theme);
+                            break;
+                        case 'Contrast':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'contrasttheme', rel: 'stylesheet', href: '/Content/dev/contrast.css' });
+                            keepTheme(theme);
+                                break;
+                        case 'Enhanced':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'enhancedtheme', rel: 'stylesheet', href: '/Content/dev/Enhanced.css' });
+                            keepTheme(theme);
+                                break;
+                        case 'Midnight':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'midnighttheme', rel: 'stylesheet', href: '/Content/dev/Midnight.css' });
+                            keepTheme(theme);
+                                break;
+                        case 'Slime':
+                            $('<link>').appendTo('head').attr({ type: 'text/css', id: 'slimetheme', rel: 'stylesheet', href: '/Content/dev/Slime.css' });
+                            keepTheme(theme);
+                            break;
+                        default:
+                            $('#darktheme').remove();
+                            $('#redtheme').remove();
+                            $('#bluetheme').remove();
+                            $('#intensetheme').remove();
+                            $('#Contrast').remove();
+
+                            break;
+                        }
+                    }
+                }).post();
+            });
+
+            $('#classterfeedback').click(function () {
+                //$(this).children().toggleClass('fa-comments').toggleClass('fa-remove');
+                $('#feedbackicon').toggleClass('fa-comments').toggleClass('fa-remove');
+                $('#classterfeedbackbox').toggleClass('active');
+            });
+
+            $('#schoolfeedback').click(function () {
+                //$(this).children().toggleClass('fa-comments').toggleClass('fa-remove');
+                $('#feedbackicon').removeClass('fa-comments').addClass('fa-remove');
+                $('#schoolfeedbackbox').toggleClass('active');
+            });
+
+            $('#feedbackbutton').click(function () {
+                //$(this).children().toggleClass('fa-comments').toggleClass('fa-remove');
+                $('#feedbackicon').toggleClass('fa-comments').toggleClass('fa-remove');
+                $('#schoolfeedbackbox').removeClass('active');
+                $('#classterfeedbackbox').removeClass('active');
+            });
+
+
+            function setCookie(cname, cvalue, exdays) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+                var expires = "expires=" + d.toGMTString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
+            function getCookie(cname) {
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
+            var timeZoneOffsetCookieValue = getCookie("_timeZoneOffset");
+
+            var now = new Date();
+            var timeZoneOffset = -now.getTimezoneOffset();
+
+            if (timeZoneOffsetCookieValue != timeZoneOffset) {
+                setCookie("_timeZoneOffset", timeZoneOffset, 1);
+            }
+
+        </script>
+    </div>
+
+
+
+    <script>
+    function gm_authFailure() {
+        console.log('gmap failure');
+        jQuery('body').append('<input type="hidden" id="noMaps" value="' + 'Set or check your Google maps API key' + '" />');
+    };
+
+    jQuery(document).ready(function () {
+        var datePattern = "DD/MM/YYYY".toUpperCase();
+        $.fn.dataTable.moment(datePattern);
+
+        if (jQuery('#toolbar-buttons').length > 0)
+            jQuery('#toolbar-buttons').sticky({ topSpacing: 0, zIndex: 2000 });
+        else if (jQuery('#form-toolbar-buttons').length > 0)
+            jQuery('#form-toolbar-buttons').sticky({ topSpacing: 0, zIndex: 2000 });
+
+
+        $('.spin-icon').click(function () {
+            $(".theme-config-box").toggleClass("show");
+        });
+
+        var companyName = '13 - Al-Alamiya Modern International School';
+        var periodName = '7 - Academic Year 2023-2024';
+        jQuery('#companyPeriodNames').empty();
+        if (companyName != null && periodName != null) {
+            var footerLeft = '<strong>Institute :</strong>' + ' ' + companyName;
+            if (periodName != '') {
+                footerLeft = footerLeft + '<span id="infoSplitter"> | </span>'+'<strong>Period :</strong>' + ' ' + periodName;
+            }
+            jQuery('#companyPeriodNames').html(footerLeft);
+        }
+    });
+
+    var currCult = jQuery('#currentCulture').val().split('-')[0];
+    $.fn.select2.defaults.set('language', currCult);
+
+    var sessionLastExecution = moment();
+
+    function keepSessionOpenFunc(data) {
+        if (!data.ajaxData.Valid) {
+            BusyLayer.makeBusy();
+            window.location = data.ajaxData.RedirectUrl;
+        }
+        else {
+            sessionLastExecution = moment();
+        }
+    }
+
+    var keepSessionAliveInstance = Ajax.callback("/Actions/KeepSessionAlive", "keepSessionOpenFunc", { userName: $("#user").val(), company: $("#companyCode").val(), period: $("#periodCode").val() });
+
+    keepSessionAliveInstance.showLoader = false;
+
+    window.addEventListener("focus", function (event) {
+        keepSessionAliveInstance.send();
+    }, false);
+
+    // prevent browsers (such as Firefox) from using the backspace key in order to redirect back
+    window.addEventListener('keydown', function(e) {
+        if (e.keyIdentifier == 'U+0008' || e.keyIdentifier == 'Backspace' || e.keyCode == 8) { if (e.target == document.body) { e.preventDefault(); return false; } }
+    }, true);
+
+    $(document).ready(function() {
+        var selected = $(_.last(_.filter($('#side-menu li'), function(li) { return $(li).hasClass('active') }))).attr('id')
+        if (!_.isUndefined(selected) && selected != 'Menu_1')
+            $('div.sidebar-collapse').animate({ scrollTop: $("#" + selected).last().offset().top }, 'fast');
+    });
+
+    //ADmission Layout
+    if ($('#userType').val() == 'Admission') {
+        var startAdmissionPortalWithMenuAutoHidden = false;
+        if (startAdmissionPortalWithMenuAutoHidden) {
+            if (window.innerWidth > 768) {
+                $("body").addClass(" mini-navbar ");
+            }
+            else {
+                $("body").removeClass(" mini-navbar ");
+            }
+        }
+        var admissionDashboardHiddenElements = null;
+        if (admissionDashboardHiddenElements.indexOf(3) >= 0) {
+            jQuery('.messaging-menu').hide();
+        }
+        if (admissionDashboardHiddenElements.indexOf(4) >= 0) {
+            jQuery('.announcements-menu').hide();
+        }
+
+        $(".navbar").css({ "background-color": "#fff", "box-shadow":"5px 5px 5px 0 #bfbfbf1a"});
+
+    }
+
+    var isAdmissionParentUserOnly = false;
+
+    if (isAdmissionParentUserOnly == true) {
+        var startAdmissionPortalWithMenuAutoHidden = false;
+        if (startAdmissionPortalWithMenuAutoHidden) {
+
+            if (window.innerWidth > 768) {
+                $("body").addClass(" mini-navbar ");
+            }
+            else {
+                $("body").removeClass(" mini-navbar ");
+            }
+
+        }
+
+        var admissionDashboardHiddenElements = null;
+        if (admissionDashboardHiddenElements.indexOf(3) >= 0) {
+            jQuery('.messaging-menu').hide();
+        }
+        if (admissionDashboardHiddenElements.indexOf(4) >= 0) {
+            jQuery('.announcements-menu').hide();
+        }
+
+        $(".navbar").css({ "background-color": "#fff", "box-shadow":"5px 5px 5px 0 #bfbfbf1a"});
+    }
+
+    </script>
+
+
+
+    <script id="settingInfoForClassterTemplate" type="text/template">
+        <div class="col-sm-12">
+            <div class="row">
+                <%= message %>
+            </div>
+        </div>
+    </script>
+
+    <script src="/Scripts/dev/site_variables.js"></script>
+
+
+
+    <script>
+        //debugger;
+        if ($("#periodCode").val() != '') {
+            var sid = "fecj1pvkb0idpixfmulp3zbb" + "/" + $("#user").val() + "/" + $("#companyCode").val() + "/" + $("#periodCode").val();
+            CacheService.initiate(sid, "Student");
+        }
+
+        var feedbackService = new FeedbackService.FeedbackService();
+        feedbackService.Initialize();
+        feedbackService.RenderUIAsync();
+    </script>
+</body>
+</html>

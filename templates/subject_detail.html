@@ -1,0 +1,75 @@
+<!-- view_posts.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Posts</title>
+    <style>
+        /* Add your custom CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .post {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .post-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .post-content {
+            margin-bottom: 10px;
+        }
+        .post-files {
+            margin-top: 10px;
+        }
+        .file-link {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>View Posts</h2>
+        {% for post in posts %}
+        <div class="post">
+            <div class="post-title">{{ post.title }}</div>
+            <div class="post-content">{{ post.content }}</div>
+            <div class="post-files">
+                {% if post.pdf_path %}
+                <a href="{{ post.pdf_path }}" class="file-link">Download PDF</a>
+                {% endif %}
+                {% if post.word_path %}
+                <a href="{{ post.word_path }}" class="file-link">Download Word Document</a>
+                {% endif %}
+                {% if post.powerpoint_path %}
+                <a href="{{ post.powerpoint_path }}" class="file-link">Download PowerPoint</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

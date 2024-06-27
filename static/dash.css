@@ -1,0 +1,46 @@
+ body {
+            font-family: Arial, sans-serif;
+        }
+
+        .d-flex {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        #sidebar-wrapper {
+            width: 200px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        #page-content-wrapper {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .card {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            #page-content-wrapper {
+                width: 100%;
+                padding: 10px;
+            }
+
+            .card {
+                margin-bottom: 10px;
+            }
+
+            .navbar .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }

@@ -1,78 +1,90 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="favicon.ico">
-    <title>AMS School - Login</title>
-    <!-- Simple bar CSS -->
-    <link rel="stylesheet" href="../static/css/simplebar.css">
-    <!-- Fonts CSS -->
-    <link href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <!-- Icons CSS -->
-    <link rel="stylesheet" href="../static/css/feather.css">
-    <!-- Date Range Picker CSS -->
-    <link rel="stylesheet" href="../static/css/daterangepicker.css">
-    <!-- App CSS -->
-    <link rel="stylesheet" href="../static/css/app-light.css" id="lightTheme">
-    <link rel="stylesheet" href="../static/css/app-dark.css" id="darkTheme" disabled>
-  </head>
-  <body class="light ">
-    <div class="wrapper vh-100">
-      <div class="row align-items-center h-100">
-        <form method="post" action="{{ url_for('login') }}" class="col-lg-3 col-md-4 col-10 mx-auto text-center">
-          <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="./index.html">
-            <img src="../static/assets/images/logo.png" alt="School Image" style="width: 100px; height: auto;">
-              <g>
-                <polygon class="st0" points="78,105 15,105 24,87 87,87 	" />
-                <polygon class="st0" points="96,69 33,69 42,51 105,51 	" />
-                <polygon class="st0" points="78,33 15,33 24,15 87,15 	" />
-              </g>
-            </svg>
-          </a>
-          <h1 class="h6 mb-3">Login</h1>
-          <div class="form-group">
-            <label for="inputEmail" class="sr-only">Email address</label>
-            <input name="email" type="text" id="inputEmail" class="form-control form-control-lg" placeholder="Email address" required="">
-          </div>
-          <div class="form-group">
-            <label for="inputPassword" class="sr-only">Password</label>
-            <input name="password" type="password" id="inputPassword" class="form-control form-control-lg" placeholder="Password" required="">
-          </div>
-          <div class="checkbox mb-3">
-<!--            <label>-->
-<!--              <input type="checkbox" value="remember-me"> Stay logged in </label>-->
-          </div>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-          <p class="mt-5 mb-3 text-muted">© 2024</p>
-        </form>
-      </div>
-    </div>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/popper.min.js"></script>
-    <script src="../js/moment.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/simplebar.min.js"></script>
-    <script src='../js/daterangepicker.js'></script>
-    <script src='../js/jquery.stickOnScroll.js'></script>
-    <script src="../js/tinycolor-min.js"></script>
-    <script src="../js/config.js"></script>
-    <script src="../js/apps.js"></script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-56159088-1"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>AMS School - Login</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Custom Styles -->
+  <style>
+    body {
+      background-color: #DFD3C3; /* Light brown background color */
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-      function gtag()
-      {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'UA-56159088-1');
-    </script>
-  </body>
-</html>
+    .login-form {
+      background-color: #FFFFFF; /* White background color for form */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-form h1 {
+      margin-bottom: 20px;
+      color: #543310; /* Dark brown color for headings */
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      background-color: #FFFFFF; /* White background for inputs */
+      color: #543310; /* Dark brown text color */
+      border: 1px solid #543310; /* Dark brown border */
+    }
+
+    .form-control:focus {
+      background-color: #FFFFFF; /* White background for inputs on focus */
+      border-color: #543310; /* Dark brown border on focus */
+      box-shadow: 0 0 0 0.2rem rgba(84, 51, 16, 0.25); /* Darker shadow on focus */
+    }
+
+    .btn-login {
+      background-color: #543310; /* Dark brown button background */
+      color: #FFFFFF; /* White button text color */
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .btn-login:hover {
+      background-color: #432a09; /* Darker brown on hover */
+    }
+
+    .text-muted {
+      text-align: center;
+      margin-top: 20px;
+      color: #543310; /* Dark brown text color */
+    }
+  </style>
+</head>
+<body>
+  <div class="login-form">
+    <img src="../static/assets/images/logo.png" alt="AMS School Logo" width="150" height="150">
+    <form method="post" action="{{ url_for('login') }}">
+      <h1 class="h3 mb-3">Login</h1>
+      <div class="form-group">
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input name="email" type="text" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+      </div>
+      <button class="btn btn-lg btn-login" type="submit">Login</button>
+      <p class="text-muted">© 2024</p>
+    </form>
+  </div>
 </body>
 </html>

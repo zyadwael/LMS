@@ -55,9 +55,11 @@
     <div class="container">
         <h2>View {{teacher_name}} INFO</h2>
         <div class="post">
-            <div class="post-title">{{ teacher_name }}</div>
-            <div class="post-content">{{ teacher.email }}</div>
+            <div class="post-content">Name : {{ teacher_name }}</div>
+            <div class="post-content">Email : {{ teacher.email }}</div>
+            <div class="post-content">Phone Number : {{teacher.phone}}</div>
             <div class="post-content">Teaches Grade {{ teacher.grade }} - Class {{ teacher.Class }}</div>
+
         </div>
     </div>
 </body>

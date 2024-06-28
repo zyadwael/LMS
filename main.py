@@ -75,7 +75,7 @@ with app.app_context():
         files = db.relationship('Files', backref='lesson')
         video_link = db.relationship('Videos', backref='lesson')
         quizzes = db.relationship('Quizzes', backref='lesson')
-        quizzes = db.relationship('Quizzes', backref='lesson')
+
 
 
     class Files(db.Model):

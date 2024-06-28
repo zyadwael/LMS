@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ subject.name }} - Posts</title>
+    <meta charset="utf-8">
+    <title>Argon - Video</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+
     <link rel="stylesheet" href="../static/css/simplebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/feather.css">
@@ -15,10 +19,12 @@
     <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
     <link rel="stylesheet" href="../static/css/quill.snow.css">
     <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <link rel="stylesheet" href="../static/css/styles.css">
+
     <style>
         body {
             background: #DFD3C3;
-            font-family: Arial, sans-serif;
+            font-family: 'Overpass', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
@@ -41,10 +47,17 @@
             top: 0;
             bottom: 0;
             left: 0;
-            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
         }
 
         .logo-container {
@@ -83,11 +96,15 @@
         }
 
         .main-content {
-            margin-left: 250px;
             flex: 1;
             padding: 20px;
             box-sizing: border-box;
+            margin-left: 250px;
             transition: margin-left 0.3s ease-in-out;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
         }
 
         .dashboard-header {
@@ -95,39 +112,59 @@
             margin-bottom: 20px;
         }
 
-        .posts {
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            color: #543310;
-        }
-
-        .post {
+        .section {
             background-color: #C7B198;
             padding: 20px;
-            margin-bottom: 20px;
+            box-sizing: border-box;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .post h2 {
-            margin: 0 0 10px 0;
-        }
-
-        .post a {
             color: #543310;
-            text-decoration: underline;
+            margin-bottom: 20px;
         }
 
-        .post a:hover {
-            text-decoration: none;
+        .section h1 {
+            color: white;
+        }
+
+        .embed-responsive {
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .embed-responsive::before {
+            content: "";
+            display: block;
+            padding-top: 56.25%;
+        }
+
+        .embed-responsive-item {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            border-radius: 5px;
         }
 
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
             .sidebar {
                 position: fixed;
                 transform: translateX(-100%);
@@ -144,6 +181,7 @@
         }
     </style>
 </head>
+
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="container">
@@ -166,32 +204,23 @@
             </ul>
         </div>
 
-
-    <div class="container">
-        <div class="main-content">
-            <div class="dashboard-header">
-                <h1 style="color: #543310;">{{ subject.name }}</h1>
-            </div>
-            <div class="posts">
-                {% for lesson in lessons %}
-                <div class="post">
-                    <h2>{{ lesson.name }}</h2>
-                    {% if lesson_videos[lesson.id] %}
-                    {% for video in lesson_videos[lesson.id] %}
-                    <p><a href="/video/{{ video.id }}" target="_blank">Video On the Lesson</a></p>
-                    {% endfor %}
-                    {% endif %}
-                    {% if lesson.files %}
-                    <p><a href="{{ url_for('static', filename='uploads/' ~ lesson.files) }}" target="_blank">Download File</a></p>
-                    {% endif %}
+        <div class="main-content" id="main-content">
+            <div class="container-fluid position-relative overlay-top bg-dark text-white-50 py-5" style="margin-top: 90px;">
+                <div class="section">
+                    <h1 class="display-4">{{ name }} Video</h1>
+                    <p>{{ description }}</p>
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" width="560" height="315" src="https://www.youtube.com/embed/{{ video_url }}" frameborder="0" allowfullscreen></iframe>
+                    </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
     </div>
 
 
-            <script src="../static/js/jquery.min.js"></script>
+    <a href="#" class="btn btn-lg btn-primary rounded-0 btn-lg-square back-to-top"><i class="fa fa-angle-double-up"></i></a>
+
+    <script src="../static/js/jquery.min.js"></script>
     <script src="../static/js/popper.min.js"></script>
     <script src="../static/js/moment.min.js"></script>
     <script src="../static/js/bootstrap.min.js"></script>
@@ -201,8 +230,8 @@
     <script src="../static/js/tinycolor-min.js"></script>
     <script src="../static/js/config.js"></script>
     <script src="../static/js/fullcalendar.js"></script>
-    <script src="../static/js/fullcalendar.custom.js"></script>
     <script src="../static/js/apps.js"></script>
+
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
@@ -213,4 +242,5 @@
         }
     </script>
 </body>
+
 </html>

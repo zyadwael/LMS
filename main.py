@@ -397,10 +397,8 @@ def unauthorized():
     return "You are not authorized to view this page.", 403
 
 @app.route('/view_subject/<int:subject_id>')
-@login_required
 def view_subject(subject_id):
-    subject = Subjects.query.get_or_404(subject_id)
-
+    subject = Subjects.query.get(subject_id)
     if current_user.role == "student":
         lessons = Lessons.query.filter_by(subject_id=subject.id).all()
         lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
@@ -417,7 +415,12 @@ def view_subject(subject_id):
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
 
-
+@app.route('/video/<int:video_id>')
+def show_video(video_id):
+    video = Videos.query.get(video_id)
+    if not video:
+        return "Video not found", 404
+    return render_template('video.html', name=video.name,  video_url=video.url)
 
 
 @app.route('/view_teacher/<int:id>')

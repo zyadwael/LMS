@@ -177,7 +177,7 @@
                     <h2>{{ lesson.name }}</h2>
                     {% if lesson_videos[lesson.id] %}
                     {% for video in lesson_videos[lesson.id] %}
-                    <p><a href="{{ video.url }}" target="_blank">Video On the Lesson</a></p>
+                    <p><a href="/video/{{ video.id }}" target="_blank">Video On the Lesson</a></p>
                     {% endfor %}
                     {% endif %}
                     {% if lesson.files %}

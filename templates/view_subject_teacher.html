@@ -41,10 +41,14 @@
             top: 0;
             bottom: 0;
             left: 0;
-            z-index: 1000; /* Ensure sidebar stays above content */
+            z-index: 1000;
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
         }
 
         .logo-container {
@@ -77,6 +81,7 @@
             display: block;
             width: 100%;
         }
+
 
         .sidebar ul li a:hover {
             text-decoration: underline;
@@ -122,30 +127,55 @@
         .post a:hover {
             text-decoration: none;
         }
+    .toggle-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: #543310;
+        color: #ecf0f1;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        z-index: 1001; /* Ensure the button is above all other elements */
+        border-radius: 5px;
+    }
 
-        /* Media Queries for Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                position: fixed;
-                transform: translateX(-100%);
-                width: 250px;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
+    /* Media Queries for Responsive Design */
+    @media (max-width: 768px) {
+        .section {
+            flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+            margin: 10px 0; /* Adjust margin for spacing */
         }
+
+
+        .sidebar {
+            position: fixed;
+            transform: translateX(-100%);
+            width: 250px;
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .dashboard-sections {
+            flex-direction: column;
+        }
+
+        .section {
+            width: 100%; /* Full width on smaller screens */
+            margin: 10px 0; /* Adjust margin for spacing */
+        }
+    }
+
     </style>
 </head>
 <body>
+<button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="sidebar" id="sidebar">
         <div class="logo-container">
             <a href="../templates/index.html">
@@ -177,7 +207,7 @@
                     <h2>{{ lesson.name }}</h2>
                     {% if lesson_videos[lesson.id] %}
                     {% for video in lesson_videos[lesson.id] %}
-                    <p><a href="/video/{{ video.id }}" target="_blank">Video On the Lesson</a></p>
+                    <p><a href="/video/{{ video.id }}">Video On the Lesson</a></p>
                     {% endfor %}
                     {% endif %}
                     {% if lesson.files %}

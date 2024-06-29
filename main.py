@@ -479,7 +479,6 @@ def create_subject():
 def create_lesson(subject_id):
     subject = Subjects.query.get_or_404(subject_id)
 
-    # Ensure only the assigned teacher can add lessons
     if subject.teacher_id != current_user.id:
         return jsonify({'error': 'You do not have permission to add a lesson to this subject'}), 403
 
@@ -488,23 +487,19 @@ def create_lesson(subject_id):
         video_link = request.form.get('videoLink')
         grade = request.form.get('grade')
 
-        # Validate required fields
         if not lesson_name or not video_link or not grade:
             return jsonify({'error': 'Lesson name, video link, and grade are required'}), 400
 
-        # Create new lesson
         new_lesson = Lessons(name=lesson_name, subject_id=subject_id)
         db.session.add(new_lesson)
         db.session.commit()
 
-        # Add video
         new_video = Videos(name=lesson_name, url=video_link, lesson_id=new_lesson.id)
         db.session.add(new_video)
         db.session.commit()
 
-        return redirect("/dashboard")
+        return jsonify({'message': 'Lesson created successfully'}), 201
 
-    # GET request: render the form for creating a lesson
     return render_template('create_lesson.html', subject=subject)
 
 

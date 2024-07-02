@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.title }}</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        padding: 20px;
+    }
+
+    form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        margin-top: 0;
+    }
+
+    ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    ul li {
+        margin-bottom: 10px;
+    }
+
+    input[type="radio"] {
+        margin-right: 10px;
+    }
+
+    label {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-top: 5px;
+    }
+
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 20px 0;
+    }
+</style>
+
+</head>
+<body>
+<div class="container">
+    <h1>{{ quiz.name }}</h1>
+    <form id="quizForm" method="POST">
+        {% for question in questions %}
+        <div class="question-container" data-question-id="{{ question.id }}">
+            <p>{{ question.question_text }}</p>
+            {% if question.question_type == 'multiple' %}
+                {% set options = question.options %}
+                {% for option in options %}
+                    <label>
+                        <input type="radio" name="{{ question.id }}" value="{{ option }}"> {{ option }}
+                    </label><br>
+                {% endfor %}
+            {% elif question.question_type == 'true_false' %}
+                <label>
+                    <input type="radio" name="{{ question.id }}" value="True"> True
+                </label><br>
+                <label>
+                    <input type="radio" name="{{ question.id }}" value="False"> False
+                </label><br>
+            {% elif question.question_type == 'complete' %}
+                <input type="text" name="{{ question.id }}" placeholder="Your answer here"><br>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" id="submitQuiz">Submit Quiz</button>
+    </form>
+</div>
+
+
+</body>
+</html>

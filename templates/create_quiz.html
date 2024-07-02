@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #543310;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+            color: #543310;
+        }
+
+        input, textarea, select {
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #543310;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .question-container {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #F5F5F5;
+            border-radius: 5px;
+        }
+
+        .add-question {
+            margin-top: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Quiz for {{ lesson.name }}</h1>
+        <form id="quizForm" method="POST">
+            <label for="quizTitle">Quiz Title</label>
+            <input type="text" id="quizTitle" name="quizTitle" required>
+
+            <label for="quizDescription">Quiz Description</label>
+            <textarea id="quizDescription" name="quizDescription" rows="4" required></textarea>
+
+            <div id="questionsContainer">
+                <div class="question-container">
+                    <label for="question1">Question 1</label>
+                    <input type="text" id="question1" name="question1" required>
+
+                    <label for="questionType1">Question Type</label>
+                    <select id="questionType1" name="questionType1" onchange="updateQuestionType(1)" required>
+                        <option value="multiple">Multiple Choice</option>
+                        <option value="true_false">True/False</option>
+                        <option value="complete">Fill in the Blank</option>
+                    </select>
+
+                    <div id="optionsContainer1">
+                        <label>Choices:</label>
+                        <input type="text" id="choice1_1" name="choice1_1" placeholder="Choice 1" required>
+                        <input type="text" id="choice1_2" name="choice1_2" placeholder="Choice 2" required>
+                        <input type="text" id="choice1_3" name="choice1_3" placeholder="Choice 3">
+                        <input type="text" id="choice1_4" name="choice1_4" placeholder="Choice 4">
+
+                        <label for="answer1">Correct Answer</label>
+                        <select id="answer1" name="answer1" required>
+                            <option value="1">Choice 1</option>
+                            <option value="2">Choice 2</option>
+                            <option value="3">Choice 3</option>
+                            <option value="4">Choice 4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="add-question" onclick="addQuestion()">Add Question</button>
+            <button type="submit" class="submit-btn">Create Quiz</button>
+        </form>
+    </div>
+
+<script>
+    let questionCount = 1;
+
+    function addQuestion() {
+        questionCount++;
+        const questionsContainer = document.getElementById('questionsContainer');
+        const newQuestion = document.createElement('div');
+        newQuestion.classList.add('question-container');
+        newQuestion.innerHTML = `
+            <label for="question${questionCount}">Question ${questionCount}</label>
+            <input type="text" id="question${questionCount}" name="question${questionCount}" required>
+
+            <label for="questionType${questionCount}">Question Type</label>
+            <select id="questionType${questionCount}" name="questionType${questionCount}" onchange="updateQuestionType(${questionCount})" required>
+                <option value="multiple">Multiple Choice</option>
+                <option value="true_false">True/False</option>
+                <option value="complete">Fill in the Blank</option>
+            </select>
+
+            <div id="optionsContainer${questionCount}">
+                <label>Choices:</label>
+                <input type="text" id="choice${questionCount}_1" name="choice${questionCount}_1" placeholder="Choice 1" required>
+                <input type="text" id="choice${questionCount}_2" name="choice${questionCount}_2" placeholder="Choice 2" required>
+                <input type="text" id="choice${questionCount}_3" name="choice${questionCount}_3" placeholder="Choice 3">
+                <input type="text" id="choice${questionCount}_4" name="choice${questionCount}_4" placeholder="Choice 4">
+
+                <label for="answer${questionCount}">Correct Answer</label>
+                <select id="answer${questionCount}" name="answer${questionCount}" required>
+                    <option value="1">Choice 1</option>
+                    <option value="2">Choice 2</option>
+                    <option value="3">Choice 3</option>
+                    <option value="4">Choice 4</option>
+                </select>
+            </div>
+        `;
+        questionsContainer.appendChild(newQuestion);
+    }
+
+    function updateQuestionType(questionNum) {
+        const questionType = document.getElementById(`questionType${questionNum}`).value;
+        const optionsContainer = document.getElementById(`optionsContainer${questionNum}`);
+
+        if (questionType === 'multiple') {
+            optionsContainer.innerHTML = `
+                <label>Choices:</label>
+                <input type="text" id="choice${questionNum}_1" name="choice${questionNum}_1" placeholder="Choice 1" required>
+                <input type="text" id="choice${questionNum}_2" name="choice${questionNum}_2" placeholder="Choice 2" required>
+                <input type="text" id="choice${questionNum}_3" name="choice${questionNum}_3" placeholder="Choice 3">
+                <input type="text" id="choice${questionNum}_4" name="choice${questionNum}_4" placeholder="Choice 4">
+
+                <label for="answer${questionNum}">Correct Answer</label>
+                <select id="answer${questionNum}" name="answer${questionNum}" required>
+                    <option value="1">Choice 1</option>
+                    <option value="2">Choice 2</option>
+                    <option value="3">Choice 3</option>
+                    <option value="4">Choice 4</option>
+                </select>
+            `;
+        } else if (questionType === 'true_false') {
+            optionsContainer.innerHTML = `
+                <label>Correct Answer:</label>
+                <select id="answer${questionNum}" name="answer${questionNum}" required>
+                    <option value="True">True</option>
+                    <option value="False">False</option>
+                </select>
+            `;
+        } else if (questionType === 'complete') {
+            optionsContainer.innerHTML = `
+                <label for="answer${questionNum}">Correct Answer:</label>
+                <input type="text" id="answer${questionNum}" name="answer${questionNum}" placeholder="Your answer here" required>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>

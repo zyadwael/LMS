@@ -78,7 +78,22 @@ with app.app_context():
         video_link = db.relationship('Videos', backref='lesson')
         quizzes = db.relationship('Quizzes', backref='lesson')
 
+    class QuizQuestion(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
+        question_type = db.Column(db.String(50))  # 'multiple', 'true_false', 'complete'
+        question_text = db.Column(db.Text)
+        options = db.Column(db.Text)  # Store options as JSON for multiple choice
+        correct_answer = db.Column(db.Text)
+        score = db.Column(db.Integer)
 
+
+    class QuizResult(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
+        score = db.Column(db.Integer)
+        timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     class Files(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -185,6 +200,8 @@ admin.add_view(MyModelView(News, db.session))
 admin.add_view(MyModelView(Message, db.session))
 admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
+admin.add_view(MyModelView(QuizResult, db.session))
+admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Videos, db.session))
 
@@ -530,6 +547,105 @@ def create_lesson(subject_id):
 
     return render_template('create_lesson.html', subject=subject)
 
+
+@app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+def create_quiz(lesson_id):
+    lesson = Lessons.query.get_or_404(lesson_id)
+
+    if request.method == 'POST':
+        quiz_title = request.form['quizTitle']
+        quiz_description = request.form['quizDescription']
+
+        # Create new quiz
+        new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id)
+        db.session.add(new_quiz)
+        db.session.commit()
+
+        # Extract all question data
+        questions_data = []
+        for key in request.form.keys():
+            if key.startswith('question') and key[len('question'):].isdigit():
+                question_index = key[len('question'):]
+                question_data = {
+                    'question_text': request.form[f'question{question_index}'],
+                    'question_type': request.form[f'questionType{question_index}'],
+                    'choices': [
+                        request.form.get(f'choice{question_index}_1', ''),
+                        request.form.get(f'choice{question_index}_2', ''),
+                        request.form.get(f'choice{question_index}_3', ''),
+                        request.form.get(f'choice{question_index}_4', '')
+                    ],
+                    'correct_answer': request.form[f'answer{question_index}']
+                }
+                questions_data.append(question_data)
+
+        # Add all questions to the quiz
+        for question_data in questions_data:
+            question_text = question_data['question_text']
+            question_type = question_data['question_type']
+            choices = question_data['choices']
+            correct_answer = question_data['correct_answer']
+
+            if question_type == 'multiple':
+                correct_choice = choices[int(correct_answer) - 1]
+            elif question_type == 'true_false':
+                correct_choice = correct_answer
+            elif question_type == 'complete':
+                correct_choice = correct_answer
+
+            new_question = QuizQuestion(
+                quiz_id=new_quiz.id,
+                question_type=question_type,
+                question_text=question_text,
+                options=json.dumps([choice for choice in choices if choice]) if choices else None,
+                correct_answer=correct_choice,
+                score=1  # Modify if needed
+            )
+            db.session.add(new_question)
+
+        db.session.commit()
+
+        flash("Quiz created successfully!", "success")
+        return redirect(url_for('my_subjects'))
+
+    return render_template('create_quiz.html', lesson=lesson)
+
+
+@app.route('/take_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+def take_quiz(quiz_id):
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+
+    if request.method == 'POST':
+        # Get answers from the form data
+        answers = request.form.to_dict()
+
+        # Initialize score calculation variables
+        score = 0
+        total_questions = len(questions)
+
+        # Iterate through each question to check answers
+        for question in questions:
+            # Retrieve the correct answer from the database
+            correct_answer = question.correct_answer
+
+            # Check if the user's answer matches the correct answer
+            if str(question.id) in answers and answers[str(question.id)] == correct_answer:
+                score += question.score
+
+        # Create a QuizResult entry for the user's performance
+        result = QuizResult(user_id=current_user.id, quiz_id=quiz.id, score=score)
+        db.session.add(result)
+        db.session.commit()
+
+        # Display score and redirect to the dashboard or another appropriate page
+        flash(f'You scored {score} out of {total_questions}', 'success')
+        return redirect(url_for('dashboard'))
+
+    # Render the quiz template with questions for GET requests
+    return render_template('take_quiz.html', quiz=quiz, questions=questions)
 
 
 

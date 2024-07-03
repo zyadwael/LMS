@@ -58,6 +58,7 @@ with app.app_context():
         teacher = db.relationship('Teacher', backref='user', uselist=False)
         student = db.relationship('Students', backref='user', uselist=False)
         subjects = db.relationship('Subjects', backref='teacher')
+        quizzes = db.relationship('Quizzes', backref='user')
 
 
     class Subjects(db.Model):
@@ -68,6 +69,7 @@ with app.app_context():
         teacher_name = db.Column(db.String(1000))
         lessons = db.relationship('Lessons', backref='subject')
 
+
     class Lessons(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
@@ -76,6 +78,24 @@ with app.app_context():
         video_link = db.relationship('Videos', backref='lesson')
         quizzes = db.relationship('Quizzes', backref='lesson')
 
+
+    class QuizQuestion(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
+        question_type = db.Column(db.String(50))  # 'multiple', 'true_false', 'complete'
+        question_text = db.Column(db.Text)
+        options = db.Column(db.Text)  # Store options as JSON for multiple choice
+        correct_answer = db.Column(db.Text)
+        score = db.Column(db.Integer)
+
+
+    class QuizResult(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.id'))
+        score = db.Column(db.Integer)
+        timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        student_email = db.Column(db.String(1000))
 
 
     class Files(db.Model):
@@ -97,6 +117,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         questions = db.Column(db.Text)  # Assuming questions are stored as JSON or similar format
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
     class Teacher(UserMixin, db.Model):
@@ -122,7 +143,6 @@ with app.app_context():
         id = db.Column(db.Integer, primary_key=True)
         title = db.Column(db.String(100))
         content = db.Column(db.String(100))
-
 
 
     class Message(db.Model):
@@ -183,8 +203,12 @@ admin.add_view(MyModelView(News, db.session))
 admin.add_view(MyModelView(Message, db.session))
 admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
+admin.add_view(MyModelView(QuizResult, db.session))
+admin.add_view(MyModelView(QuizQuestion, db.session))
+
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Videos, db.session))
+
 
 def send_notification(user_id, message_content):
     new_notification = Message(
@@ -237,7 +261,7 @@ def dashboard():
                                notifications=notifications)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications)
+                               notifications=notifications, user=current_user)
     if current_user.role == "parent":
         return render_template("parent_dashboard.html", notifications=notifications)
     if current_user.role == "admin":
@@ -396,6 +420,7 @@ def quizzes():
 def unauthorized():
     return "You are not authorized to view this page.", 403
 
+
 @app.route('/view_subject/<int:subject_id>')
 def view_subject(subject_id):
     subject = Subjects.query.get(subject_id)
@@ -407,7 +432,8 @@ def view_subject(subject_id):
         if subject.teacher_id == current_user.id:
             lessons = Lessons.query.filter_by(subject_id=subject.id).all()
             lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos)
+            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons,
+                                   lesson_videos=lesson_videos)
         else:
             flash("You are not assigned to this subject.", "danger")
             return redirect(url_for('dashboard'))
@@ -415,12 +441,13 @@ def view_subject(subject_id):
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
 
+
 @app.route('/video/<int:video_id>')
 def show_video(video_id):
     video = Videos.query.get(video_id)
     if not video:
         return "Video not found", 404
-    return render_template('video.html', name=video.name,  video_url=video.url)
+    return render_template('video.html', name=video.name, video_url=video.url)
 
 
 @app.route('/view_teacher/<int:id>')
@@ -466,7 +493,8 @@ def create_subject():
         if not subject_name or not grade:
             return jsonify({'error': 'Subject name and grade are required'}), 400
 
-        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name)
+        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,
+                               teacher_name=current_user.name)
         db.session.add(new_subject)
         db.session.commit()
 
@@ -551,5 +579,137 @@ def create_file(lesson_id):
     return render_template('create_file.html', lesson=lesson)
 
 
+@app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+def create_quiz(lesson_id):
+    if current_user.role == "teacher":
+        lesson = Lessons.query.get_or_404(lesson_id)
+
+        if request.method == 'POST':
+            quiz_title = request.form['quizTitle']
+            quiz_description = request.form['quizDescription']
+
+            # Create new quiz
+            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
+            db.session.add(new_quiz)
+            db.session.commit()
+
+            # Extract all question data
+            questions_data = []
+            for key in request.form.keys():
+                if key.startswith('question') and key[len('question'):].isdigit():
+                    question_index = key[len('question'):]
+                    question_data = {
+                        'question_text': request.form[f'question{question_index}'],
+                        'question_type': request.form[f'questionType{question_index}'],
+                        'choices': [
+                            request.form.get(f'choice{question_index}_1', ''),
+                            request.form.get(f'choice{question_index}_2', ''),
+                            request.form.get(f'choice{question_index}_3', ''),
+                            request.form.get(f'choice{question_index}_4', '')
+                        ],
+                        'correct_answer': request.form[f'answer{question_index}']
+                    }
+                    questions_data.append(question_data)
+
+            # Add all questions to the quiz
+            for question_data in questions_data:
+                question_text = question_data['question_text']
+                question_type = question_data['question_type']
+                choices = question_data['choices']
+                correct_answer = question_data['correct_answer']
+
+                if question_type == 'multiple':
+                    correct_choice = choices[int(correct_answer) - 1]
+                elif question_type == 'true_false':
+                    correct_choice = correct_answer
+                elif question_type == 'complete':
+                    correct_choice = correct_answer
+
+                new_question = QuizQuestion(
+                    quiz_id=new_quiz.id,
+                    question_type=question_type,
+                    question_text=question_text,
+                    options=json.dumps([choice for choice in choices if choice]) if choices else None,
+                    correct_answer=correct_choice,
+                    score=1  # Modify if needed
+                )
+                db.session.add(new_question)
+
+            db.session.commit()
+
+            flash("Quiz created successfully!", "success")
+            return redirect(url_for('my_subjects'))
+
+        return render_template('create_quiz.html', lesson=lesson)
+
+
+@app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
+@login_required
+def take_quiz(quiz_id):
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+    for question in questions:
+        if question.options:
+            question.options = json.loads(question.options)
+    return render_template('take_quiz.html', quiz=quiz, questions=questions)
+
+
+@app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])
+@login_required
+def submit_quiz(quiz_id):
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+    total_score = 0
+
+    for question in questions:
+        user_answer = request.form.get(str(question.id))
+        if user_answer is not None:
+            if question.question_type == 'multiple' or question.question_type == 'true_false':
+                if user_answer == question.correct_answer:
+                    total_score += question.score
+            elif question.question_type == 'complete':
+                if user_answer.strip().lower() == question.correct_answer.strip().lower():
+                    total_score += question.score
+
+    quiz_result = QuizResult(user_id=current_user.id, quiz_id=quiz_id, score=total_score,
+                             student_email=current_user.email)
+    db.session.add(quiz_result)
+    db.session.commit()
+
+    return redirect(url_for('quiz_result', quiz_id=quiz_id))
+
+
+@app.route('/quiz_result/<int:quiz_id>', methods=['GET'])
+@login_required
+def quiz_result(quiz_id):
+    quiz_result = QuizResult.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first_or_404()
+    return render_template('quiz_result.html', score=quiz_result.score)
+
+
+@app.route('/results/<int:user_id>')
+@login_required
+def results(user_id):
+    if current_user.role == "teacher" and current_user.id == user_id:
+        teacher = Users.query.get_or_404(user_id)
+        quizzes = Quizzes.query.filter_by(user_id=user_id).all()
+        return render_template('results.html', teacher_name=teacher.name, quizzes=quizzes)
+    else:
+        # Handle unauthorized access
+        return redirect(url_for('index'))
+
+@app.route('/all_results/<int:quiz_id>')
+@login_required
+def all_results(quiz_id):
+    if current_user.role == "teacher":
+        quiz = Quizzes.query.get_or_404(quiz_id)
+        results = QuizResult.query.filter_by(quiz_id=quiz_id).all()
+        return render_template('all_results.html', quiz_name=quiz.name, results=results, teacher_id=current_user.id)
+    else:
+        # Handle unauthorized access
+        return redirect(url_for('index'))
+
+
+
 if __name__ == "__main__":
-     app.run(debug=True)
+    app.run(debug=True)

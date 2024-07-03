@@ -82,7 +82,6 @@
             width: 100%;
         }
 
-
         .sidebar ul li a:hover {
             text-decoration: underline;
         }
@@ -127,55 +126,86 @@
         .post a:hover {
             text-decoration: none;
         }
-    .toggle-btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background-color: #543310;
-        color: #ecf0f1;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-        z-index: 1001; /* Ensure the button is above all other elements */
-        border-radius: 5px;
-    }
 
-    /* Media Queries for Responsive Design */
-    @media (max-width: 768px) {
-        .section {
-            flex-basis: calc(100% - 20px); /* Full width on smaller screens */
-            margin: 10px 0; /* Adjust margin for spacing */
-        }
-
-
-        .sidebar {
+        .toggle-btn {
             position: fixed;
-            transform: translateX(-100%);
-            width: 250px;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001; /* Ensure the button is above all other elements */
+            border-radius: 5px;
         }
 
-        .sidebar.open {
-            transform: translateX(0);
+        .add-lesson-btn {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
         }
 
-        .main-content {
-            margin-left: 0;
+        .add-lesson-btn:hover {
+            background-color: #725238;
         }
 
-        .dashboard-sections {
-            flex-direction: column;
+        .add-quiz-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
         }
 
-        .section {
-            width: 100%; /* Full width on smaller screens */
-            margin: 10px 0; /* Adjust margin for spacing */
+        .add-quiz-btn:hover {
+            background-color: #543310;
         }
-    }
 
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%; /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
+        }
     </style>
 </head>
 <body>
-<button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="sidebar" id="sidebar">
         <div class="logo-container">
             <a href="../templates/index.html">
@@ -199,7 +229,7 @@
         <div class="main-content">
             <div class="dashboard-header">
                 <h1 style="color: #543310;">{{ subject.name }}</h1>
-                <a href="/create_lesson/{{ subject.id }}"><button style=";text-decoration: none; margin-left: 20px;">Add New Lesson</button></a>
+                <a href="/create_lesson/{{ subject.id }}" class="add-lesson-btn">Add New Lesson</a>
             </div>
             <div class="posts">
                 {% for lesson in lessons %}
@@ -207,7 +237,10 @@
                     <h2>{{ lesson.name }}</h2>
                     {% if lesson_videos[lesson.id] %}
                     {% for video in lesson_videos[lesson.id] %}
-                    <p><a href="/video/{{ video.id }}">Video On the Lesson</a></p>
+                    <p>
+                        <a href="/video/{{ video.id }}">Video On the Lesson</a>
+                        <a href="/create_quiz/{{ video.id }}" class="add-quiz-btn">Add Quiz</a>
+                    </p>
                     {% endfor %}
                     {% endif %}
                     {% if lesson.files %}

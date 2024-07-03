@@ -15,7 +15,6 @@
             align-items: center;
             height: 100vh;
         }
-
         .container {
             background-color: #fff;
             padding: 20px;
@@ -23,27 +22,22 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
         }
-
         h1 {
             text-align: center;
             margin-bottom: 20px;
         }
-
         .form-group {
             margin-bottom: 15px;
         }
-
         label {
             display: block;
             margin-bottom: 5px;
         }
-
         input, select, textarea {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
         }
-
         button {
             width: 100%;
             padding: 10px;
@@ -53,11 +47,9 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         button:hover {
             background-color: #A0522D;
         }
-
         #message {
             margin-top: 15px;
             text-align: center;
@@ -67,7 +59,7 @@
 <body>
     <div class="container">
         <h1>Create Lesson</h1>
-        <form id="lessonForm" method="post" enctype="multipart/form-data">
+        <form id="lessonForm" method="post" action="{{ url_for('create_lesson', subject_id=subject.id) }}">
             <div class="form-group">
                 <label for="subjectName">Subject Name</label>
                 <input type="text" id="subjectName" name="subjectName" required>
@@ -99,10 +91,6 @@
                 <textarea id="content" name="content" rows="4" required></textarea>
             </div>
             <div class="form-group">
-                <label for="file">Upload File</label>
-                <input type="file" id="file" name="file">
-            </div>
-            <div class="form-group">
                 <label for="videoLink">Video Link</label>
                 <input type="text" id="videoLink" name="videoLink">
             </div>
@@ -110,7 +98,6 @@
         </form>
         <div id="message"></div>
     </div>
-
     <script>
         document.getElementById('lessonForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -119,7 +106,7 @@
 
             fetch(form.action, {
                 method: 'POST',
-                body: formData
+                body: new URLSearchParams(formData)
             })
             .then(response => response.json())
             .then(data => {

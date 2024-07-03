@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject.name }} - Posts</title>
-    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/simplebar.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../static/css/feather.css">
-    <link rel="stylesheet" href="../static/css/fullcalendar.css">
-    <link rel="stylesheet" href="../static/css/select2.css">
-    <link rel="stylesheet" href="../static/css/dropzone.css">
-    <link rel="stylesheet" href="../static/css/uppy.min.css">
-    <link rel="stylesheet" href="../static/css/jquery.steps.css">
-    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
-    <link rel="stylesheet" href="../static/css/quill.snow.css">
-    <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feather.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fullcalendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/select2.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/uppy.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.steps.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.timepicker.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/daterangepicker.css') }}">
     <style>
         body {
             background: #DFD3C3;
@@ -82,7 +82,6 @@
             width: 100%;
         }
 
-
         .sidebar ul li a:hover {
             text-decoration: underline;
         }
@@ -127,51 +126,49 @@
         .post a:hover {
             text-decoration: none;
         }
-    .toggle-btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background-color: #543310;
-        color: #ecf0f1;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-        z-index: 1001; /* Ensure the button is above all other elements */
-        border-radius: 5px;
-    }
-
-    /* Media Queries for Responsive Design */
-    @media (max-width: 768px) {
-        .section {
-            flex-basis: calc(100% - 20px); /* Full width on smaller screens */
-            margin: 10px 0; /* Adjust margin for spacing */
-        }
-
-
-        .sidebar {
+        .toggle-btn {
             position: fixed;
-            transform: translateX(-100%);
-            width: 250px;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001; /* Ensure the button is above all other elements */
+            border-radius: 5px;
         }
 
-        .sidebar.open {
-            transform: translateX(0);
-        }
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
 
-        .main-content {
-            margin-left: 0;
-        }
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 250px;
+            }
 
-        .dashboard-sections {
-            flex-direction: column;
-        }
+            .sidebar.open {
+                transform: translateX(0);
+            }
 
-        .section {
-            width: 100%; /* Full width on smaller screens */
-            margin: 10px 0; /* Adjust margin for spacing */
-        }
-    }
+            .main-content {
+                margin-left: 0;
+            }
 
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%; /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
+        }
     </style>
 </head>
 <body>
@@ -179,68 +176,56 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
-                <a href="../templates/index.html">
-                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+                <a href="{{ url_for('index') }}">
+                    <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
             <ul>
-                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="{{ url_for('dashboard') }}"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
                 <li><a href="#"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
-                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
-                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
+                <li><a href="{{ url_for('my_subjects') }}"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
+                <li><a href="{{ url_for('my_teachers') }}"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
                 <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
                 <li><a href="#"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
-                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
-                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
-                <li><a href="#"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
             </ul>
         </div>
-
-
-    <div class="container">
         <div class="main-content">
             <div class="dashboard-header">
-                <h1 style="color: #543310;">{{ subject.name }}</h1>
+                <h1>{{ subject.name }}</h1>
             </div>
-                <div class="posts">
-                    {% for lesson in lessons %}
-                    <div class="post">
-                        <h2>{{ lesson.name }}</h2>
-                        {% if lesson_videos[lesson.id] %}
-                        {% for video in lesson_videos[lesson.id] %}
-                        <p><a href="/video/{{ video.id }}">Video On the Lesson</a></p>
-                        {% endfor %}
-                        {% endif %}
-                        {% if lesson.files %}
-                        <p><a href="{{ url_for('static', filename='uploads/' ~ lesson.files) }}">Download File</a></p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+            <div class="posts">
+                {% for lesson in lessons %}
+                <div class="post">
+                    <h2>{{ lesson.name }}</h2>
+                    {% if lesson_videos[lesson.id] %}
+                        <h3>Videos</h3>
+                        <ul>
+                            {% for video in lesson_videos[lesson.id] %}
+                            <li><a href="{{ url_for('show_video', video_id=video.id) }}">{{ video.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% if lesson_files[lesson.id] %}
+                        <h3>Files</h3>
+                        <ul>
+                            {% for file in lesson_files[lesson.id] %}
+                            <li><a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                 </div>
-
+                {% endfor %}
+            </div>
         </div>
     </div>
-
-
-            <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/popper.min.js"></script>
-    <script src="../static/js/moment.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/simplebar.min.js"></script>
-    <script src="../static/js/daterangepicker.js"></script>
-    <script src="../static/js/jquery.stickOnScroll.js"></script>
-    <script src="../static/js/tinycolor-min.js"></script>
-    <script src="../static/js/config.js"></script>
-    <script src="../static/js/fullcalendar.js"></script>
-    <script src="../static/js/fullcalendar.custom.js"></script>
-    <script src="../static/js/apps.js"></script>
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
-            var mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
+            if (sidebar.classList.contains('closed')) {
+                sidebar.classList.remove('closed');
+            } else {
+                sidebar.classList.add('closed');
+            }
         }
     </script>
 </body>

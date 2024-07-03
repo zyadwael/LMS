@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #543310;
+        }
+
+        .quiz-results {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+        }
+
+        .quiz-results h2 {
+            text-align: center;
+        }
+
+        .quiz-results ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .quiz-results ul li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #F5EAD9;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .back-btn:hover {
+            background-color: #3c250d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Results for {{ quiz_name }}</h1>
+        </div>
+        <div class="quiz-results">
+            <ul>
+                {% for result in results %}
+                    <li>{{ result.student_email }} - Score: {{ result.score }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <a href="{{ url_for('results', user_id=teacher_id) }}" class="back-btn">Back to Results</a>
+    </div>
+</body>
+</html>

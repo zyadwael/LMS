@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #DFD3C3; /* Matches the theme background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #C7B198; /* Matches the theme container background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: bold;
+            color: #543310; /* Matches the theme text color */
+            margin-bottom: 20px;
+        }
+
+        .question-container {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            text-align: left;
+            background-color: #EAE7DC; /* Light background for questions */
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .question-container p {
+            margin: 0 0 10px;
+            color: #543310; /* Matches the theme text color */
+        }
+
+        .answers {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        .answers label {
+            display: block;
+            margin-bottom: 10px;
+            color: #543310; /* Matches the theme text color */
+            cursor: pointer;
+        }
+
+        .answers input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .answers input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #543310; /* Border color to match theme */
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #F5F5F5;
+        }
+
+        button {
+            background-color: #543310; /* Matches the theme button color */
+            color: #ecf0f1; /* Light text color */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #3e2810; /* Darker shade for hover effect */
+        }
+
+        .result-wrapper {
+            display: none;
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #543310; /* Matches the theme text color */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>{{ quiz.name }}</h1>
+    <form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+        {% for question in questions %}
+        <div class="question-container" data-question-id="{{ question.id }}">
+            <p>Question {{ loop.index }}: {{ question.question_text }}</p>
+            {% if question.question_type == 'multiple' %}
+                {% set options = question.options %}
+                {% for option in options %}
+                    <label>
+                        <input type="radio" name="{{ question.id }}" value="{{ option }}"> {{ option }}
+                    </label><br>
+                {% endfor %}
+            {% elif question.question_type == 'true_false' %}
+                <label>
+                    <input type="radio" name="{{ question.id }}" value="True"> True
+                </label><br>
+                <label>
+                    <input type="radio" name="{{ question.id }}" value="False"> False
+                </label><br>
+            {% elif question.question_type == 'complete' %}
+                <input type="text" name="{{ question.id }}" placeholder="Your answer here"><br>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" id="submitQuiz">Submit Quiz</button>
+    </form>
+    <script>
+        var app = {
+            createAnswers: function (answers) {
+                var answersWrapper = document.getElementById("answers");
+                for (var i = 0; i < answers.length; i++) {
+                    var answerWrapper = document.createElement("div");
+                    answerWrapper.className = "answer-wrapper";
+                    var answer = document.createElement("li");
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    var check = document.createElement("div");
+
+                    label.textContent = answers[i];
+                    input.type = "radio";
+                    input.name = "answer";
+                    input.className = "radio-button";
+
+                    check.className = "check";
+                    answerWrapper.className = "answer-wrapper__answer";
+
+                    answerWrapper.appendChild(input);
+                    answerWrapper.appendChild(label);
+                    answerWrapper.appendChild(check);
+
+                    answer.appendChild(answerWrapper);
+                    answersWrapper.appendChild(answer);
+                }
+            }
+        };
+
+        function submitAnswer() {
+            var selected = document.querySelector('input[name="answer"]:checked');
+            if (selected) {
+                document.getElementById('result').style.display = 'block';
+            } else {
+                alert('Please select an answer');
+            }
+        }
+
+        window.onload = function() {
+            var answers = ["Black", "Bright Orange", "Pink", "Grey"];
+            app.createAnswers(answers);
+        };
+    </script>
+</body>
+</html>

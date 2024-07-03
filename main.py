@@ -610,43 +610,45 @@ def create_quiz(lesson_id):
         return redirect(url_for('my_subjects'))
 
     return render_template('create_quiz.html', lesson=lesson)
-
-
-@app.route('/take_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
 def take_quiz(quiz_id):
     quiz = Quizzes.query.get_or_404(quiz_id)
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
-
-    if request.method == 'POST':
-        # Get answers from the form data
-        answers = request.form.to_dict()
-
-        # Initialize score calculation variables
-        score = 0
-        total_questions = len(questions)
-
-        # Iterate through each question to check answers
-        for question in questions:
-            # Retrieve the correct answer from the database
-            correct_answer = question.correct_answer
-
-            # Check if the user's answer matches the correct answer
-            if str(question.id) in answers and answers[str(question.id)] == correct_answer:
-                score += question.score
-
-        # Create a QuizResult entry for the user's performance
-        result = QuizResult(user_id=current_user.id, quiz_id=quiz.id, score=score)
-        db.session.add(result)
-        db.session.commit()
-
-        # Display score and redirect to the dashboard or another appropriate page
-        flash(f'You scored {score} out of {total_questions}', 'success')
-        return redirect(url_for('dashboard'))
-
-    # Render the quiz template with questions for GET requests
+    for question in questions:
+        if question.options:
+            question.options = json.loads(question.options)
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
 
+@app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])
+@login_required
+def submit_quiz(quiz_id):
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+    total_score = 0
+
+    for question in questions:
+        user_answer = request.form.get(str(question.id))
+        if user_answer is not None:
+            if question.question_type == 'multiple' or question.question_type == 'true_false':
+                if user_answer == question.correct_answer:
+                    total_score += question.score
+            elif question.question_type == 'complete':
+                if user_answer.strip().lower() == question.correct_answer.strip().lower():
+                    total_score += question.score
+
+    quiz_result = QuizResult(user_id=current_user.id, quiz_id=quiz_id, score=total_score)
+    db.session.add(quiz_result)
+    db.session.commit()
+
+    return redirect(url_for('quiz_result', quiz_id=quiz_id))
+
+
+@app.route('/quiz_result/<int:quiz_id>', methods=['GET'])
+@login_required
+def quiz_result(quiz_id):
+    quiz_result = QuizResult.query.filter_by(user_id=current_user.id, quiz_id=quiz_id).first_or_404()
+    return render_template('quiz_result.html', score=quiz_result.score)
 
 
 if __name__ == "__main__":

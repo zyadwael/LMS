@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quizzes and Surveys</title>
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin: 20px;
+        }
+
+        .quiz-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .quiz-list li {
+            background-color: #C7B198;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quiz-list li a {
+            text-decoration: none;
+            color: #543310;
+            font-size: 18px;
+            flex-grow: 1;
+            margin-right: 20px; /* Add some space between the title and the button */
+        }
+
+        .quiz-list li form {
+            margin: 0;
+        }
+
+        .quiz-list li button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        }
+
+        .quiz-list li button:hover {
+            background-color: #3e2715;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quizzes and Surveys</h1>
+        <ul class="quiz-list">
+            {% for quiz in quizzes %}
+                <li>
+                    <a href="/take_quiz/{{ quiz.id }}">{{ quiz.name }}</a>
+                    <form action="/quizzes_surveys" method="POST">
+                        <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                        <button type="submit" class="btn btn-primary">Take the Quiz</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+</body>
+</html>

@@ -172,6 +172,21 @@
             background-color: #543310;
         }
 
+        .take-quiz-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .take-quiz-btn:hover {
+            background-color: #543310;
+        }
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             .section {
@@ -239,13 +254,24 @@
                     {% for video in lesson_videos[lesson.id] %}
                     <p>
                         <a href="/video/{{ video.id }}">Video On the Lesson</a>
-                        <a href="/create_quiz/{{ video.id }}" class="add-quiz-btn">Add Quiz</a>
+                    {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take  Quiz</a>
+                    {% else %}  <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
+                    {% endif %}
                     </p>
                     {% endfor %}
                     {% endif %}
                     {% if lesson.files %}
-                    <p><a href="{{ url_for('static', filename='uploads/' ~ lesson.files) }}" target="_blank">Download File</a></p>
+                        {% for file in lesson.files %}
+                            <a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a>
+                        {% endfor %}
+                    {% else %}
+                        <form action="/create_file/{{ lesson.id }}" method="GET">
+                            <button type="submit" class="add-lesson-btn">Add File</button>
+                        </form>
                     {% endif %}
+
+
+
                 </div>
                 {% endfor %}
             </div>

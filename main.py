@@ -7,11 +7,11 @@ from flask_admin.contrib.sqla import ModelView
 
 import requests
 from flask import Flask, render_template, redirect, url_for, flash, abort, request, current_app, jsonify, make_response, \
-    Response
+    Response, send_from_directory, send_file
 from sqlalchemy.orm import joinedload
 
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import logging
 from flask_sqlalchemy import SQLAlchemy
 
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
@@ -28,6 +28,8 @@ UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
+logging.basicConfig(level=logging.DEBUG)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -205,9 +207,9 @@ admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
 admin.add_view(MyModelView(QuizResult, db.session))
 admin.add_view(MyModelView(QuizQuestion, db.session))
-
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Videos, db.session))
+
 
 
 def send_notification(user_id, message_content):
@@ -232,6 +234,11 @@ def mark_notification_as_read(notification_id):
     if notification:
         notification.read = True
         db.session.commit()
+
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route("/", methods=['POST', 'GET'])
@@ -261,7 +268,7 @@ def dashboard():
                                notifications=notifications)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications, user=current_user)
+                               notifications=notifications , user=current_user)
     if current_user.role == "parent":
         return render_template("parent_dashboard.html", notifications=notifications)
     if current_user.role == "admin":
@@ -340,30 +347,6 @@ def send_email():
     return redirect(url_for('students'))
 
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return 'No file part'
-        file = request.files['file']
-        if file.filename == '':
-            return 'No selected file'
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            # Save the file path and other details to the database
-            post = Lessons(
-                subject_name=request.form['subject_name'],
-                grade=request.form['grade'],
-                name=request.form['name'],
-                pdf_path=filename,
-                subject_id=request.form['subject_id']
-            )
-            db.session.add(post)
-            db.session.commit()
-            return redirect(url_for('upload_file'))
-    return render_template('upload.html')
 
 
 @app.route("/my_subjects")
@@ -420,20 +403,22 @@ def quizzes():
 def unauthorized():
     return "You are not authorized to view this page.", 403
 
-
 @app.route('/view_subject/<int:subject_id>')
 def view_subject(subject_id):
     subject = Subjects.query.get(subject_id)
     if current_user.role == "student":
         lessons = Lessons.query.filter_by(subject_id=subject.id).all()
         lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos)
+        lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files , lesson_quiz=lesson_quiz)
     elif current_user.role == "teacher":
         if subject.teacher_id == current_user.id:
             lessons = Lessons.query.filter_by(subject_id=subject.id).all()
             lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons,
-                                   lesson_videos=lesson_videos)
+            lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).first() for lesson in lessons}  # Get only the first quiz
+            lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files,lesson_quiz=lesson_quiz)
         else:
             flash("You are not assigned to this subject.", "danger")
             return redirect(url_for('dashboard'))
@@ -441,13 +426,34 @@ def view_subject(subject_id):
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
 
-
 @app.route('/video/<int:video_id>')
 def show_video(video_id):
     video = Videos.query.get(video_id)
     if not video:
         return "Video not found", 404
-    return render_template('video.html', name=video.name, video_url=video.url)
+    return render_template('video.html', name=video.name,  video_url=video.url)
+
+@app.route('/download/<path:filename>')
+def download_file(filename):
+    # Construct the absolute file path
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    # Debugging: Print the constructed file path and verify
+    logging.debug(f'Requested filename: {filename}')
+    logging.debug(f'Constructed file path: {file_path}')
+    print(f'Constructed file path: {file_path}')  # Print to console for debugging
+
+    # Check if the file exists
+    if os.path.exists(file_path):
+        logging.debug(f'File found: {file_path}')  # File found
+        return send_file(file_path, as_attachment=True)
+    else:
+        logging.error(f'File not found: {file_path}')  # Error logging
+        print(f'File not found: {file_path}')  # Print to console for debugging
+        return "File not found", 404
+
+
+
 
 
 @app.route('/view_teacher/<int:id>')
@@ -493,8 +499,7 @@ def create_subject():
         if not subject_name or not grade:
             return jsonify({'error': 'Subject name and grade are required'}), 400
 
-        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,
-                               teacher_name=current_user.name)
+        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name)
         db.session.add(new_subject)
         db.session.commit()
 
@@ -507,45 +512,37 @@ def create_subject():
 def create_lesson(subject_id):
     subject = Subjects.query.get_or_404(subject_id)
 
-    # Ensure only the assigned teacher can add lessons
     if subject.teacher_id != current_user.id:
         return jsonify({'error': 'You do not have permission to add a lesson to this subject'}), 403
 
     if request.method == 'POST':
-        lesson_name = request.form.get('lessonName')
-        video_link = request.form.get('videoLink')
-        grade = request.form.get('grade')
 
-        # Validate required fields
-        if not lesson_name or not video_link or not grade:
-            return jsonify({'error': 'Lesson name, video link, and grade are required'}), 400
+        lesson_name = request.form['lessonName']
+        video_link = request.form['videoLink']
+        grade = request.form['grade']
+        content = request.form['content']
 
-        # Create new lesson
+
+        if not lesson_name or not grade or not content:
+            return jsonify({'error': 'Lesson name, grade, and content are required'}), 400
+
+        # Create a new lesson
         new_lesson = Lessons(name=lesson_name, subject_id=subject_id)
         db.session.add(new_lesson)
         db.session.commit()
 
-        # Add video
-        new_video = Videos(name=lesson_name, url=video_link, lesson_id=new_lesson.id)
-        db.session.add(new_video)
-        db.session.commit()
+        # Handle file upload
 
-        return redirect("/dashboard")
+        # Create a new video record in the database
+        if video_link:
+            new_video = Videos(name=lesson_name, url=video_link, lesson_id=new_lesson.id)
+            db.session.add(new_video)
+            db.session.commit()
 
-    # GET request: render the form for creating a lesson
+        # Return success message
+        return jsonify({'message': 'Lesson created successfully'}), 201
+
     return render_template('create_lesson.html', subject=subject)
-
-
-UPLOAD_FOLDER = 'path/to/upload/folder'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Configuration for file uploads
-UPLOAD_FOLDER = 'path/to/upload/folder'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
 
 
 @app.route('/create_file/<int:lesson_id>', methods=['GET', 'POST'])
@@ -567,18 +564,15 @@ def create_file(lesson_id):
 
         if file:
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            new_file = Files(name=filename, path=file_path, lesson_id=lesson_id)
+            new_file = Files(name=filename, path=filename, lesson_id=lesson_id)
             db.session.add(new_file)
             db.session.commit()
 
             return jsonify({'message': 'File created successfully'}), 201
 
     return render_template('create_file.html', lesson=lesson)
-
-
 @app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def create_quiz(lesson_id):
@@ -709,7 +703,5 @@ def all_results(quiz_id):
         # Handle unauthorized access
         return redirect(url_for('index'))
 
-
-
 if __name__ == "__main__":
-    app.run(debug=True)
+     app.run(debug=True)

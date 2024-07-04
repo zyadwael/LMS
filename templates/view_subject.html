@@ -139,6 +139,23 @@
             border-radius: 5px;
         }
 
+
+        .take-quiz-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .take-quiz-btn:hover {
+            background-color: #543310;
+        }
+
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             .section {
@@ -176,7 +193,7 @@
     <div class="container">
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
-                <a href="{{ url_for('index') }}">
+                <a href="../templates/index.html">
                     <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
@@ -199,19 +216,22 @@
                     <h2>{{ lesson.name }}</h2>
                     {% if lesson_videos[lesson.id] %}
                         <h3>Videos</h3>
-                        <ul>
+
                             {% for video in lesson_videos[lesson.id] %}
-                            <li><a href="{{ url_for('show_video', video_id=video.id) }}">{{ video.name }}</a></li>
+                            <a href="{{ url_for('show_video', video_id=video.id) }}">{{ video.name }}</a>
                             {% endfor %}
-                        </ul>
+
+                    {% endif %}
+
+                    {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take  Quiz</a>
                     {% endif %}
                     {% if lesson_files[lesson.id] %}
                         <h3>Files</h3>
-                        <ul>
+
                             {% for file in lesson_files[lesson.id] %}
-                            <li><a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a></li>
+                            <a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a>
                             {% endfor %}
-                        </ul>
+
                     {% endif %}
                 </div>
                 {% endfor %}

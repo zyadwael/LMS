@@ -576,65 +576,66 @@ def create_file(lesson_id):
 @app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def create_quiz(lesson_id):
-    lesson = Lessons.query.get_or_404(lesson_id)
+    if current_user.role == "teacher":
+        lesson = Lessons.query.get_or_404(lesson_id)
 
-    if request.method == 'POST':
-        quiz_title = request.form['quizTitle']
-        quiz_description = request.form['quizDescription']
+        if request.method == 'POST':
+            quiz_title = request.form['quizTitle']
+            quiz_description = request.form['quizDescription']
 
-        # Create new quiz
-        new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id)
-        db.session.add(new_quiz)
-        db.session.commit()
+            # Create new quiz
+            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
+            db.session.add(new_quiz)
+            db.session.commit()
 
-        # Extract all question data
-        questions_data = []
-        for key in request.form.keys():
-            if key.startswith('question') and key[len('question'):].isdigit():
-                question_index = key[len('question'):]
-                question_data = {
-                    'question_text': request.form[f'question{question_index}'],
-                    'question_type': request.form[f'questionType{question_index}'],
-                    'choices': [
-                        request.form.get(f'choice{question_index}_1', ''),
-                        request.form.get(f'choice{question_index}_2', ''),
-                        request.form.get(f'choice{question_index}_3', ''),
-                        request.form.get(f'choice{question_index}_4', '')
-                    ],
-                    'correct_answer': request.form[f'answer{question_index}']
-                }
-                questions_data.append(question_data)
+            # Extract all question data
+            questions_data = []
+            for key in request.form.keys():
+                if key.startswith('question') and key[len('question'):].isdigit():
+                    question_index = key[len('question'):]
+                    question_data = {
+                        'question_text': request.form[f'question{question_index}'],
+                        'question_type': request.form[f'questionType{question_index}'],
+                        'choices': [
+                            request.form.get(f'choice{question_index}_1', ''),
+                            request.form.get(f'choice{question_index}_2', ''),
+                            request.form.get(f'choice{question_index}_3', ''),
+                            request.form.get(f'choice{question_index}_4', '')
+                        ],
+                        'correct_answer': request.form[f'answer{question_index}']
+                    }
+                    questions_data.append(question_data)
 
-        # Add all questions to the quiz
-        for question_data in questions_data:
-            question_text = question_data['question_text']
-            question_type = question_data['question_type']
-            choices = question_data['choices']
-            correct_answer = question_data['correct_answer']
+            # Add all questions to the quiz
+            for question_data in questions_data:
+                question_text = question_data['question_text']
+                question_type = question_data['question_type']
+                choices = question_data['choices']
+                correct_answer = question_data['correct_answer']
 
-            if question_type == 'multiple':
-                correct_choice = choices[int(correct_answer) - 1]
-            elif question_type == 'true_false':
-                correct_choice = correct_answer
-            elif question_type == 'complete':
-                correct_choice = correct_answer
+                if question_type == 'multiple':
+                    correct_choice = choices[int(correct_answer) - 1]
+                elif question_type == 'true_false':
+                    correct_choice = correct_answer
+                elif question_type == 'complete':
+                    correct_choice = correct_answer
 
-            new_question = QuizQuestion(
-                quiz_id=new_quiz.id,
-                question_type=question_type,
-                question_text=question_text,
-                options=json.dumps([choice for choice in choices if choice]) if choices else None,
-                correct_answer=correct_choice,
-                score=1  # Modify if needed
-            )
-            db.session.add(new_question)
+                new_question = QuizQuestion(
+                    quiz_id=new_quiz.id,
+                    question_type=question_type,
+                    question_text=question_text,
+                    options=json.dumps([choice for choice in choices if choice]) if choices else None,
+                    correct_answer=correct_choice,
+                    score=1  # Modify if needed
+                )
+                db.session.add(new_question)
 
-        db.session.commit()
+            db.session.commit()
 
-        flash("Quiz created successfully!", "success")
-        return redirect(url_for('my_subjects'))
+            flash("Quiz created successfully!", "success")
+            return redirect(url_for('my_subjects'))
 
-    return render_template('create_quiz.html', lesson=lesson)
+        return render_template('create_quiz.html', lesson=lesson)
 @app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
 def take_quiz(quiz_id):

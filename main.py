@@ -18,6 +18,8 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 
 from flask_babel import Babel
 from werkzeug.utils import secure_filename
+from twilio.jwt.access_token import AccessToken
+from twilio.jwt.access_token.grants import VideoGrant
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -702,6 +704,46 @@ def all_results(quiz_id):
     else:
         # Handle unauthorized access
         return redirect(url_for('index'))
+
+
+@app.route('/quizzes_surveys', methods=['GET', 'POST'])
+@login_required  # Ensure only logged-in users can access
+def quizzes_surveys():
+    if request.method == 'POST':
+        quiz_id = request.form.get('quiz_id')
+        # Handle the quiz form submission logic here
+        # For example, redirect the user to the quiz taking page
+        return redirect(url_for('take_quiz', quiz_id=quiz_id))
+
+    quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
+    return render_template('quizzes_surveys.html', quizzes=quizzes)
+
+# Replace the Twilio credentials with your actual credentials
+account_sid = 'ACdebb3c6c4846b66c07a02cb795f33934'
+api_key = 'SK1a7e538ed35fe90977890fdef5bf89e9'
+api_secret = '6sE6ABJZuT1Gndron4Mv0ZYApZsTeick'
+
+
+def generate_twilio_access_token(identity, room_name):
+    # Create access token
+    token = AccessToken(account_sid, api_key, api_secret, identity=identity)
+
+    # Create video grant and add to token
+    video_grant = VideoGrant(room=room_name)  # Specify the room name
+    token.add_grant(video_grant)
+
+    # Generate token as a JWT string
+    return token.to_jwt()
+
+@app.route('/generate-token')
+def generate_token():
+    # Generate access token for a participant with identity 'example_identity' and room name 'example_room'
+    access_token = generate_twilio_access_token('example_identity', 'example_room')
+    return jsonify({'access_token': access_token})
+
+@app.route('/zoom')
+def index():
+    return render_template('zoom.html')
 
 if __name__ == "__main__":
      app.run(debug=True)

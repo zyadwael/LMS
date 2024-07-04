@@ -636,6 +636,8 @@ def create_quiz(lesson_id):
             return redirect(url_for('my_subjects'))
 
         return render_template('create_quiz.html', lesson=lesson)
+
+
 @app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
 def take_quiz(quiz_id):
@@ -645,6 +647,7 @@ def take_quiz(quiz_id):
         if question.options:
             question.options = json.loads(question.options)
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
+
 
 @app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])
 @login_required
@@ -663,7 +666,8 @@ def submit_quiz(quiz_id):
                 if user_answer.strip().lower() == question.correct_answer.strip().lower():
                     total_score += question.score
 
-    quiz_result = QuizResult(user_id=current_user.id, quiz_id=quiz_id, score=total_score)
+    quiz_result = QuizResult(user_id=current_user.id, quiz_id=quiz_id, score=total_score,
+                             student_email=current_user.email)
     db.session.add(quiz_result)
     db.session.commit()
 
@@ -698,7 +702,6 @@ def all_results(quiz_id):
     else:
         # Handle unauthorized access
         return redirect(url_for('index'))
-
 
 if __name__ == "__main__":
      app.run(debug=True)

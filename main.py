@@ -399,7 +399,7 @@ def assessments():
 @login_required
 def quizzes():
     if current_user.role == "student" or "parent":
-        return render_template("quizzes.html")
+        return render_template("quizzes_surveys_teacher.html")
 
     if current_user.role == "teacher" or "admin":
         return render_template("quiz_creation.html")
@@ -695,7 +695,7 @@ def results(user_id):
     if current_user.role == "teacher" and current_user.id == user_id:
         teacher = Users.query.get_or_404(user_id)
         quizzes = Quizzes.query.filter_by(user_id=user_id).all()
-        return render_template('results.html', teacher_name=teacher.name, quizzes=quizzes)
+        return render_template('quizzes_surveys_teacher.html', teacher_name=teacher.name, quizzes=quizzes)
     else:
         # Handle unauthorized access
         return redirect(url_for('index'))
@@ -720,11 +720,14 @@ def quizzes_surveys():
         # Handle the quiz form submission logic here
         # For example, redirect the user to the quiz taking page
         return redirect(url_for('take_quiz', quiz_id=quiz_id))
+    if current_user.role == "student":
+        quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
+        return render_template('quizzes_surveys.html', quizzes=quizzes)
+    elif current_user.role == "teacher":
+        quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
+        return render_template('quizzes_surveys_teacher.html', quizzes=quizzes)
 
-    quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
-    return render_template('quizzes_surveys.html', quizzes=quizzes)
 
-# Replace the Twilio credentials with your actual credentials
 # Replace the Twilio credentials with your actual credentials
 account_sid = 'ACdebb3c6c4846b66c07a02cb795f33934'
 api_key = 'SK1a7e538ed35fe90977890fdef5bf89e9'

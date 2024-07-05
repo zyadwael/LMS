@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable</title>
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        .sidebar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .posts {
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            color: #543310;
+        }
+
+        .post {
+            background-color: #C7B198;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .post h2 {
+            margin: 0 0 10px 0;
+        }
+
+        .post a {
+            color: #543310;
+            text-decoration: underline;
+        }
+
+        .post a:hover {
+            text-decoration: none;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            border-radius: 5px;
+        }
+
+        .upload-timetable-btn {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .upload-timetable-btn:hover {
+            background-color: #725238;
+        }
+
+        .print-timetable-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .print-timetable-btn:hover {
+            background-color: #543310;
+        }
+
+        .take-quiz-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .take-quiz-btn:hover {
+            background-color: #543310;
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px);
+                margin: 10px 0;
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <a href="../templates/index.html">
+                <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+            </a>
+        </div>
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="#">Timetable</a></li>
+            <li><a href="/my_subjects">My Subjects</a></li>
+            <li><a href="/my_teachers">My Teachers</a></li>
+            <li><a href="#">Attendance</a></li>
+            <li><a href="#">Sessions</a></li>
+            <li><a href="#">Assessments & Assignments</a></li>
+            <li><a href="#">Remarks & Actions</a></li>
+            <li><a href="#">Quizzes/Surveys</a></li>
+
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <h1>Timetable</h1>
+
+            {% if file_url %}
+                <p>Uploaded file:</p>
+                <img src="{{ file_url }}" alt="Timetable Image" style="max-width: 100%; height: auto;">
+                <button onclick="printImage('{{ file_url }}')" class="print-timetable-btn">Print Timetable</button>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".csv, .xls, .xlsx, .jpg, .jpeg, .png">
+                <button type="submit" class="upload-timetable-btn">Upload Timetable</button>
+            </form>
+
+            <p>Timetable data will be displayed here.</p>
+
+            <a href="{{ url_for('print_timetable') }}" class="print-timetable-btn">Print Timetable</a>
+        </div>
+    </div>
+
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/popper.min.js"></script>
+    <script src="../static/js/moment.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/simplebar.min.js"></script>
+    <script src="../static/js/daterangepicker.js"></script>
+    <script src="../static/js/jquery.stickOnScroll.js"></script>
+    <script src="../static/js/tinycolor-min.js"></script>
+    <script src="../static/js/config.js"></script>
+    <script src="../static/js/fullcalendar.js"></script>
+    <script src="../static/js/fullcalendar.custom.js"></script>
+    <script src="../static/js/apps.js"></script>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('closed');
+            sidebar.classList.toggle('open');
+        }
+
+        function printImage(url) {
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print Timetable</title></head><body>');
+            printWindow.document.write('<img src="' + url + '" style="max-width: 100%; height: auto;">');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+</body>
+</html>

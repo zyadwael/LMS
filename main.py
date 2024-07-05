@@ -20,6 +20,7 @@ from flask_babel import Babel
 from werkzeug.utils import secure_filename
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant
+from flask import send_from_directory
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -108,7 +109,11 @@ with app.app_context():
         path = db.Column(db.String(200))
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
 
-
+    class Timetable(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100))
+        path = db.Column(db.String(200))
+        teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'))  # Foreign key to Teacher
     class Videos(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
@@ -132,7 +137,7 @@ with app.app_context():
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
+        timetable_id = db.Column(db.Integer, db.ForeignKey('timetable.id'))  # Foreign key to Timetable
 
     class Students(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -210,6 +215,7 @@ admin.add_view(MyModelView(Quizzes, db.session))
 admin.add_view(MyModelView(QuizResult, db.session))
 admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
+admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
 
 
@@ -239,7 +245,7 @@ def mark_notification_as_read(notification_id):
 
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx'}
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'png', 'jpg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -719,10 +725,10 @@ def quizzes_surveys():
     return render_template('quizzes_surveys.html', quizzes=quizzes)
 
 # Replace the Twilio credentials with your actual credentials
+# Replace the Twilio credentials with your actual credentials
 account_sid = 'ACdebb3c6c4846b66c07a02cb795f33934'
 api_key = 'SK1a7e538ed35fe90977890fdef5bf89e9'
 api_secret = '6sE6ABJZuT1Gndron4Mv0ZYApZsTeick'
-
 
 def generate_twilio_access_token(identity, room_name):
     # Create access token
@@ -744,6 +750,62 @@ def generate_token():
 @app.route('/zoom')
 def index():
     return render_template('zoom.html')
+
+
+@app.route('/timetable', methods=['GET', 'POST'])
+@login_required
+def timetable(): # Assuming a function to get the current user
+
+    # Check if a timetable already exists for the teacher
+    existing_timetable = Timetable.query.filter_by(teacher_id=current_user.id).first()
+
+    if existing_timetable:
+        # Timetable already exists, display it or offer options
+        file_url = url_for('uploaded_file', filename=existing_timetable.path)
+        return render_template('timetable.html', file_url=file_url, existing=True)
+    else:
+        # No existing timetable, handle upload
+        file_url = None
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                flash('No file part', 'error')
+                return redirect(request.url)
+
+            file = request.files['file']
+
+            if file.filename == '':
+                flash('No selected file', 'error')
+                return redirect(request.url)
+
+            if file:
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                # Create new timetable and associate with teacher
+                new_timetable = Timetable(name=filename, path=filename, teacher_id=current_user.id)
+                db.session.add(new_timetable)
+                db.session.commit()
+
+                flash('File uploaded successfully', 'success')
+                file_url = url_for('uploaded_file', filename=filename)
+
+        return render_template('timetable.html', file_url=file_url)
+
+@app.route("/print_timetable")
+@login_required
+def print_timetable():
+    # Logic to access or format existing timetable for printing (adapt based on needs)
+    return render_template('print_timetable.html')
+
+
+# Ensure the uploads folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == "__main__":
      app.run(debug=True)

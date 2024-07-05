@@ -55,6 +55,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         password = db.Column(db.String(100))
         email = db.Column(db.String(100), unique=True)
+        phone_number = db.Column(db.String(1000), unique=True)
         gender = db.Column(db.String(100))
         religion = db.Column(db.String(100))
         role = db.Column(db.String(100))
@@ -64,6 +65,15 @@ with app.app_context():
         student = db.relationship('Students', backref='user', uselist=False)
         subjects = db.relationship('Subjects', backref='teacher')
         quizzes = db.relationship('Quizzes', backref='user')
+        parents = db.relationship('Parents', backref='user')
+
+
+    class Parents(UserMixin, db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100))
+        email = db.Column(db.String(100), unique=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
 
 
     class Subjects(db.Model):
@@ -129,6 +139,7 @@ with app.app_context():
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         duration = db.Column(db.Integer, nullable=True)
 
+
     class Teacher(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
@@ -142,9 +153,10 @@ with app.app_context():
     class Students(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
-        email = db.Column(db.String(100))
+        email = db.Column(db.String(100), unique=True)
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
+        parent_email = db.Column(db.String(1000))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
@@ -217,6 +229,8 @@ admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
+admin.add_view(MyModelView(Parents, db.session))
+
 
 
 
@@ -276,9 +290,10 @@ def dashboard():
                                notifications=notifications)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications , user=current_user)
+                               notifications=notifications, user=current_user)
     if current_user.role == "parent":
-        return render_template("parent_dashboard.html", notifications=notifications)
+        my_students = Students.query.filter_by(parent_email=current_user.email).all()
+        return render_template("parent_dashboard.html", notifications=notifications, children=my_students)
     if current_user.role == "admin":
         return render_template("admin_dashboard.html", notifications=notifications)
     else:
@@ -399,7 +414,7 @@ def assessments():
 @login_required
 def quizzes():
     if current_user.role == "student" or "parent":
-        return render_template("quizzes_surveys_teacher.html")
+        return render_template("quizzes.html")
 
     if current_user.role == "teacher" or "admin":
         return render_template("quiz_creation.html")
@@ -590,10 +605,9 @@ def create_quiz(lesson_id):
         if request.method == 'POST':
             quiz_title = request.form['quizTitle']
             quiz_description = request.form['quizDescription']
-            quiz_duration = request.form['quizDuration']
 
             # Create new quiz
-            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id,duration=quiz_duration)
+            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
             db.session.add(new_quiz)
             db.session.commit()
 
@@ -734,9 +748,7 @@ def quizzes_surveys():
     quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
     return render_template('quizzes_surveys.html', quizzes=quizzes)
 
-
-
-
+# Replace the Twilio credentials with your actual credentials
 # Replace the Twilio credentials with your actual credentials
 account_sid = 'ACdebb3c6c4846b66c07a02cb795f33934'
 api_key = 'SK1a7e538ed35fe90977890fdef5bf89e9'
@@ -818,6 +830,8 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
 
 if __name__ == "__main__":
      app.run(debug=True)

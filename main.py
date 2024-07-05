@@ -127,7 +127,7 @@ with app.app_context():
         questions = db.Column(db.Text)  # Assuming questions are stored as JSON or similar format
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
+        duration = db.Column(db.Integer, nullable=True)
 
     class Teacher(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -590,9 +590,10 @@ def create_quiz(lesson_id):
         if request.method == 'POST':
             quiz_title = request.form['quizTitle']
             quiz_description = request.form['quizDescription']
+            quiz_duration = request.form['quizDuration']
 
             # Create new quiz
-            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
+            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id,duration=quiz_duration)
             db.session.add(new_quiz)
             db.session.commit()
 
@@ -650,10 +651,19 @@ def create_quiz(lesson_id):
 @login_required
 def take_quiz(quiz_id):
     quiz = Quizzes.query.get_or_404(quiz_id)
+
+    # Check if the quiz has already been submitted by the student
+    result = QuizResult.query.filter_by(quiz_id=quiz_id, student_email=current_user.email).first()
+    if result:
+        # Redirect to a page or display a message that the quiz has already been submitted
+        flash('You have already submitted this quiz.', 'warning')
+        return redirect(url_for('quizzes_surveys'))  # or another appropriate page
+
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
     for question in questions:
         if question.options:
             question.options = json.loads(question.options)
+
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
 
 

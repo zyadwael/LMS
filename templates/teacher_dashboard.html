@@ -271,7 +271,6 @@
             mainContent.classList.toggle('expanded');
         }
 
-
         function showQuizResults() {
             var quizResultsSection = document.getElementById('quiz-results');
             var mainContent = document.getElementById('main-content');
@@ -291,7 +290,8 @@
 
             fetchQuizResults();
         }
-                function fetchQuizResults() {
+
+        function fetchQuizResults() {
             // Mocked data for demonstration purposes
             var quizResults = [
                 { student: 'John Doe', score: '85%' },
@@ -311,6 +311,40 @@
                 quizResultsList.appendChild(listItem);
             });
         }
+
+        function sendSessionNotification(sessionInfo) {
+            if (Notification.permission === 'granted') {
+                new Notification('Session Notification', {
+                    body: You have a session: ${sessionInfo.title} at ${sessionInfo.time},
+                    icon: '../static/assets/images/logo.png' // Optional: URL to an icon image
+                });
+            }
+        }
+
+        function checkForSessions() {
+            // Mocked session data for demonstration purposes
+            var sessions = [
+                { title: 'Math Class', time: '10:00 AM' },
+                { title: 'Science Lab', time: '1:00 PM' },
+                // Add more sessions as needed
+            ];
+
+            sessions.forEach(function(session) {
+                sendSessionNotification(session);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (Notification.permission !== 'granted') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        checkForSessions();
+                    }
+                });
+            } else {
+                checkForSessions();
+            }
+        });
     </script>
 </body>
 </html>

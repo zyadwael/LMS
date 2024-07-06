@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #DFD3C3;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #8B4513;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #A0522D;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main_content">
+
+    <h1>Edit Quiz</h1>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST">
+        <div class="container">
+        <label for="name">Quiz Name:</label>
+        <input type="text" name="name" id="name" value="{{ quiz.name }}">
+        </div>
+                <div class="container">
+        <label for="type">Quiz Type:</label>
+                    <select  name="type" id="type" >
+                        <option value="multiple-choice">Multiple Choice</option>
+                        <option value="true-false">True/False</option>
+                        <option value="short-answer">Short Answer</option>
+                    </select>
+            </div>
+        <div class="container">
+        <label for="questions">Quiz Questions:</label>
+        <input type="text" name="questions" id="questions" value="{{ quiz_questions.question_text }}">
+            </div>
+            <div class="container">
+        <label for="options">Options:</label>
+        <input type="text" name="options" id="options" value="{{ quiz_questions.options }}">
+            </div>
+           <div class="container">
+        <label for="correct_answer">Options:</label>
+        <input type="text" name="correct_answer" id="correct_answer" value="{{ quiz_questions.correct_answer }}">
+            </div>
+                <div class="container">
+        <label for="duration">Quiz Dureation:</label>
+        <input type="number" name="duration" id="duration" min="1" value="{{ quiz.duration }}">
+            </div>
+    <button type="submit" class="button">Save Changes</button>
+    </form>
+            </div>
+
+
+</body>
+</html>

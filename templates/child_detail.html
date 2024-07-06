@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard</title>
+    <title>AMS SCHOOL : Parent Dashboard</title>
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
     <style>
         body {
             background: #DFD3C3;
@@ -26,14 +37,18 @@
             color: #ecf0f1;
             padding: 20px;
             box-sizing: border-box;
-            position: absolute;
+            position: fixed; /* Change from absolute to fixed */
             top: 0;
             bottom: 0;
+            left: 0;
             transform: translateX(0);
             transition: transform 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto; /* Enable vertical scrolling */
+            overscroll-behavior: contain; /* Prevent overscroll */
+            z-index: 100; /* Ensure it overlays other content properly */
         }
 
         .sidebar.closed {
@@ -164,44 +179,31 @@
             border: none;
             padding: 10px;
             cursor: pointer;
-            z-index: 1;
+            z-index: 1001; /* Ensure the button is above all other elements */
             border-radius: 5px;
         }
 
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
             .sidebar {
-                position: fixed;
-                transform: translateX(-100%);
+                transform: translateX(0%);
                 width: 250px;
             }
 
-            .sidebar.open {
-                transform: translateX(0);
+            .sidebar.closed {
+                transform: translateX(-100%);
             }
 
             .main-content {
                 margin-left: 0;
             }
-
-            .dashboard-sections {
-                flex-direction: column;
-            }
-
-            .section, .latest-news-section {
-                margin: 10px 0;
-            }
         }
+
     </style>
 </head>
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="container">
-
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
                 <a href="../templates/index.html">
@@ -209,34 +211,34 @@
                 </a>
             </div>
             <ul>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="#">Timetable</a></li>
-                <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/students">My Students</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
-                <li><a href="#">Assessments & Assignments</a></li>
-                <li><a href="#">Remarks & Actions</a></li>
-                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
-                <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
-
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/child_timetable"><i class="feather icon-calendar"></i><span class="link-text">Child's Timetable</span></a></li>
+                <li><a href="/child_subjects"><i class="feather icon-book"></i><span class="link-text">Child's Subjects</span></a></li>
+                <li><a href="/child_teachers"><i class="feather icon-user"></i><span class="link-text">Child's Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Child's Attendance</span></a></li>
+                <li><a href="/child_sessions"><i class="feather icon-users"></i><span class="link-text">Child's Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Child's Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Child's Remarks & Actions</span></a></li>
+                <li><a href="/child_quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Child's Quizzes/Surveys</span></a></li>
             </ul>
         </div>
         <div class="main-content" id="main-content">
             <div class="dashboard-header">
-                <h1 style="color: #543310;">Dashboard</h1>
+                <h1 style="color: #543310;">Parent Dashboard</h1>
             </div>
             <div class="dashboard-sections">
                 <div class="section">
-                    <h2>Teachers</h2>
+                    <h2>Child's Teachers</h2>
                     <ul>
-                        <li>{{ teachers.name }} - {{ teachers.subject }}</li>
+                        {% for teacher in child_teachers %}
+                            <li>{{ teacher.name }} - {{ teacher.subject }}</li>
+                        {% endfor %}
                     </ul>
                 </div>
                 <div class="section">
-                    <h2>Marks</h2>
+                    <h2>Child's Marks</h2>
                     <ul>
-                        {% for quiz in quizzes %}
+                        {% for quiz in child_quizzes %}
                             <li>{{ quiz.title }}: {{ quiz.score }}%</li>
                         {% endfor %}
                     </ul>
@@ -250,100 +252,54 @@
                     </ul>
                 </div>
             </div>
-            <div class="students-section">
-                <h2>60 Students</h2>
-                <p>My Students</p>
-            </div>
-            <div class="quiz-results" id="quiz-results">
-                <h2>Quiz Results</h2>
-                <ul id="quiz-results-list">
-                    <!-- Quiz results will be inserted here -->
-                </ul>
-            </div>
         </div>
     </div>
+
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/popper.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/simplebar.min.js"></script>
+    <script src="../static/js/daterangepicker.js"></script>
+    <script src="../static/js/jquery.stickOnScroll.js"></script>
+    <script src="../static/js/tinycolor-min.js"></script>
+    <script src="../static/js/config.js"></script>
+    <script src="../static/js/fullcalendar.js"></script>
+    <script src="../static/js/fullcalendar.custom.js"></script>
+    <script src="../static/js/apps.js"></script>
+
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
             var mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
-        }
-
-        function showQuizResults() {
-            var quizResultsSection = document.getElementById('quiz-results');
-            var mainContent = document.getElementById('main-content');
-
-            // Hide all other sections
-            var sections = mainContent.getElementsByClassName('section');
-            for (var i = 0; i < sections.length; i++) {
-                sections[i].style.display = 'none';
-            }
-            var studentsSection = document.getElementsByClassName('students-section')[0];
-            studentsSection.style.display = 'none';
-            var latestNewsSection = document.getElementsByClassName('latest-news-section')[0];
-            latestNewsSection.style.display = 'none';
-
-            // Show quiz results section
-            quizResultsSection.style.display = 'block';
-
-            fetchQuizResults();
-        }
-
-        function fetchQuizResults() {
-            // Mocked data for demonstration purposes
-            var quizResults = [
-                { student: 'John Doe', score: '85%' },
-                { student: 'Jane Smith', score: '92%' },
-                { student: 'Jim Brown', score: '78%' },
-                // Add more quiz results as needed
-            ];
-
-            // Clear existing results
-            var quizResultsList = document.getElementById('quiz-results-list');
-            quizResultsList.innerHTML = '';
-
-            // Insert new results
-            quizResults.forEach(function(result) {
-                var listItem = document.createElement('li');
-                listItem.textContent = result.student + ': ' + result.score;
-                quizResultsList.appendChild(listItem);
-            });
-        }
-
-        function sendSessionNotification(sessionInfo) {
-            if (Notification.permission === 'granted') {
-                new Notification('Session Notification', {
-                    body: You have a session: ${sessionInfo.title} at ${sessionInfo.time},
-                    icon: '../static/assets/images/logo.png' // Optional: URL to an icon image
-                });
-            }
-        }
-
-        function checkForSessions() {
-            // Mocked session data for demonstration purposes
-            var sessions = [
-                { title: 'Math Class', time: '10:00 AM' },
-                { title: 'Science Lab', time: '1:00 PM' },
-                // Add more sessions as needed
-            ];
-
-            sessions.forEach(function(session) {
-                sendSessionNotification(session);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (Notification.permission !== 'granted') {
-                Notification.requestPermission().then(function(permission) {
-                    if (permission === 'granted') {
-                        checkForSessions();
-                    }
-                });
+            if (sidebar.classList.contains('closed')) {
+                sidebar.classList.remove('closed');
+                mainContent.classList.remove('expanded');
+                console.log("Sidebar opened");
             } else {
-                checkForSessions();
+                sidebar.classList.add('closed');
+                mainContent.classList.add('expanded');
+                console.log("Sidebar closed");
             }
+        }
+
+        function checkSidebarState() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('closed');
+                mainContent.classList.add('expanded');
+                console.log("Window resized to mobile view - Sidebar closed");
+            } else {
+                sidebar.classList.remove('closed');
+                mainContent.classList.remove('expanded');
+                console.log("Window resized to desktop view - Sidebar opened");
+            }
+        }
+
+        window.addEventListener('resize', checkSidebarState);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            checkSidebarState();
         });
     </script>
 </body>

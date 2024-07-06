@@ -20,6 +20,8 @@ from flask_babel import Babel
 from werkzeug.utils import secure_filename
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant
+from django.shortcuts import render
+
 from flask import send_from_directory
 
 app = Flask(__name__)
@@ -55,6 +57,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         password = db.Column(db.String(100))
         email = db.Column(db.String(100), unique=True)
+        phone_number = db.Column(db.String(1000), unique=True)
         gender = db.Column(db.String(100))
         religion = db.Column(db.String(100))
         role = db.Column(db.String(100))
@@ -64,6 +67,7 @@ with app.app_context():
         student = db.relationship('Students', backref='user', uselist=False)
         subjects = db.relationship('Subjects', backref='teacher')
         quizzes = db.relationship('Quizzes', backref='user')
+        parents = db.relationship('Parents', backref='user')
 
 
     class Subjects(db.Model):
@@ -72,8 +76,8 @@ with app.app_context():
         teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         grade = db.Column(db.String(1000))
         teacher_name = db.Column(db.String(1000))
+        teacher_email = db.Column(db.String(100))
         lessons = db.relationship('Lessons', backref='subject')
-
 
     class Lessons(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -127,6 +131,7 @@ with app.app_context():
         questions = db.Column(db.Text)  # Assuming questions are stored as JSON or similar format
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        duration = db.Column(db.Integer, nullable=True)
 
 
     class Teacher(UserMixin, db.Model):
@@ -139,13 +144,22 @@ with app.app_context():
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         timetable_id = db.Column(db.Integer, db.ForeignKey('timetable.id'))  # Foreign key to Timetable
 
+    class Parents(UserMixin, db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100))
+        email = db.Column(db.String(100), unique=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+
     class Students(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
         email = db.Column(db.String(100))
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
+        parent_email = db.Column(db.String(1000))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
 
 
     class News(UserMixin, db.Model):
@@ -206,6 +220,7 @@ admin = Admin(app)
 admin.add_view(MyModelView(Users, db.session))
 admin.add_view(MyModelView(Students, db.session))
 admin.add_view(MyModelView(Teacher, db.session))
+admin.add_view(MyModelView(Parents, db.session))
 admin.add_view(MyModelView(Subjects, db.session))
 admin.add_view(MyModelView(Event, db.session))
 admin.add_view(MyModelView(News, db.session))
@@ -276,13 +291,15 @@ def dashboard():
                                notifications=notifications)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications , user=current_user)
+                               notifications=notifications, user=current_user)
     if current_user.role == "parent":
-        return render_template("parent_dashboard.html", notifications=notifications)
+        my_students = Students.query.filter_by(parent_email=current_user.email).all()
+        return render_template("parent_dashboard.html", notifications=notifications, children=my_students)
     if current_user.role == "admin":
         return render_template("admin_dashboard.html", notifications=notifications)
     else:
         return redirect(url_for('unauthorized'))
+
 
 
 @app.route('/notifications')
@@ -371,10 +388,12 @@ def my_subjects():
 
     elif current_user.role == 'teacher':
         teacher = Users.query.filter_by(id=current_user.id).first()
-        teacher_name = teacher.name
-        print(teacher_name)
+        teacher_email = teacher.email
+        print(teacher_email)
         if teacher:
-            filtered_subjects = Subjects.query.filter_by(teacher_name=teacher_name).all()
+            filtered_subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
+            print(f"Number of subjects found: {len(filtered_subjects)}")
+
             return render_template("my_subjects_teacher.html", subjects=filtered_subjects)
         else:
             print("Teacher record not found.")  # Debug statement
@@ -426,6 +445,7 @@ def view_subject(subject_id):
             lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
             lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).first() for lesson in lessons}  # Get only the first quiz
             lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+
             return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files,lesson_quiz=lesson_quiz)
         else:
             flash("You are not assigned to this subject.", "danger")
@@ -463,6 +483,58 @@ def download_file(filename):
 
 
 
+@app.route("/edit_lesson/<int:lesson_id>", methods=["GET", "POST"])
+@login_required
+def edit_lesson(lesson_id):
+    lesson = Lessons.query.get(lesson_id)
+    video = Videos.query.filter_by(lesson_id=lesson_id).first()
+    if lesson is None:
+        flash("Lesson not found!", "danger")
+        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+
+    if request.method == "POST":
+        lesson.name = request.form["name"]
+        video.url = request.form['video']
+
+
+        try:
+            db.session.commit()
+            flash("Lesson edited successfully!", "success")
+            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error editing lesson: {e}", "danger")
+
+    return render_template("edit_lesson.html", lesson=lesson,video=video)
+
+
+
+@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
+@login_required
+def edit_quiz(lesson_id):
+    lesson = Lessons.query.get(lesson_id)
+    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
+    quiz_id = quiz.id
+    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
+    if lesson is None:
+        flash("Lesson not found!", "danger")
+        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
+    if request.method == "POST":
+        quiz.name = request.form['name']
+        quiz_questions.question_text = request.form['questions']
+        quiz_questions.question_type = request.form['type']
+        quiz_questions.correct_answer = request.form['correct_answer']
+        quiz.duration = request.form['duration']
+
+        try:
+            db.session.commit()
+            flash("Lesson edited successfully!", "success")
+            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error editing lesson: {e}", "danger")
+
+    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
 
 @app.route('/view_teacher/<int:id>')
 def view_teacher(id):
@@ -500,6 +572,8 @@ def notification():
 @login_required
 def create_subject():
     if request.method == 'POST':
+        teacher = Users.query.filter_by(id=current_user.id).first()
+        teacher_email = teacher.email
         data = request.get_json()
         subject_name = data.get('name')
         grade = data.get('grade')
@@ -507,7 +581,7 @@ def create_subject():
         if not subject_name or not grade:
             return jsonify({'error': 'Subject name and grade are required'}), 400
 
-        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name)
+        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name,teacher_email=teacher_email)
         db.session.add(new_subject)
         db.session.commit()
 
@@ -590,9 +664,10 @@ def create_quiz(lesson_id):
         if request.method == 'POST':
             quiz_title = request.form['quizTitle']
             quiz_description = request.form['quizDescription']
+            quiz_duration = request.form['quizDuration']
 
             # Create new quiz
-            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
+            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id,duration=quiz_duration)
             db.session.add(new_quiz)
             db.session.commit()
 
@@ -646,15 +721,27 @@ def create_quiz(lesson_id):
         return render_template('create_quiz.html', lesson=lesson)
 
 
+
+
 @app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
 def take_quiz(quiz_id):
     quiz = Quizzes.query.get_or_404(quiz_id)
+
+    # Check if the quiz has already been submitted by the student
+    result = QuizResult.query.filter_by(quiz_id=quiz_id, student_email=current_user.email).first()
+    if result:
+        # Redirect to a page or display a message that the quiz has already been submitted
+        flash('You have already submitted this quiz.', 'warning')
+        return redirect(url_for('quizzes_surveys'))  # or another appropriate page
+
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
     for question in questions:
         if question.options:
             question.options = json.loads(question.options)
+
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
+
 
 
 @app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])

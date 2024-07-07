@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #DFD3C3;
+            background-color: #DFD3C3; /* Matches the theme background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -16,7 +16,7 @@
         }
 
         .container {
-            background-color: #C7B198;
+            background-color: #C7B198; /* Matches the theme container background */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -28,7 +28,7 @@
         h1 {
             font-size: 2em;
             font-weight: bold;
-            color: #543310;
+            color: #543310; /* Matches the theme text color */
             margin-bottom: 20px;
         }
 
@@ -36,14 +36,14 @@
             font-size: 1.2em;
             margin-bottom: 20px;
             text-align: left;
-            background-color: #EAE7DC;
+            background-color: #EAE7DC; /* Light background for questions */
             padding: 15px;
             border-radius: 8px;
         }
 
         .question-container p {
             margin: 0 0 10px;
-            color: #543310;
+            color: #543310; /* Matches the theme text color */
         }
 
         .answers {
@@ -55,17 +55,28 @@
         .answers label {
             display: block;
             margin-bottom: 10px;
-            color: #543310;
+            color: #543310; /* Matches the theme text color */
             cursor: pointer;
         }
 
-        .answers input[type="radio"], .answers input[type="text"] {
+        .answers input[type="radio"] {
             margin-right: 10px;
         }
 
+        .answers input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #543310; /* Border color to match theme */
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #F5F5F5;
+        }
+
         button {
-            background-color: #543310;
-            color: #ecf0f1;
+            background-color: #543310; /* Matches the theme button color */
+            color: #ecf0f1; /* Light text color */
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
@@ -75,33 +86,27 @@
         }
 
         button:hover {
-            background-color: #3e2810;
+            background-color: #3e2810; /* Darker shade for hover effect */
         }
 
         .result-wrapper {
             display: none;
             font-size: 1.2em;
             margin-top: 20px;
-            color: #543310;
-        }
-
-        #timer {
-            font-size: 1.2em;
-            color: #543310;
-            margin-bottom: 20px;
+            color: #543310; /* Matches the theme text color */
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>{{ quiz.name }}</h1>
-    <div id="timer">Time remaining: <span id="timeRemaining"></span></div>
     <form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
         {% for question in questions %}
         <div class="question-container" data-question-id="{{ question.id }}">
             <p>Question {{ loop.index }}: {{ question.question_text }}</p>
             {% if question.question_type == 'multiple' %}
-                {% for option in question.options %}
+                {% set options = question.options %}
+                {% for option in options %}
                     <label>
                         <input type="radio" name="{{ question.id }}" value="{{ option }}"> {{ option }}
                     </label><br>
@@ -120,56 +125,49 @@
         {% endfor %}
         <button type="submit" id="submitQuiz">Submit Quiz</button>
     </form>
-    <div class="result-wrapper" id="result">
-        <p>Your quiz has been submitted successfully!</p>
-    </div>
-</div>
-<script>
-    // Timer functionality
-    function startTimer(duration) {
-        var timer = duration, minutes, seconds;
-        var interval = setInterval(function () {
-            minutes = parseInt(timer / 60, 10);
-            seconds = parseInt(timer % 60, 10);
+    <script>
+        var app = {
+            createAnswers: function (answers) {
+                var answersWrapper = document.getElementById("answers");
+                for (var i = 0; i < answers.length; i++) {
+                    var answerWrapper = document.createElement("div");
+                    answerWrapper.className = "answer-wrapper";
+                    var answer = document.createElement("li");
+                    var label = document.createElement("label");
+                    var input = document.createElement("input");
+                    var check = document.createElement("div");
 
-            minutes = minutes < 10 ? "0" + minutes : minutes;
-            seconds = seconds < 10 ? "0" + seconds : seconds;
+                    label.textContent = answers[i];
+                    input.type = "radio";
+                    input.name = "answer";
+                    input.className = "radio-button";
 
-            document.getElementById('timeRemaining').textContent = minutes + ":" + seconds;
+                    check.className = "check";
+                    answerWrapper.className = "answer-wrapper__answer";
 
-            if (--timer < 0) {
-                clearInterval(interval);
-                document.getElementById('quizForm').submit();
-                disableForm();
+                    answerWrapper.appendChild(input);
+                    answerWrapper.appendChild(label);
+                    answerWrapper.appendChild(check);
+
+                    answer.appendChild(answerWrapper);
+                    answersWrapper.appendChild(answer);
+                }
             }
-        }, 1000);
-    }
+        };
 
-    function disableForm() {
-        document.getElementById('submitQuiz').disabled = true;
-        var inputs = document.querySelectorAll('input');
-        for (var i = 0; i < inputs.length; i++) {
-            inputs[i].disabled = true;
-        }
-    }
-
-    window.onload = function () {
-        var quizDuration = {{ quiz.duration }} * 60; // Convert minutes to seconds
-        startTimer(quizDuration);
-
-        // Check if time has already ended (for page reload scenario)
-        var endTime = new Date().getTime() + quizDuration * 1000;
-        if (localStorage.getItem('endTime')) {
-            endTime = localStorage.getItem('endTime');
-        } else {
-            localStorage.setItem('endTime', endTime);
+        function submitAnswer() {
+            var selected = document.querySelector('input[name="answer"]:checked');
+            if (selected) {
+                document.getElementById('result').style.display = 'block';
+            } else {
+                alert('Please select an answer');
+            }
         }
 
-        var now = new Date().getTime();
-        if (now > endTime) {
-            disableForm();
-        }
-    };
-</script>
+        window.onload = function() {
+            var answers = ["Black", "Bright Orange", "Pink", "Grey"];
+            app.createAnswers(answers);
+        };
+    </script>
 </body>
 </html>

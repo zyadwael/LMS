@@ -90,11 +90,20 @@
             <label for="quizDescription">Quiz Description</label>
             <textarea id="quizDescription" name="quizDescription" rows="4" required></textarea>
 
-                <label for="quizDuration">Quiz Duration (minutes):</label>
-             <input type="number" id="quizDuration" name="quizDuration" required>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required>
+
+            <label for="startTime">Start Time:</label>
+            <input type="time" id="startTime" name="startTime" required>
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required>
+
+            <label for="endTime">End Time:</label>
+            <input type="time" id="endTime" name="endTime" required>
 
             <div id="questionsContainer">
-                <div class="question-container">
+                <div class="question-container" id="question1-container">
                     <label for="question1">Question 1</label>
                     <input type="text" id="question1" name="question1" required>
 
@@ -136,6 +145,7 @@
             const questionsContainer = document.getElementById('questionsContainer');
             const newQuestion = document.createElement('div');
             newQuestion.classList.add('question-container');
+            newQuestion.id = question${questionCount}-container;
             newQuestion.innerHTML = `
                 <label for="question${questionCount}">Question ${questionCount}</label>
                 <input type="text" id="question${questionCount}" name="question${questionCount}" required>
@@ -167,8 +177,8 @@
         }
 
         function updateQuestionType(questionNum) {
-            const questionType = document.getElementById(`questionType${questionNum}`).value;
-            const optionsContainer = document.getElementById(`optionsContainer${questionNum}`);
+            const questionType = document.getElementById(questionType${questionNum}).value;
+            const optionsContainer = document.getElementById(optionsContainer${questionNum});
 
             if (questionType === 'multiple') {
                 optionsContainer.innerHTML = `

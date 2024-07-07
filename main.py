@@ -23,6 +23,7 @@ from twilio.jwt.access_token.grants import VideoGrant
 from django.shortcuts import render
 
 from flask import send_from_directory
+from datetime import datetime
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -131,7 +132,8 @@ with app.app_context():
         questions = db.Column(db.Text)  # Assuming questions are stored as JSON or similar format
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-        duration = db.Column(db.Integer, nullable=True)
+        start_date = db.Column(db.DateTime, nullable=False)
+        end_date = db.Column(db.DateTime, nullable=False)
 
 
     class Teacher(UserMixin, db.Model):
@@ -168,15 +170,15 @@ with app.app_context():
         content = db.Column(db.String(100))
 
 
-    class Message(db.Model):
+    class Messages(db.Model):
         id = db.Column(db.Integer, primary_key=True)
-        teacher_email = db.Column(db.String(100))
-        student_email = db.Column(db.String(100))
-        message = db.Column(db.Text)
+        sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        content = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-        read = db.Column(db.Boolean, default=False)
-        type = db.Column(db.String(50), default="message")
-        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+        sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_messages')
+        receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_messages')
 
         def to_dict(self):
             return {
@@ -224,7 +226,7 @@ admin.add_view(MyModelView(Parents, db.session))
 admin.add_view(MyModelView(Subjects, db.session))
 admin.add_view(MyModelView(Event, db.session))
 admin.add_view(MyModelView(News, db.session))
-admin.add_view(MyModelView(Message, db.session))
+admin.add_view(MyModelView(Messages, db.session))
 admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
 admin.add_view(MyModelView(QuizResult, db.session))
@@ -235,28 +237,7 @@ admin.add_view(MyModelView(Videos, db.session))
 
 
 
-def send_notification(user_id, message_content):
-    new_notification = Message(
-        teacher_email=None,
-        student_email=None,
-        message=message_content,
-        type="notification",
-        read=False
-    )
-    new_notification.user_id = user_id
-    db.session.add(new_notification)
-    db.session.commit()
 
-
-def get_user_notifications(user_id):
-    return Message.query.filter_by(user_id=user_id, type="notification").all()
-
-
-def mark_notification_as_read(notification_id):
-    notification = Message.query.get(notification_id)
-    if notification:
-        notification.read = True
-        db.session.commit()
 
 
 def allowed_file(filename):
@@ -285,41 +266,25 @@ def dashboard():
     user = Users.query.all()
     latest_news = News.query.all()
     teachers = Teacher.query.filter_by(grade=current_user.grade).all()
-    notifications = get_user_notifications(current_user.id)
     if current_user.role == "student":
-        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications)
+        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications, user=current_user)
+                              user=current_user)
     if current_user.role == "parent":
         my_students = Students.query.filter_by(parent_email=current_user.email).all()
-        return render_template("parent_dashboard.html", notifications=notifications, children=my_students)
+        return render_template("parent_dashboard.html", children=my_students)
     if current_user.role == "admin":
-        return render_template("admin_dashboard.html", notifications=notifications)
+        return render_template("admin_dashboard.html")
     else:
         return redirect(url_for('unauthorized'))
 
 
 
-@app.route('/notifications')
-@login_required
-def notifications():
-    messages = Message.query.filter_by(student_email=current_user.email).all()
-    return render_template('notifications.html', messages=messages)
 
 
-@app.route('/mark_notification_as_read/<int:notification_id>', methods=['POST'])
-@login_required
-def mark_notification_as_read(notification_id):
-    message = Message.query.get(notification_id)
-    if message and message.student_email == current_user.email:
-        message.read = True
-        db.session.commit()
-        flash('Notification marked as read.', 'success')
-    else:
-        flash('Notification not found or access denied.', 'error')
-    return redirect(url_for(''))
+
+
 
 
 # API endpoint to get all events for the dashboard
@@ -357,19 +322,6 @@ def send_email_page(email):
     return render_template('send_email.html', email=email)
 
 
-@app.route('/send-email', methods=['POST'])
-@login_required
-def send_email():
-    teacher_email = current_user.email
-    student_email = request.form['email']
-    message_content = request.form['message']
-
-    new_message = Message(teacher_email=teacher_email, student_email=student_email, message=message_content)
-    db.session.add(new_message)
-    db.session.commit()
-
-    flash('Message sent successfully!', 'success')
-    return redirect(url_for('students'))
 
 
 
@@ -509,32 +461,6 @@ def edit_lesson(lesson_id):
 
 
 
-@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
-@login_required
-def edit_quiz(lesson_id):
-    lesson = Lessons.query.get(lesson_id)
-    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
-    quiz_id = quiz.id
-    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
-    if lesson is None:
-        flash("Lesson not found!", "danger")
-        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
-    if request.method == "POST":
-        quiz.name = request.form['name']
-        quiz_questions.question_text = request.form['questions']
-        quiz_questions.question_type = request.form['type']
-        quiz_questions.correct_answer = request.form['correct_answer']
-        quiz.duration = request.form['duration']
-
-        try:
-            db.session.commit()
-            flash("Lesson edited successfully!", "success")
-            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error editing lesson: {e}", "danger")
-
-    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
 
 @app.route('/view_teacher/<int:id>')
 def view_teacher(id):
@@ -655,6 +581,8 @@ def create_file(lesson_id):
             return jsonify({'message': 'File created successfully'}), 201
 
     return render_template('create_file.html', lesson=lesson)
+
+
 @app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def create_quiz(lesson_id):
@@ -664,10 +592,19 @@ def create_quiz(lesson_id):
         if request.method == 'POST':
             quiz_title = request.form['quizTitle']
             quiz_description = request.form['quizDescription']
-            quiz_duration = request.form['quizDuration']
+            start_date_str = request.form['startDate'] + ' ' + request.form['startTime']
+            end_date_str = request.form['endDate'] + ' ' + request.form['endTime']
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d %H:%M')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d %H:%M')
 
             # Create new quiz
-            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id,duration=quiz_duration)
+            new_quiz = Quizzes(
+                name=quiz_title,
+                lesson_id=lesson_id,
+                user_id=current_user.id,
+                start_date=start_date,
+                end_date=end_date
+            )
             db.session.add(new_quiz)
             db.session.commit()
 
@@ -722,6 +659,7 @@ def create_quiz(lesson_id):
 
 
 
+from datetime import datetime
 
 @app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
@@ -731,9 +669,16 @@ def take_quiz(quiz_id):
     # Check if the quiz has already been submitted by the student
     result = QuizResult.query.filter_by(quiz_id=quiz_id, student_email=current_user.email).first()
     if result:
-        # Redirect to a page or display a message that the quiz has already been submitted
         flash('You have already submitted this quiz.', 'warning')
-        return redirect(url_for('quizzes_surveys'))  # or another appropriate page
+        return redirect(url_for('quizzes_surveys'))
+
+    # Check if the current time is within the quiz's start and end dates
+    current_time = datetime.now()
+    print(f"Current Time: {current_time}, Quiz Start: {quiz.start_date}, Quiz End: {quiz.end_date}")
+
+    if current_time < quiz.start_date or current_time > quiz.end_date:
+        flash('The quiz is not available at this time.', 'warning')
+        return redirect(url_for('quizzes_surveys'))
 
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
     for question in questions:
@@ -741,6 +686,7 @@ def take_quiz(quiz_id):
             question.options = json.loads(question.options)
 
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
+
 
 
 
@@ -895,6 +841,39 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/send_message', methods=['GET', 'POST'])
+@login_required
+def send_message():
+    if request.method == 'POST':
+        receiver_email = request.form['receiver_email']
+        content = request.form['content']
+
+        receiver = Users.query.filter_by(email=receiver_email).first()
+        if not receiver:
+            flash('Receiver not found', 'danger')
+            return redirect(url_for('send_message'))
+
+        message = Messages(sender_id=current_user.id, receiver_id=receiver.id, content=content)
+        db.session.add(message)
+        db.session.commit()
+
+        # Create a dictionary with message status
+        message_data = {'message': 'Message sent successfully!'}
+
+        # Return JSON response with status code 200 (success)
+        return jsonify(message_data), 200
+
+    users = Users.query.all()  # To display a list of users to select as receivers
+    return render_template('send_message.html', users=users)
+
+
+@app.route('/messages')
+@login_required
+def view_messages():
+    received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
+    sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
+    return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
 
 if __name__ == "__main__":
      app.run(debug=True)

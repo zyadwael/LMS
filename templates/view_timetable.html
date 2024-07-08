@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Timetable</title>
-      <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Timetable</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <style>
         body {
+            background: #DFD3C3;
             font-family: Arial, sans-serif;
-            background-color: #DFD3C3;
             margin: 0;
             padding: 0;
             display: flex;
@@ -13,79 +16,95 @@
             align-items: center;
             height: 100vh;
         }
+
         .container {
-            background-color: #fff;
+            background-color: #C7B198;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #8B4513;
-            border: none;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #A0522D;
-        }
-        #message {
-            margin-top: 15px;
-            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 1200px;
+            overflow-x: auto;
         }
 
-        /* Table Styles */
-        table {
-            border-collapse: collapse;  /* Ensures borders between cells */
-            width: 100%;  /* Stretch table to container width */
+        h1 {
+            text-align: center;
+            color: #543310;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
         th, td {
-            border: 1px solid #ddd;  /* Add a solid border with light gray color */
-            padding: 8px;  /* Add padding for readability */
+            border: 1px solid #C7B198;
+            padding: 10px;
+            text-align: center;
+            vertical-align: top;
+            background-color: #fff; /* Background color for timetable entries */
+        }
+
+        th {
+            background-color: #C7B198;
+            color: #543310;
+        }
+
+        td {
+            color: #543310;
+        }
+
+        .session {
+            margin-bottom: 10px;
+            border: 1px solid #C7B198; /* Matching the table header color */
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .session-time {
+            color: #543310;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-<div class="container">
-  <h1>My Timetable</h1>
-
-  {% if timetable %}
-  <table>
-    <thead>
-      <tr>
-        <th>Subject</th>
-        <th>Session Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in timetable %}
-      <tr>
-        <td>{{ entry.subject_name }}</td>
-        <td>{{ entry.session_time }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-</div>
+    <div class="container">
+        <h1>My Timetable</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sunday</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <th>Saturday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] %}
+                        <td>
+                            {% if schedule.get(day) %}
+                                {% for time, entries in schedule[day] | dictsort %}
+                                    {% for entry in entries %}
+                                        <div class="session">
+                                            <p><strong>{{ entry.subject_name }}</strong></p>
+                                            <p>{{ entry.grade }} {{ entry.Class }}</p>
+                                            <p class="session-time">{{ time }}</p>
+                                        </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

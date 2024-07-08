@@ -58,7 +58,11 @@
             <input type="text" id="subject_name" name="subject_name" required>
 
             <label for="teacher_email">Teacher Email:</label>
-            <input type="text" id="teacher_email" name="teacher_email" required>
+            <select id="teacher_email" name="teacher_email" required>
+                {% for teacher in teachers %}
+                    <option value="{{ teacher.email }}">{{ teacher.email }}</option>
+                {% endfor %}
+            </select>
 
             <label for="day_of_week">Day of Week:</label>
             <select id="day_of_week" name="day_of_week" required>

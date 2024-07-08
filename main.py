@@ -18,9 +18,12 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 
 from flask_babel import Babel
 from werkzeug.utils import secure_filename
-
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant
+from django.shortcuts import render
+
+from flask import send_from_directory
+from datetime import datetime
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -55,6 +58,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         password = db.Column(db.String(100))
         email = db.Column(db.String(100), unique=True)
+        phone_number = db.Column(db.String(1000), unique=True)
         gender = db.Column(db.String(100))
         religion = db.Column(db.String(100))
         role = db.Column(db.String(100))
@@ -64,6 +68,7 @@ with app.app_context():
         student = db.relationship('Students', backref='user', uselist=False)
         subjects = db.relationship('Subjects', backref='teacher')
         quizzes = db.relationship('Quizzes', backref='user')
+        parents = db.relationship('Parents', backref='user')
 
 
     class Subjects(db.Model):
@@ -72,8 +77,8 @@ with app.app_context():
         teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         grade = db.Column(db.String(1000))
         teacher_name = db.Column(db.String(1000))
+        teacher_email = db.Column(db.String(100))
         lessons = db.relationship('Lessons', backref='subject')
-
 
     class Lessons(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -93,7 +98,6 @@ with app.app_context():
         correct_answer = db.Column(db.Text)
         score = db.Column(db.Integer)
 
-
     class QuizResult(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -102,14 +106,21 @@ with app.app_context():
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
         student_email = db.Column(db.String(1000))
 
-
     class Files(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
         path = db.Column(db.String(200))
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
 
-
+    class Timetable(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        subject_name = db.Column(db.String(100))
+        day_of_week = db.Column(db.String(10))
+        time_of_day = db.Column(db.String(5))
+        grade = db.Column(db.String(100))
+        Class = db.Column(db.String(100))
+        teacher_email = db.Column(db.String(100))
+        teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'))
     class Videos(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
@@ -123,7 +134,8 @@ with app.app_context():
         questions = db.Column(db.Text)  # Assuming questions are stored as JSON or similar format
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
+        start_date = db.Column(db.DateTime, nullable=False)
+        end_date = db.Column(db.DateTime, nullable=False)
 
     class Teacher(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -133,6 +145,13 @@ with app.app_context():
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        timetable_id = db.Column(db.Integer, db.ForeignKey('timetable.id'))  # Foreign key to Timetable
+
+    class Parents(UserMixin, db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100))
+        email = db.Column(db.String(100), unique=True)
+        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 
     class Students(UserMixin, db.Model):
@@ -141,7 +160,9 @@ with app.app_context():
         email = db.Column(db.String(100))
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
+        parent_email = db.Column(db.String(1000))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
 
 
     class News(UserMixin, db.Model):
@@ -150,15 +171,15 @@ with app.app_context():
         content = db.Column(db.String(100))
 
 
-    class Message(db.Model):
+    class Messages(db.Model):
         id = db.Column(db.Integer, primary_key=True)
-        teacher_email = db.Column(db.String(100))
-        student_email = db.Column(db.String(100))
-        message = db.Column(db.Text)
+        sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        content = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-        read = db.Column(db.Boolean, default=False)
-        type = db.Column(db.String(50), default="message")
-        user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+        sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_messages')
+        receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_messages')
 
         def to_dict(self):
             return {
@@ -202,45 +223,26 @@ admin = Admin(app)
 admin.add_view(MyModelView(Users, db.session))
 admin.add_view(MyModelView(Students, db.session))
 admin.add_view(MyModelView(Teacher, db.session))
+admin.add_view(MyModelView(Parents, db.session))
 admin.add_view(MyModelView(Subjects, db.session))
 admin.add_view(MyModelView(Event, db.session))
 admin.add_view(MyModelView(News, db.session))
-admin.add_view(MyModelView(Message, db.session))
+admin.add_view(MyModelView(Messages, db.session))
 admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
 admin.add_view(MyModelView(QuizResult, db.session))
 admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
+admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
 
 
 
-def send_notification(user_id, message_content):
-    new_notification = Message(
-        teacher_email=None,
-        student_email=None,
-        message=message_content,
-        type="notification",
-        read=False
-    )
-    new_notification.user_id = user_id
-    db.session.add(new_notification)
-    db.session.commit()
 
-
-def get_user_notifications(user_id):
-    return Message.query.filter_by(user_id=user_id, type="notification").all()
-
-
-def mark_notification_as_read(notification_id):
-    notification = Message.query.get(notification_id)
-    if notification:
-        notification.read = True
-        db.session.commit()
 
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx'}
+    ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'png', 'jpg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -265,39 +267,25 @@ def dashboard():
     user = Users.query.all()
     latest_news = News.query.all()
     teachers = Teacher.query.filter_by(grade=current_user.grade).all()
-    notifications = get_user_notifications(current_user.id)
     if current_user.role == "student":
-        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications)
+        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers)
     if current_user.role == "teacher":
         return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                               notifications=notifications , user=current_user)
+                              user=current_user)
     if current_user.role == "parent":
-        return render_template("parent_dashboard.html", notifications=notifications)
+        my_students = Students.query.filter_by(parent_email=current_user.email).all()
+        return render_template("parent_dashboard.html", children=my_students)
     if current_user.role == "admin":
-        return render_template("admin_dashboard.html", notifications=notifications)
+        return render_template("admin_dashboard.html")
     else:
         return redirect(url_for('unauthorized'))
 
 
-@app.route('/notifications')
-@login_required
-def notifications():
-    messages = Message.query.filter_by(student_email=current_user.email).all()
-    return render_template('notifications.html', messages=messages)
 
 
-@app.route('/mark_notification_as_read/<int:notification_id>', methods=['POST'])
-@login_required
-def mark_notification_as_read(notification_id):
-    message = Message.query.get(notification_id)
-    if message and message.student_email == current_user.email:
-        message.read = True
-        db.session.commit()
-        flash('Notification marked as read.', 'success')
-    else:
-        flash('Notification not found or access denied.', 'error')
-    return redirect(url_for(''))
+
+
+
 
 
 # API endpoint to get all events for the dashboard
@@ -335,19 +323,6 @@ def send_email_page(email):
     return render_template('send_email.html', email=email)
 
 
-@app.route('/send-email', methods=['POST'])
-@login_required
-def send_email():
-    teacher_email = current_user.email
-    student_email = request.form['email']
-    message_content = request.form['message']
-
-    new_message = Message(teacher_email=teacher_email, student_email=student_email, message=message_content)
-    db.session.add(new_message)
-    db.session.commit()
-
-    flash('Message sent successfully!', 'success')
-    return redirect(url_for('students'))
 
 
 
@@ -366,10 +341,12 @@ def my_subjects():
 
     elif current_user.role == 'teacher':
         teacher = Users.query.filter_by(id=current_user.id).first()
-        teacher_name = teacher.name
-        print(teacher_name)
+        teacher_email = teacher.email
+        print(teacher_email)
         if teacher:
-            filtered_subjects = Subjects.query.filter_by(teacher_name=teacher_name).all()
+            filtered_subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
+            print(f"Number of subjects found: {len(filtered_subjects)}")
+
             return render_template("my_subjects_teacher.html", subjects=filtered_subjects)
         else:
             print("Teacher record not found.")  # Debug statement
@@ -394,7 +371,7 @@ def assessments():
 @login_required
 def quizzes():
     if current_user.role == "student" or "parent":
-        return render_template("quizzes.html")
+        return render_template("quizzes_surveys_teacher.html")
 
     if current_user.role == "teacher" or "admin":
         return render_template("quiz_creation.html")
@@ -421,6 +398,7 @@ def view_subject(subject_id):
             lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
             lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).first() for lesson in lessons}  # Get only the first quiz
             lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+
             return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files,lesson_quiz=lesson_quiz)
         else:
             flash("You are not assigned to this subject.", "danger")
@@ -456,6 +434,64 @@ def download_file(filename):
         return "File not found", 404
 
 
+
+
+@app.route("/edit_lesson/<int:lesson_id>", methods=["GET", "POST"])
+@login_required
+def edit_lesson(lesson_id):
+    lesson = Lessons.query.get(lesson_id)
+    video = Videos.query.filter_by(lesson_id=lesson_id).first()
+    if lesson is None:
+        flash("Lesson not found!", "danger")
+        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+
+    if request.method == "POST":
+        lesson.name = request.form["name"]
+        video.url = request.form['video']
+
+
+        try:
+            db.session.commit()
+            flash("Lesson edited successfully!", "success")
+            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error editing lesson: {e}", "danger")
+
+    return render_template("edit_lesson.html", lesson=lesson,video=video)
+
+@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
+@login_required
+def edit_quiz(lesson_id):
+    lesson = Lessons.query.get(lesson_id)
+    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
+    quiz_id = quiz.id
+    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
+    if lesson is None:
+        flash("Lesson not found!", "danger")
+        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
+
+    if quiz.start_date:
+        return jsonify("Quiz Time Started, Cannot edit.", "danger")
+
+
+    if request.method == "POST":
+        quiz.name = request.form['name']
+        quiz_questions.question_text = request.form['questions']
+        quiz_questions.question_type = request.form['type']
+        quiz_questions.correct_answer = request.form['correct_answer']
+        quiz.start_date = request.form['start_date']
+        quiz.end_date = request.form['end_date']
+
+        try:
+            db.session.commit()
+            flash("Lesson edited successfully!", "success")
+            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error editing lesson: {e}", "danger")
+
+    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
 
 
 
@@ -495,6 +531,8 @@ def notification():
 @login_required
 def create_subject():
     if request.method == 'POST':
+        teacher = Users.query.filter_by(id=current_user.id).first()
+        teacher_email = teacher.email
         data = request.get_json()
         subject_name = data.get('name')
         grade = data.get('grade')
@@ -502,7 +540,7 @@ def create_subject():
         if not subject_name or not grade:
             return jsonify({'error': 'Subject name and grade are required'}), 400
 
-        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name)
+        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name,teacher_email=teacher_email)
         db.session.add(new_subject)
         db.session.commit()
 
@@ -576,6 +614,8 @@ def create_file(lesson_id):
             return jsonify({'message': 'File created successfully'}), 201
 
     return render_template('create_file.html', lesson=lesson)
+
+
 @app.route('/create_quiz/<int:lesson_id>', methods=['GET', 'POST'])
 @login_required
 def create_quiz(lesson_id):
@@ -585,9 +625,19 @@ def create_quiz(lesson_id):
         if request.method == 'POST':
             quiz_title = request.form['quizTitle']
             quiz_description = request.form['quizDescription']
+            start_date_str = request.form['startDate'] + ' ' + request.form['startTime']
+            end_date_str = request.form['endDate'] + ' ' + request.form['endTime']
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d %H:%M')
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d %H:%M')
 
             # Create new quiz
-            new_quiz = Quizzes(name=quiz_title, lesson_id=lesson_id, user_id=current_user.id)
+            new_quiz = Quizzes(
+                name=quiz_title,
+                lesson_id=lesson_id,
+                user_id=current_user.id,
+                start_date=start_date,
+                end_date=end_date
+            )
             db.session.add(new_quiz)
             db.session.commit()
 
@@ -645,11 +695,29 @@ def create_quiz(lesson_id):
 @login_required
 def take_quiz(quiz_id):
     quiz = Quizzes.query.get_or_404(quiz_id)
+
+    # Check if the quiz has already been submitted by the student
+    result = QuizResult.query.filter_by(quiz_id=quiz_id, student_email=current_user.email).first()
+    if result:
+        flash('You have already submitted this quiz.', 'warning')
+        return redirect(url_for('quizzes_surveys'))
+
+    # Check if the current time is within the quiz's start and end dates
+    current_time = datetime.now()
+    print(f"Current Time: {current_time}, Quiz Start: {quiz.start_date}, Quiz End: {quiz.end_date}")
+
+    if current_time < quiz.start_date or current_time > quiz.end_date:
+        flash('The quiz is not available at this time.', 'warning')
+        return redirect(url_for('quizzes_surveys'))
+
     questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
     for question in questions:
         if question.options:
             question.options = json.loads(question.options)
+
     return render_template('take_quiz.html', quiz=quiz, questions=questions)
+
+
 
 
 @app.route('/submit_quiz/<int:quiz_id>', methods=['POST'])
@@ -719,6 +787,9 @@ def quizzes_surveys():
     quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
     return render_template('quizzes_surveys.html', quizzes=quizzes)
 
+
+
+
 # Replace the Twilio credentials with your actual credentials
 account_sid = 'ACdebb3c6c4846b66c07a02cb795f33934'
 api_key = 'SK1a7e538ed35fe90977890fdef5bf89e9'
@@ -744,6 +815,107 @@ def generate_token():
 @app.route('/zoom')
 def index():
     return render_template('zoom.html')
+
+
+@app.route('/timetable', methods=['GET', 'POST'])
+@login_required
+def timetable():
+    if request.method == 'POST':
+
+        subject_name = request.form.get('subject_name')
+        day_of_week = request.form.get('day_of_week')
+        time_of_day = request.form.get('time_of_day')
+        grade = request.form.get('grade')
+        Class = request.form.get('Class')
+        teacher_email = request.form.get('teacher_email')
+
+        new_timetable = Timetable(
+            subject_name=subject_name,
+            day_of_week=day_of_week,
+            time_of_day=time_of_day,
+            grade=grade,
+            Class=Class,
+            teacher_email=teacher_email
+        )
+
+        db.session.add(new_timetable)
+        db.session.commit()
+
+        flash('Timetable created successfully!', category='success')
+        return redirect(url_for('timetable'))
+    else:
+        teachers = Teacher.query.all()
+        return render_template('create_timetable.html', teachers=teachers)
+
+
+@app.route("/view_timetable")
+@login_required
+def view_timetable():
+    if current_user.role == "teacher":
+        teacher_email = current_user.email
+        timetables = Timetable.query.filter_by(teacher_email=teacher_email).all()
+    elif current_user.role == "student":
+        grade = current_user.grade
+        Class = current_user.Class
+        timetables = Timetable.query.filter_by(grade=grade, Class=Class).all()
+
+    schedule = {day: {} for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
+
+    for entry in timetables:
+        day = entry.day_of_week
+        time = entry.time_of_day
+        if time not in schedule[day]:
+            schedule[day][time] = []
+        schedule[day][time].append(entry)
+
+    return render_template('view_timetable.html', schedule=schedule)
+
+
+@app.route("/print_timetable")
+@login_required
+def print_timetable():
+    # Logic to access or format existing timetable for printing (adapt based on needs)
+    return render_template('print_timetable.html')
+
+
+# Ensure the uploads folder exists
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/send_message', methods=['GET', 'POST'])
+@login_required
+def send_message():
+    if request.method == 'POST':
+        receiver_email = request.form['receiver_email']
+        content = request.form['content']
+
+        receiver = Users.query.filter_by(email=receiver_email).first()
+        if not receiver:
+            flash('Receiver not found', 'danger')
+            return redirect(url_for('send_message'))
+
+        message = Messages(sender_id=current_user.id, receiver_id=receiver.id, content=content)
+        db.session.add(message)
+        db.session.commit()
+
+        flash('Message sent successfully!', 'success')
+        return redirect(url_for('send_message'))
+
+    return render_template('send_message.html')
+
+@app.route('/messages')
+@login_required
+def view_messages():
+    received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
+    sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
+    return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
+
+
 
 if __name__ == "__main__":
      app.run(debug=True)

@@ -114,10 +114,12 @@ with app.app_context():
         path = db.Column(db.String(200))
         lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
 
+
     class Timetable(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         subject_name = db.Column(db.String(100))
-        session_time = db.Column(db.String(100))
+        day_of_week = db.Column(db.String(10))
+        time_of_day = db.Column(db.String(5))
         grade = db.Column(db.String(100))
         Class = db.Column(db.String(100))
         teacher_email = db.Column(db.String(100))
@@ -822,28 +824,54 @@ def index():
 @app.route('/timetable', methods=['GET', 'POST'])
 @login_required
 def timetable():
-    if current_user.role == "admin":
+    if request.method == 'POST':
         subject_name = request.form.get('subject_name')
-        session_time = request.form.get('session_time')
+        day_of_week = request.form.get('day_of_week')
+        time_of_day = request.form.get('time_of_day')
         grade = request.form.get('grade')
         Class = request.form.get('Class')
         teacher_email = request.form.get('teacher_email')
-        timetable = Timetable(session_time=session_time, subject_name=subject_name,teacher_email=teacher_email, grade=grade, Class=Class)
-        db.session.add(timetable)
+
+        new_timetable = Timetable(
+            subject_name=subject_name,
+            day_of_week=day_of_week,
+            time_of_day=time_of_day,
+            grade=grade,
+            Class=Class,
+            teacher_email=teacher_email
+        )
+
+        db.session.add(new_timetable)
         db.session.commit()
+
+        flash('Timetable created successfully!', category='success')
+        return redirect(url_for('timetable'))
+    else:
         return render_template('create_timetable.html')
 
-    else:
-        grade = request.form.get('grade')
-        Class = request.form.get('Class')
-        teacher_email = request.form.get('teacher_email')
-        # Filter by current_user.id for teachers' own timetables (optional)
-        if current_user.role == "teacher":
-            timetable = Timetable.query.filter_by(teacher_email=teacher_email).all()
-        else:
-            timetable = Timetable.query.filter_by(grade=grade, Class=Class).all()
 
-        return render_template('view_timetable.html', timetable=timetable)
+@app.route("/view_timetable")
+@login_required
+def view_timetable():
+    if current_user.role == "teacher":
+        teacher_email = current_user.email
+        timetables = Timetable.query.filter_by(teacher_email=teacher_email).all()
+    elif current_user.role == "student":
+        grade = current_user.grade
+        Class = current_user.Class
+        timetables = Timetable.query.filter_by(grade=grade, Class=Class).all()
+
+    schedule = {day: {} for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
+
+    for entry in timetables:
+        day = entry.day_of_week
+        time = entry.time_of_day
+        if time not in schedule[day]:
+            schedule[day][time] = []
+        schedule[day][time].append(entry)
+
+    return render_template('view_timetable.html', schedule=schedule)
+
 
 @app.route("/print_timetable")
 @login_required
@@ -877,15 +905,10 @@ def send_message():
         db.session.add(message)
         db.session.commit()
 
-        # Create a dictionary with message status
-        message_data = {'message': 'Message sent successfully!'}
+        flash('Message sent successfully!', 'success')
+        return redirect(url_for('send_message'))
 
-        # Return JSON response with status code 200 (success)
-        return jsonify(message_data), 200
-
-    users = Users.query.all()  # To display a list of users to select as receivers
-    return render_template('send_message.html', users=users)
-
+    return render_template('send_message.html')
 
 @app.route('/messages')
 @login_required
@@ -893,6 +916,8 @@ def view_messages():
     received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
     sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
     return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
+
+
 
 if __name__ == "__main__":
      app.run(debug=True)

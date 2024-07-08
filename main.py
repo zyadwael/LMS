@@ -116,9 +116,12 @@ with app.app_context():
 
     class Timetable(db.Model):
         id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(100))
-        path = db.Column(db.String(200))
-        teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'))  # Foreign key to Teacher
+        subject_name = db.Column(db.String(100))
+        session_time = db.Column(db.String(100))
+        grade = db.Column(db.String(100))
+        Class = db.Column(db.String(100))
+        teacher_email = db.Column(db.String(100))
+        teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'))
     class Videos(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100))
@@ -459,6 +462,38 @@ def edit_lesson(lesson_id):
 
     return render_template("edit_lesson.html", lesson=lesson,video=video)
 
+@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
+@login_required
+def edit_quiz(lesson_id):
+    lesson = Lessons.query.get(lesson_id)
+    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
+    quiz_id = quiz.id
+    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
+    if lesson is None:
+        flash("Lesson not found!", "danger")
+        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
+
+    if quiz.start_date:
+        return jsonify("Quiz Time Started, Cannot edit.", "danger")
+
+
+    if request.method == "POST":
+        quiz.name = request.form['name']
+        quiz_questions.question_text = request.form['questions']
+        quiz_questions.question_type = request.form['type']
+        quiz_questions.correct_answer = request.form['correct_answer']
+        quiz.start_date = request.form['start_date']
+        quiz.end_date = request.form['end_date']
+
+        try:
+            db.session.commit()
+            flash("Lesson edited successfully!", "success")
+            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error editing lesson: {e}", "danger")
+
+    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
 
 
 
@@ -658,9 +693,6 @@ def create_quiz(lesson_id):
         return render_template('create_quiz.html', lesson=lesson)
 
 
-
-from datetime import datetime
-
 @app.route('/take_quiz/<int:quiz_id>', methods=['GET'])
 @login_required
 def take_quiz(quiz_id):
@@ -789,42 +821,29 @@ def index():
 
 @app.route('/timetable', methods=['GET', 'POST'])
 @login_required
-def timetable(): # Assuming a function to get the current user
+def timetable():
+    if current_user.role == "admin":
+        subject_name = request.form.get('subject_name')
+        session_time = request.form.get('session_time')
+        grade = request.form.get('grade')
+        Class = request.form.get('Class')
+        teacher_email = request.form.get('teacher_email')
+        timetable = Timetable(session_time=session_time, subject_name=subject_name,teacher_email=teacher_email, grade=grade, Class=Class)
+        db.session.add(timetable)
+        db.session.commit()
+        return render_template('create_timetable.html')
 
-    # Check if a timetable already exists for the teacher
-    existing_timetable = Timetable.query.filter_by(teacher_id=current_user.id).first()
-
-    if existing_timetable:
-        # Timetable already exists, display it or offer options
-        file_url = url_for('uploaded_file', filename=existing_timetable.path)
-        return render_template('timetable.html', file_url=file_url, existing=True)
     else:
-        # No existing timetable, handle upload
-        file_url = None
-        if request.method == 'POST':
-            if 'file' not in request.files:
-                flash('No file part', 'error')
-                return redirect(request.url)
+        grade = request.form.get('grade')
+        Class = request.form.get('Class')
+        teacher_email = request.form.get('teacher_email')
+        # Filter by current_user.id for teachers' own timetables (optional)
+        if current_user.role == "teacher":
+            timetable = Timetable.query.filter_by(teacher_email=teacher_email).all()
+        else:
+            timetable = Timetable.query.filter_by(grade=grade, Class=Class).all()
 
-            file = request.files['file']
-
-            if file.filename == '':
-                flash('No selected file', 'error')
-                return redirect(request.url)
-
-            if file:
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-                # Create new timetable and associate with teacher
-                new_timetable = Timetable(name=filename, path=filename, teacher_id=current_user.id)
-                db.session.add(new_timetable)
-                db.session.commit()
-
-                flash('File uploaded successfully', 'success')
-                file_url = url_for('uploaded_file', filename=filename)
-
-        return render_template('timetable.html', file_url=file_url)
+        return render_template('view_timetable.html', timetable=timetable)
 
 @app.route("/print_timetable")
 @login_required

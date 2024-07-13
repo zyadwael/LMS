@@ -558,6 +558,7 @@ def add_question():
     question_text = request.form.get('questionText')
     question_type = request.form.get('questionType')
 
+
     try:
         options = [choice for choice in request.form.getlist(f'choices_{question_id}')] if question_id else []  # Access options with question ID (if present)
         options_json = json.dumps(options)  # Convert options list to JSON string

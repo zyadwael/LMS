@@ -69,6 +69,7 @@ with app.app_context():
         subjects = db.relationship('Subjects', backref='teacher')
         quizzes = db.relationship('Quizzes', backref='user')
         parents = db.relationship('Parents', backref='user')
+        grades = db.relationship('Grades', backref='student')
 
 
     class Subjects(db.Model):
@@ -76,6 +77,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         grade = db.Column(db.String(1000))
+        Class = db.Column(db.String(1000))
         teacher_name = db.Column(db.String(1000))
         teacher_email = db.Column(db.String(100))
         lessons = db.relationship('Lessons', backref='subject')
@@ -171,6 +173,21 @@ with app.app_context():
         content = db.Column(db.String(100))
 
 
+    class Grades(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        behavior = db.Column(db.String(100))
+        oral_exam = db.Column(db.String(100))
+        written_exam = db.Column(db.String(100))
+        comments = db.Column(db.String(255))
+        attendance = db.Column(db.String(100))
+        assignments = db.Column(db.String(100))
+        class_projects = db.Column(db.String(100))
+        subject_projects = db.Column(db.String(100))
+        participation = db.Column(db.String(100))
+        class_work = db.Column(db.String(100))
+
+
     class Messages(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -235,7 +252,7 @@ admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
-
+admin.add_view(MyModelView(Grades, db.session))
 
 
 
@@ -245,7 +262,13 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'png', 'jpg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.template_filter('json_loads')
+def json_loads_filter(s):
+    return json.loads(s)
 
+@app.context_processor
+def utility_processor():
+    return dict(enumerate=enumerate)
 @app.route("/", methods=['POST', 'GET'])
 def login():
     if request.method == "POST":
@@ -460,38 +483,103 @@ def edit_lesson(lesson_id):
 
     return render_template("edit_lesson.html", lesson=lesson,video=video)
 
-@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
+@app.route('/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
-def edit_quiz(lesson_id):
-    lesson = Lessons.query.get(lesson_id)
-    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
-    quiz_id = quiz.id
-    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
-    if lesson is None:
-        flash("Lesson not found!", "danger")
-        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
+def edit_quiz(quiz_id):
+    if current_user.role != "teacher":
+        abort(403)
 
-    if quiz.start_date:
-        return jsonify("Quiz Time Started, Cannot edit.", "danger")
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz.id).all()
 
-
-    if request.method == "POST":
+    if request.method == 'POST':
+        # Update quiz details
         quiz.name = request.form['name']
-        quiz_questions.question_text = request.form['questions']
-        quiz_questions.question_type = request.form['type']
-        quiz_questions.correct_answer = request.form['correct_answer']
-        quiz.start_date = request.form['start_date']
-        quiz.end_date = request.form['end_date']
+        quiz.description = request.form['description']
+        db.session.commit()
 
-        try:
-            db.session.commit()
-            flash("Lesson edited successfully!", "success")
-            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Error editing lesson: {e}", "danger")
+        # Process each question
+        for question in quiz_questions:
+            question_text = request.form.get(f'questionText{question.id}', '')
+            question_type = request.form.get(f'questionType{question.id}', '')
 
-    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
+            # Update question attributes
+            question.question_text = question_text
+            question.question_type = question_type
+
+            if question_type == 'multiple':
+                choices = [
+                    request.form.get(f'choice{question.id}_{i + 1}', '')
+                    for i in range(4)  # Assuming maximum 4 choices
+                ]
+                question.options = json.dumps(choices) if choices else json.dumps([])
+                correct_answer_index = request.form.get(f'correct_answer{question.id}', '1')
+                question.correct_answer = choices[int(correct_answer_index) - 1]
+
+            elif question_type == 'true_false':
+                question.options = json.dumps(['True', 'False'])
+                question.correct_answer = request.form.get(f'trueFalse{question.id}', 'true')
+
+            elif question_type == 'short_answer':
+                question.options = json.dumps([])
+                question.correct_answer = request.form.get(f'short_answer{question.id}', '')
+
+        db.session.commit()
+        flash("Quiz updated successfully!", "success")
+        return redirect(url_for('edit_quiz', quiz_id=quiz_id))
+
+    return render_template('edit_quiz.html', quiz=quiz, quiz_questions=quiz_questions)
+
+
+
+@app.route('/delete_question/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    try:
+        # Retrieve the question to be deleted
+        question = QuizQuestion.query.get_or_404(question_id)
+
+        # Delete the question from the database
+        db.session.delete(question)
+        db.session.commit()
+
+        return jsonify({'message': f'Question {question_id} deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+
+@app.route('/add_question', methods=['POST'])
+def add_question():
+    # Extract form data
+    quiz_id = request.form.get('quiz_id')
+    question_id = request.form.get('question_id')  # Get question ID from the form (if applicable)
+    question_text = request.form.get('questionText')
+    question_type = request.form.get('questionType')
+
+    try:
+        options = [choice for choice in request.form.getlist(f'choices_{question_id}')] if question_id else []  # Access options with question ID (if present)
+        options_json = json.dumps(options)  # Convert options list to JSON string
+
+        correct_answer = request.form.get(f'correct_answer_{question_id}')  # Access correct answer with question ID (if present)
+
+        # Create and save QuizQuestion object
+        new_question = QuizQuestion(
+            quiz_id=quiz_id,
+            question_text=question_text,
+            question_type=question_type,
+            options=options_json,  # Use options_json string
+            correct_answer=correct_answer,
+            score=1  # Assuming score is not used yet
+        )
+        db.session.add(new_question)
+        db.session.commit()
+
+        return jsonify({'message': 'Question added successfully'})
+    except Exception as e:
+        print(f"Error adding question: {e}")
+        return jsonify({'error': 'An error occurred while adding the question.'}), 500
 
 
 
@@ -847,7 +935,6 @@ def timetable():
         teachers = Teacher.query.all()
         return render_template('create_timetable.html', teachers=teachers)
 
-
 @app.route("/view_timetable")
 @login_required
 def view_timetable():
@@ -914,6 +1001,88 @@ def view_messages():
     received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
     sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
     return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
+
+@app.route("/test")
+def test():
+    s=1
+    subject = Subjects.query.get(s)
+    print(subject)
+
+
+@app.route('/update_grades', methods=['POST'])
+def update_grades():
+    data = request.form
+    for student_id in data.keys():
+        grade = Grades.query.filter_by(student_id=student_id).first()
+        if grade:
+            grade.behavior = data.get(f'behavior{student_id}')
+            grade.oral_exam = data.get(f'oral_exam{student_id}')
+            grade.written_exam = data.get(f'written_exam{student_id}')
+            grade.comments = data.get(f'comments{student_id}')
+            grade.attendance = data.get(f'attendance{student_id}')
+            grade.assignments = data.get(f'assignments{student_id}')
+            grade.class_projects = data.get(f'class_projects{student_id}')
+            grade.subject_projects = data.get(f'subject_projects{student_id}')
+            grade.participation = data.get(f'participation{student_id}')
+            grade.class_work = data.get(f'class_work{student_id}')
+            db.session.commit()
+    return redirect(url_for('index'))
+
+@app.route('/save_term_marks', methods=['GET', 'POST'])
+def save_term_marks():
+    if request.method == 'POST':
+        student_ids = request.form.getlist('student_id')
+        for student_id in student_ids:
+            behavior = request.form.get(f'behavior{student_id}')
+            oral_exam = request.form.get(f'oral_exam{student_id}')
+            written_exam = request.form.get(f'written_exam{student_id}')
+            comments = request.form.get(f'comments{student_id}')
+            attendance = request.form.get(f'attendance{student_id}')
+            assignments = request.form.get(f'assignments{student_id}')
+            class_projects = request.form.get(f'class_projects{student_id}')
+            subject_projects = request.form.get(f'subject_projects{student_id}')
+            participation = request.form.get(f'participation{student_id}')
+            class_work = request.form.get(f'class_work{student_id}')
+
+            grade = Grades.query.filter_by(student_id=student_id).first()
+            if grade:
+                grade.behavior = behavior
+                grade.oral_exam = oral_exam
+                grade.written_exam = written_exam
+                grade.comments = comments
+                grade.attendance = attendance
+                grade.assignments = assignments
+                grade.class_projects = class_projects
+                grade.subject_projects = subject_projects
+                grade.participation = participation
+                grade.class_work = class_work
+            else:
+                new_grade = Grades(
+                    student_id=student_id,
+                    behavior=behavior,
+                    oral_exam=oral_exam,
+                    written_exam=written_exam,
+                    comments=comments,
+                    attendance=attendance,
+                    assignments=assignments,
+                    class_projects=class_projects,
+                    subject_projects=subject_projects,
+                    participation=participation,
+                    class_work=class_work
+                )
+                db.session.add(new_grade)
+        db.session.commit()
+        return redirect(url_for('save_term_marks'))
+    else:
+        grade = request.args.get('grade')
+        if grade:
+            students = Students.query.filter_by(grade=grade).all()
+            student_ids = [student.id for student in students]
+            grades = {g.student_id: g for g in Grades.query.filter(Grades.student_id.in_(student_ids)).all()}
+        else:
+            students = []
+            grades = {}
+        return render_template('grade_marks_teacher.html', students=students, grades=grades)
 
 
 

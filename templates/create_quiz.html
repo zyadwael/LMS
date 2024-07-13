@@ -145,7 +145,7 @@
             const questionsContainer = document.getElementById('questionsContainer');
             const newQuestion = document.createElement('div');
             newQuestion.classList.add('question-container');
-            newQuestion.id = question${questionCount}-container;
+            newQuestion.id = `question${questionCount}-container`;
             newQuestion.innerHTML = `
                 <label for="question${questionCount}">Question ${questionCount}</label>
                 <input type="text" id="question${questionCount}" name="question${questionCount}" required>
@@ -177,8 +177,8 @@
         }
 
         function updateQuestionType(questionNum) {
-            const questionType = document.getElementById(questionType${questionNum}).value;
-            const optionsContainer = document.getElementById(optionsContainer${questionNum});
+            const questionType = document.getElementById(`questionType${questionNum}`).value;
+            const optionsContainer = document.getElementById(`optionsContainer${questionNum}`);
 
             if (questionType === 'multiple') {
                 optionsContainer.innerHTML = `

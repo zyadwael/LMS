@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ subject.name }} - Posts</title>
+
     <link rel="stylesheet" href="../static/css/simplebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/feather.css">
@@ -120,7 +121,6 @@
 
         .post a {
             color: #543310;
-            ;
         }
 
         .post a:hover {
@@ -136,7 +136,7 @@
             border: none;
             padding: 10px;
             cursor: pointer;
-            z-index: 1001; /* Ensure the button is above all other elements */
+            z-index: 1001;
             border-radius: 5px;
         }
 
@@ -187,11 +187,12 @@
         .take-quiz-btn:hover {
             background-color: #543310;
         }
+
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             .section {
-                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
-                margin: 10px 0; /* Adjust margin for spacing */
+                flex-basis: calc(100% - 20px);
+                margin: 10px 0;
             }
 
             .sidebar {
@@ -213,32 +214,67 @@
             }
 
             .section {
-                width: 100%; /* Full width on smaller screens */
-                margin: 10px 0; /* Adjust margin for spacing */
+                width: 100%;
+                margin: 10px 0;
             }
         }
-       .post {
-    position: relative;
-    padding-bottom: 60px; /* Ensure there is space for the buttons */
-}
 
-.button-container {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .post {
+            position: relative;
+            padding-bottom: 60px;
+        }
 
-.button-container button,
-.button-container a {
-    display: inline-block;
-    margin: 5px 0;
-}
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
+        .button-container button,
+        .button-container a {
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #543310;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #543310;
+        }
+
+        td input:focus {
+            outline: none;
+        }
     </style>
 </head>
+
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="sidebar" id="sidebar">
@@ -262,65 +298,69 @@
 
     <div class="container">
         <div class="main-content">
-            <div class="dashboard-header">
-                <h1 style="color: #543310;">{{ subject.name }}</h1>
-                <a href="/create_lesson/{{ subject.id }}" class="add-lesson-btn">Add New Lesson</a>
+            <div class="content">
+                <h1>Your Marks</h1>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Behavior</th>
+                            <th>Oral Exam</th>
+                            <th>Written Exam</th>
+                            <th>Comments</th>
+                            <th>Attendance</th>
+                            <th>Assignments</th>
+                            <th>Class Projects</th>
+                            <th>Subject Projects</th>
+                            <th>Participation</th>
+                            <th>Class Work</th>
+                            <th>Total Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectsTableBody">
+                        {% for mark in marks %}
+                        <tr>
+                            <td>{{ subject.name }}</td>
+                            {% if current_user.role == 'student' %}
+                            <td>{{ mark.behavior }}</td>
+                            <td>{{ mark.oral_exam }}</td>
+                            <td>{{ mark.written_exam }}</td>
+                            <td>{{ mark.comments }}</td>
+                            <td>{{ mark.attendance }}</td>
+                            <td>{{ mark.assignments }}</td>
+                            <td>{{ mark.class_projects }}</td>
+                            <td>{{ mark.subject_projects }}</td>
+                            <td>{{ mark.participation }}</td>
+                            <td>{{ mark.class_work }}</td>
+                            <td>{{ mark.total_marks }}</td>
+                            {% else %}
+                            <td><input type="number" name="behavior" value="{{ mark.behavior }}" min="0" max="10"></td>
+                            <td><input type="number" name="oral_exam" value="{{ mark.oral_exam }}" min="0" max="10"></td>
+                            <td><input type="number" name="written_exam" value="{{ mark.written_exam }}" min="0" max="10"></td>
+                            <td><input type="text" name="comments" value="{{ mark.comments }}"></td>
+                            <td><input type="number" name="attendance" value="{{ mark.attendance }}" min="0" max="10"></td>
+                            <td><input type="number" name="assignments" value="{{ mark.assignments }}" min="0" max="10"></td>
+                            <td><input type="number" name="class_projects" value="{{ mark.class_projects }}" min="0" max="10"></td>
+                            <td><input type="number" name="subject_projects" value="{{ mark.subject_projects }}" min="0" max="10"></td>
+                            <td><input type="number" name="participation" value="{{ mark.participation }}" min="0" max="10"></td>
+                            <td><input type="number" name="class_work" value="{{ mark.class_work }}" min="0" max="10"></td>
+                            <td><input type="number" name="total_marks" value="{{ mark.total_marks }}" min="0" max="100"></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="posts">
-    {% for lesson in lessons %}
-    <div class="post">
-        <h2>{{ lesson.name }}</h2>
-        {% if lesson_videos[lesson.id] %}
-        {% for video in lesson_videos[lesson.id] %}
-        <p>
-            <a href="/video/{{ video.id }}">Video On the Lesson</a>
-        {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take Quiz</a>
-
-        {% endif %}
-        </p>
-        {% endfor %}
-        {% endif %}
-        {% if lesson.files %}
-            {% for file in lesson.files %}
-                <a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a>
-            {% endfor %}
-        {% endif %}
-
-        <div class="button-container">
-            {% if not lesson.files %}
-            <form action="/create_file/{{ lesson.id }}" method="GET">
-                <button type="submit" class="add-lesson-btn">Add File</button>
-            </form>
-            {% endif %}
-            <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
-            <a href="/edit_lesson/{{ lesson.id }}" class="add-quiz-btn">Edit Lesson</a>
         </div>
     </div>
-    {% endfor %}
-</div>
 
-        </div>
-    </div>
-    <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/popper.min.js"></script>
-    <script src="../static/js/moment.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/simplebar.min.js"></script>
-    <script src="../static/js/daterangepicker.js"></script>
-    <script src="../static/js/jquery.stickOnScroll.js"></script>
-    <script src="../static/js/tinycolor-min.js"></script>
-    <script src="../static/js/config.js"></script>
-    <script src="../static/js/fullcalendar.js"></script>
-    <script src="../static/js/fullcalendar.custom.js"></script>
-    <script src="../static/js/apps.js"></script>
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
-            var mainContent = document.getElementById('main-content');
             sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
         }
     </script>
 </body>
+
 </html>

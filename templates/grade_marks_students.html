@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ subject.name }} - Posts</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/simplebar.css') }}">
+
+    <link rel="stylesheet" href="../static/css/simplebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/feather.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/fullcalendar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/select2.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/uppy.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.steps.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.timepicker.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/quill.snow.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/daterangepicker.css') }}">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
     <style>
         body {
             background: #DFD3C3;
@@ -116,17 +116,18 @@
         }
 
         .post h2 {
-            margin: 0 0 10px 0;
+            margin: 0 0 30px 0;
         }
 
         .post a {
             color: #543310;
-            text-decoration: underline;
+            ;
         }
 
         .post a:hover {
             text-decoration: none;
         }
+
         .toggle-btn {
             position: fixed;
             top: 20px;
@@ -140,6 +141,37 @@
             border-radius: 5px;
         }
 
+        .add-lesson-btn {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .add-lesson-btn:hover {
+            background-color: #725238;
+        }
+
+        .add-quiz-btn {
+            background-color: #543310 !important;
+            color: #ecf0f1 !important;
+            border: none;
+            padding: 7px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .add-quiz-btn:hover {
+            background-color: #725238 !important;
+        }
 
         .take-quiz-btn {
             background-color: #725238;
@@ -147,10 +179,10 @@
             border: none;
             padding: 5px 10px;
             margin-left: 10px;
-            border-radius: 5px;
+            border-radius: 7px;
             cursor: pointer;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 20px;
         }
 
         .take-quiz-btn:hover {
@@ -188,6 +220,60 @@
             }
         }
 
+        .post {
+            position: relative;
+            padding-bottom: 60px; /* Ensure there is space for the buttons */
+        }
+
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-container button,
+        .button-container a {
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #543310;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #543310;
+        }
+
+        td input:focus {
+            outline: none;
+        }
+
                                   .badge {
             background-color: red;
             color: white;
@@ -221,11 +307,11 @@
             background-image: url("static/assets/images/notification.png");
             background-size: contain; /* Maintain aspect ratio */
         }
+
     </style>
 </head>
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="container">
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
                 <a href="../templates/index.html">
@@ -247,47 +333,80 @@
 
             </ul>
         </div>
-        <div class="main-content">
-            <div class="dashboard-header">
-                <h1>{{ subject.name }}</h1>
-            </div>
-            <div class="posts">
-                {% for lesson in lessons %}
-                <div class="post">
-                    <h2>{{ lesson.name }}</h2>
-                    {% if lesson_videos[lesson.id] %}
-                        <h3>Videos</h3>
 
-                            {% for video in lesson_videos[lesson.id] %}
-                            <a href="{{ url_for('show_video', video_id=video.id) }}">{{ video.name }}</a>
-                            {% endfor %}
+<div class="container">
+    <div class="main-content">
+        <div class="content">
+            <h1>Grade Marks</h1>
 
-                    {% endif %}
-
-                    {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take  Quiz</a>
-                    {% endif %}
-                    {% if lesson_files[lesson.id] %}
-                        <h3>Files</h3>
-
-                            {% for file in lesson_files[lesson.id] %}
-                            <a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a>
-                            {% endfor %}
-
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
+            <form id="gradeForm" method="POST" action="/grade_marks">
+                <input type="hidden" name="subject_id" value="{{ subject_id }}">
+                <input type="hidden" name="grade" value="{{ grade }}">
+                <input type="hidden" name="class" value="{{ class }}">
+                <table id="gradeTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Behavior</th>
+                            <th>Oral Exam</th>
+                            <th>Written Exam</th>
+                            <th>Comments</th>
+                            <th>Attendance</th>
+                            <th>Assignments</th>
+                            <th>Class Projects</th>
+                            <th>Subject Projects</th>
+                            <th>Participation</th>
+                            <th>Class Work</th>
+                            <th>Total Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        {% set grade = grades.get(student.id) %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td><input type="number" name="behavior{{ student.id }}" class="grade-input" value="{{ grade.behavior if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="oral_exam{{ student.id }}" class="grade-input" value="{{ grade.oral_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="written_exam{{ student.id }}" class="grade-input" value="{{ grade.written_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="comments{{ student.id }}" class="grade-input" value="{{ grade.comments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="attendance{{ student.id }}" class="grade-input" value="{{ grade.attendance if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="assignments{{ student.id }}" class="grade-input" value="{{ grade.assignments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="class_projects{{ student.id }}" class="grade-input" value="{{ grade.class_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="subject_projects{{ student.id }}" class="grade-input" value="{{ grade.subject_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="participation{{ student.id }}" class="grade-input" value="{{ grade.participation if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="class_work{{ student.id }}" class="grade-input" value="{{ grade.class_work if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td class="total" id="totalMarks{{ student.id }}">0</td>
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit">Save Edits</button>
+            </form>
         </div>
     </div>
+</div>
+
+
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
-            if (sidebar.classList.contains('closed')) {
-                sidebar.classList.remove('closed');
-            } else {
-                sidebar.classList.add('closed');
-            }
+            var mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('closed');
+            mainContent.classList.toggle('full-width');
+        }
+
+        function calculateTotal(studentId) {
+            var total = 0;
+            var inputs = document.querySelectorAll(input[name^="${studentId}"]);
+            inputs.forEach(function(input) {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById(totalMarks${studentId}).innerText = total;
         }
     </script>
 </body>
+
+
+
 </html>

@@ -224,6 +224,39 @@
                 margin: 10px 0;
             }
         }
+
+                .messages {
+            flex: 1; /* Make messages section take up remaining space */
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right; /* Make it float to the right */
+        }
+
+        .messages::before {
+            content: "";
+            display: flex; /* Change to flexbox for side-by-side layout */
+            width: 30px;  /* Increase width to make icon bigger */
+            height: 30px; /* Increase height to make icon bigger */
+            align-items: left; /* Vertically align icon and text */
+            margin-right: 5px; /* Reduce gap between icon and text (optional) */
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain; /* Maintain aspect ratio */
+        }
+                .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -236,17 +269,18 @@
                 </a>
             </div>
             <ul>
-                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
-                <li><a href="#"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
-                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
-                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
-                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
-                <li><a href="#"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
-                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
-                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
-                <li><a href="#"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/view_timetable">Timetable</a></li>
+                <li><a href="/my_subjects">My Subjects</a></li>
+                <li><a href="/students">My Students</a></li>
+                <li><a href="#">Attendance</a></li>
+                <li><a href="#">Sessions</a></li>
+                <li><a href="#">Assessments & Assignments</a></li>
+                <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
+                <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
+                <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
             </ul>
-            <button class="add-subject-btn" onclick="window.location.href='/create_subject'">Add Subject</button>
         </div>
 
         <main role="main" class="main-content" id="main-content">

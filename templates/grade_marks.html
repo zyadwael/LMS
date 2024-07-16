@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -121,6 +120,7 @@
 
         .post a {
             color: #543310;
+            ;
         }
 
         .post a:hover {
@@ -136,7 +136,7 @@
             border: none;
             padding: 10px;
             cursor: pointer;
-            z-index: 1001;
+            z-index: 1001; /* Ensure the button is above all other elements */
             border-radius: 5px;
         }
 
@@ -191,8 +191,8 @@
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             .section {
-                flex-basis: calc(100% - 20px);
-                margin: 10px 0;
+                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
             }
 
             .sidebar {
@@ -214,14 +214,14 @@
             }
 
             .section {
-                width: 100%;
-                margin: 10px 0;
+                width: 100%; /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
             }
         }
 
         .post {
             position: relative;
-            padding-bottom: 60px;
+            padding-bottom: 60px; /* Ensure there is space for the buttons */
         }
 
         .button-container {
@@ -272,9 +272,9 @@
         td input:focus {
             outline: none;
         }
+
     </style>
 </head>
-
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="sidebar" id="sidebar">
@@ -296,71 +296,135 @@
         </ul>
     </div>
 
-    <div class="container">
+
+<div class="container">
         <div class="main-content">
             <div class="content">
-                <h1>Your Marks</h1>
+                <h1>Grade Marks</h1>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th>Behavior</th>
-                            <th>Oral Exam</th>
-                            <th>Written Exam</th>
-                            <th>Comments</th>
-                            <th>Attendance</th>
-                            <th>Assignments</th>
-                            <th>Class Projects</th>
-                            <th>Subject Projects</th>
-                            <th>Participation</th>
-                            <th>Class Work</th>
-                            <th>Total Marks</th>
-                        </tr>
-                    </thead>
-                    <tbody id="subjectsTableBody">
-                        {% for mark in marks %}
-                        <tr>
-                            <td>{{ subject.name }}</td>
-                            {% if current_user.role == 'student' %}
-                            <td>{{ mark.behavior }}</td>
-                            <td>{{ mark.oral_exam }}</td>
-                            <td>{{ mark.written_exam }}</td>
-                            <td>{{ mark.comments }}</td>
-                            <td>{{ mark.attendance }}</td>
-                            <td>{{ mark.assignments }}</td>
-                            <td>{{ mark.class_projects }}</td>
-                            <td>{{ mark.subject_projects }}</td>
-                            <td>{{ mark.participation }}</td>
-                            <td>{{ mark.class_work }}</td>
-                            <td>{{ mark.total_marks }}</td>
-                            {% else %}
-                            <td><input type="number" name="behavior" value="{{ mark.behavior }}" min="0" max="10"></td>
-                            <td><input type="number" name="oral_exam" value="{{ mark.oral_exam }}" min="0" max="10"></td>
-                            <td><input type="number" name="written_exam" value="{{ mark.written_exam }}" min="0" max="10"></td>
-                            <td><input type="text" name="comments" value="{{ mark.comments }}"></td>
-                            <td><input type="number" name="attendance" value="{{ mark.attendance }}" min="0" max="10"></td>
-                            <td><input type="number" name="assignments" value="{{ mark.assignments }}" min="0" max="10"></td>
-                            <td><input type="number" name="class_projects" value="{{ mark.class_projects }}" min="0" max="10"></td>
-                            <td><input type="number" name="subject_projects" value="{{ mark.subject_projects }}" min="0" max="10"></td>
-                            <td><input type="number" name="participation" value="{{ mark.participation }}" min="0" max="10"></td>
-                            <td><input type="number" name="class_work" value="{{ mark.class_work }}" min="0" max="10"></td>
-                            <td><input type="number" name="total_marks" value="{{ mark.total_marks }}" min="0" max="100"></td>
-                            {% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <label for="gradeSelect">Select Grade:</label>
+                <select id="gradeSelect" onchange="fetchStudentsByGrade()">
+                    <option value="">Select a grade</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+
+                <form id="gradeForm" method="POST" action="/save_term_marks">
+                    <table id="gradeTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Behavior</th>
+                                <th>Oral Exam</th>
+                                <th>Written Exam</th>
+                                <th>Comments</th>
+                                <th>Attendance</th>
+                                <th>Assignments</th>
+                                <th>Class Projects</th>
+                                <th>Subject Projects</th>
+                                <th>Participation</th>
+                                <th>Class Work</th>
+                                <th>Total Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            {% set grade = grades.get(student.id) %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td><input type="number" name="behavior{{ student.id }}" class="grade-input" value="{{ grade.behavior if grade else '' }}"></td>
+                                <td><input type="number" name="oral_exam{{ student.id }}" class="grade-input" value="{{ grade.oral_exam if grade else '' }}"></td>
+                                <td><input type="number" name="written_exam{{ student.id }}" class="grade-input" value="{{ grade.written_exam if grade else '' }}"></td>
+                                <td><input type="number" name="comments{{ student.id }}" class="grade-input" value="{{ grade.comments if grade else '' }}"></td>
+                                <td><input type="number" name="attendance{{ student.id }}" class="grade-input" value="{{ grade.attendance if grade else '' }}"></td>
+                                <td><input type="number" name="assignments{{ student.id }}" class="grade-input" value="{{ grade.assignments if grade else '' }}"></td>
+                                <td><input type="number" name="class_projects{{ student.id }}" class="grade-input" value="{{ grade.class_projects if grade else '' }}"></td>
+                                <td><input type="number" name="subject_projects{{ student.id }}" class="grade-input" value="{{ grade.subject_projects if grade else '' }}"></td>
+                                <td><input type="number" name="participation{{ student.id }}" class="grade-input" value="{{ grade.participation if grade else '' }}"></td>
+                                <td><input type="number" name="class_work{{ student.id }}" class="grade-input" value="{{ grade.class_work if grade else '' }}"></td>
+                                <td class="total" id="totalMarks{{ student.id }}">0</td>
+                                <input type="hidden" name="student_id" value="{{ student.id }}">
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit">Save Edits</button>
+                </form>
             </div>
         </div>
     </div>
-
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
             sidebar.classList.toggle('closed');
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('expanded');
         }
+
+function fetchStudentsByGrade() {
+    var grade = document.getElementById('gradeSelect').value;
+    if (grade) {
+        $.ajax({
+            url: '/get_students_by_grade',
+            method: 'POST',
+            data: { grade: grade },
+            success: function(response) {
+                // Update the HTML table with the received student data
+                updateStudentTable(response.students);
+            },
+            error: function(error) {
+                console.error("Error fetching students:", error);
+                // Handle errors appropriately (e.g., display an error message)
+            }
+        });
+    }
+}
+
+function updateStudentTable(students) {
+    // Clear existing student rows
+    var tableBody = document.getElementById('gradeTable').getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = "";
+
+    // Create new rows for each student
+    students.forEach(function(student) {
+        // Create table row elements and populate with student data
+        // ... (your code to create table rows and populate them)
+    });
+
+    // Recalculate totals after updating students
+    calculateTotal();
+}
+
+
+        function calculateTotal() {
+            var rows = document.querySelectorAll('#gradeTable tbody tr');
+            rows.forEach(function(row) {
+                var total = 0;
+                var inputs = row.querySelectorAll('.grade-input');
+                inputs.forEach(function(input) {
+                    total += parseFloat(input.value) || 0;
+                });
+                var totalCell = row.querySelector('.total');
+                totalCell.textContent = total;
+            });
+        }
+
+        document.querySelectorAll('.grade-input').forEach(function(input) {
+            input.addEventListener('input', calculateTotal);
+        });
+
+        calculateTotal();
     </script>
 </body>
-
 </html>

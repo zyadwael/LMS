@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Term Marks</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: #543310;
+        }
+
+        .container {
+            width: 80%;
+            background-color: #C7B198;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #543310;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td {
+            background-color: #DFD3C3;
+        }
+
+        .select-button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .select-button:hover {
+            background-color: #3e260a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Term Marks</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Grade</th>
+                    <th>Class</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ subject.grade }}</td>
+                    <td>{{ subject.Class }}</td>
+                    <td>
+                        <form action="/grade_marks" method="get">
+                            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                            <input type="hidden" name="grade" value="{{ subject.grade }}">
+                            <input type="hidden" name="class" value="{{ subject.Class }}">
+                            <button type="submit" class="select-button">Select</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+
+</html>

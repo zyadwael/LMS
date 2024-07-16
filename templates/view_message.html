@@ -80,11 +80,39 @@
         .send-message-btn-container a:hover {
             background-color: #6b4427;
         }
+        .notification {
+            position: relative;
+            display: inline-block;
+        }
+        .notification .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+        }
     </style>
+    <script>
+        async function checkNotifications() {
+            const response = await fetch('/notifications');
+            const data = await response.json();
+            const notificationElement = document.getElementById('notification-count');
+            notificationElement.textContent = data.unread_messages_count;
+        }
+
+        setInterval(checkNotifications, 5000);  // Check for new notifications every 5 seconds
+    </script>
 </head>
 <body>
     <div class="container">
         <h1>Messages</h1>
+
+        <div class="notification">
+            <a href="/messages">Messages</a>
+            <span id="notification-count" class="badge">0</span>
+        </div>
 
         <div class="send-message-btn-container">
             <a href="/send_message">Send Message</a>
@@ -116,5 +144,49 @@
             </ul>
         </div>
     </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    console.log("Document loaded");
+
+    // Function to fetch unread messages count from the backend
+    function fetchUnreadMessagesCount() {
+        console.log("Fetching unread messages count");
+        return fetch('/api/unread_messages_count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Received data:", data);
+                return data.count;
+            })
+            .catch(error => {
+                console.error("Failed to fetch unread messages count:", error);
+                return 0;
+            });
+    }
+
+    // Function to update the message badge
+    function updateMessageBadge() {
+        fetchUnreadMessagesCount().then(count => {
+            console.log("Updating message badge with count:", count);
+            const messageBadge = document.getElementById('message-badge');
+            if (messageBadge) {
+                messageBadge.textContent = count;
+            }
+        });
+    }
+
+    // Initially update the badge when the page loads
+    updateMessageBadge();
+
+    // Periodically update the badge (e.g., every 10 seconds)
+    setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
+});
+
+</script>
 </body>
 </html>

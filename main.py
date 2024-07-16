@@ -186,6 +186,8 @@ with app.app_context():
         subject_projects = db.Column(db.String(100))
         participation = db.Column(db.String(100))
         class_work = db.Column(db.String(100))
+        subject_id = db.Column(db.String(100))
+        teacher_id = db.Column(db.String(100))
 
 
     class Messages(db.Model):
@@ -264,7 +266,10 @@ def allowed_file(filename):
 
 @app.template_filter('json_loads')
 def json_loads_filter(s):
-    return json.loads(s)
+    if s:
+        return json.loads(s)
+    return []
+
 
 @app.context_processor
 def utility_processor():
@@ -307,11 +312,6 @@ def dashboard():
 
 
 
-
-
-
-
-# API endpoint to get all events for the dashboard
 @app.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
@@ -321,8 +321,6 @@ def get_events():
 @app.route("/my_teachers")
 def my_teachers():
     if not current_user.is_authenticated:
-        # Handle case where user is not authenticated (if applicable)
-        # Redirect to login page or handle as per your application's logic
         return redirect(url_for('login'))
 
     if current_user.role == 'student':
@@ -957,6 +955,14 @@ def view_timetable():
     if current_user.role == "teacher":
         teacher_email = current_user.email
         timetables = Timetable.query.filter_by(teacher_email=teacher_email).all()
+        schedule = {day: {} for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
+        for entry in timetables:
+            day = entry.day_of_week
+            time = entry.time_of_day
+            if time not in schedule[day]:
+                schedule[day][time] = []
+            schedule[day][time].append(entry)
+        return render_template('view_timetable.html', schedule=schedule)
     elif current_user.role == "student":
         grade = current_user.grade
         Class = current_user.Class
@@ -971,7 +977,7 @@ def view_timetable():
             schedule[day][time] = []
         schedule[day][time].append(entry)
 
-    return render_template('view_timetable.html', schedule=schedule)
+    return render_template('view_timetable_student.html', schedule=schedule)
 
 
 @app.route("/print_timetable")
@@ -1016,7 +1022,22 @@ def send_message():
 def view_messages():
     received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
     sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
-    return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
+    return render_template('view_message.html', received_messages=received_messages, sent_messages=sent_messages)
+
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    unread_messages_count = Messages.query.filter_by(receiver_id=current_user.id, read=False).count()
+    return {'unread_messages_count': unread_messages_count}
+
+
+@app.route('/api/unread_messages_count', methods=['GET'])
+def unread_messages_count():
+    # Replace this with your actual logic to count unread messages
+    unread_count = 5  # Example count
+    return jsonify({'count': unread_count})
+
 
 @app.route("/test")
 def test():
@@ -1025,29 +1046,30 @@ def test():
     print(subject)
 
 
-@app.route('/update_grades', methods=['POST'])
-def update_grades():
-    data = request.form
-    for student_id in data.keys():
-        grade = Grades.query.filter_by(student_id=student_id).first()
-        if grade:
-            grade.behavior = data.get(f'behavior{student_id}')
-            grade.oral_exam = data.get(f'oral_exam{student_id}')
-            grade.written_exam = data.get(f'written_exam{student_id}')
-            grade.comments = data.get(f'comments{student_id}')
-            grade.attendance = data.get(f'attendance{student_id}')
-            grade.assignments = data.get(f'assignments{student_id}')
-            grade.class_projects = data.get(f'class_projects{student_id}')
-            grade.subject_projects = data.get(f'subject_projects{student_id}')
-            grade.participation = data.get(f'participation{student_id}')
-            grade.class_work = data.get(f'class_work{student_id}')
-            db.session.commit()
-    return redirect(url_for('index'))
+@app.route("/term_marks")
+@login_required
+def term_marks():
+    if current_user.role == "teacher":
+        subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+        return render_template("term_marks.html", subjects=subjects)
+    else:
+        return redirect(url_for('dashboard'))  # Redirect non-teachers to the dashboard or another appropriate page
 
-@app.route('/save_term_marks', methods=['GET', 'POST'])
-def save_term_marks():
+@app.route('/grade_marks', methods=['GET', 'POST'])
+@login_required
+def grade_marks():
+    if current_user.role != "teacher":
+        return redirect(url_for('dashboard'))
+
     if request.method == 'POST':
+        subject_id = request.form.get('subject_id')
+        grade = request.form.get('grade')
+        class_ = request.form.get('class')
+        teacher_id = current_user.id
+
         student_ids = request.form.getlist('student_id')
+        print(student_ids)
+
         for student_id in student_ids:
             behavior = request.form.get(f'behavior{student_id}')
             oral_exam = request.form.get(f'oral_exam{student_id}')
@@ -1060,21 +1082,23 @@ def save_term_marks():
             participation = request.form.get(f'participation{student_id}')
             class_work = request.form.get(f'class_work{student_id}')
 
-            grade = Grades.query.filter_by(student_id=student_id).first()
-            if grade:
-                grade.behavior = behavior
-                grade.oral_exam = oral_exam
-                grade.written_exam = written_exam
-                grade.comments = comments
-                grade.attendance = attendance
-                grade.assignments = assignments
-                grade.class_projects = class_projects
-                grade.subject_projects = subject_projects
-                grade.participation = participation
-                grade.class_work = class_work
+            grade_record = Grades.query.filter_by(student_id=student_id, subject_id=subject_id).first()
+            if grade_record:
+                grade_record.behavior = behavior
+                grade_record.oral_exam = oral_exam
+                grade_record.written_exam = written_exam
+                grade_record.comments = comments
+                grade_record.attendance = attendance
+                grade_record.assignments = assignments
+                grade_record.class_projects = class_projects
+                grade_record.subject_projects = subject_projects
+                grade_record.participation = participation
+                grade_record.class_work = class_work
+                grade_record.teacher_id = teacher_id
             else:
                 new_grade = Grades(
                     student_id=student_id,
+                    subject_id=subject_id,
                     behavior=behavior,
                     oral_exam=oral_exam,
                     written_exam=written_exam,
@@ -1084,21 +1108,62 @@ def save_term_marks():
                     class_projects=class_projects,
                     subject_projects=subject_projects,
                     participation=participation,
-                    class_work=class_work
+                    class_work=class_work,
+                    teacher_id=teacher_id
                 )
                 db.session.add(new_grade)
         db.session.commit()
-        return redirect(url_for('save_term_marks'))
+        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_))
+
     else:
+        subject_id = request.args.get('subject_id')
         grade = request.args.get('grade')
-        if grade:
-            students = Students.query.filter_by(grade=grade).all()
+        Class = request.args.get('class')
+
+        teacher_email = current_user.email
+        subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
+
+        if subject_id and grade and Class:
+            students = Students.query.filter_by(grade=grade, Class=Class).all()  # Assuming Users model has grade and class_ fields
             student_ids = [student.id for student in students]
-            grades = {g.student_id: g for g in Grades.query.filter(Grades.student_id.in_(student_ids)).all()}
+            grades = {g.student_id: g for g in Grades.query.filter(Grades.student_id.in_(student_ids), Grades.subject_id == subject_id).all()}
         else:
             students = []
             grades = {}
-        return render_template('grade_marks_teacher.html', students=students, grades=grades)
+
+        return render_template('grade_marks_students.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class)
+
+
+@app.route('/student_marks')
+@login_required  # Ensure the user is logged in
+def student_marks():
+    user_email = current_user.email
+    print(f"Current user email: {user_email}")
+
+    student = Users.query.filter_by(email=user_email).first()
+    print(f"Student object: {student}")
+
+    if student:
+        # Fetch all grades for this student
+        grades = Grades.query.filter_by(student_id=student.id).all()
+        print(grades)
+
+        # Fetch the subjects associated with these grades
+        subjects = Subjects.query.filter(Subjects.id.in_([grade.subject_id for grade in grades])).all()
+        subject_dict = {subject.id: subject.name for subject in subjects}
+
+        # Organize grades by subject
+        grades_by_subject = {}
+        for grade in grades:
+            subject_name = subject_dict.get(grade.subject_id, "Unknown Subject")
+            if subject_name not in grades_by_subject:
+                grades_by_subject[subject_name] = []
+            grades_by_subject[subject_name].append(grade)
+
+        print(f"Grades by subject: {grades_by_subject}")  # Print grades for debugging
+        return render_template('grade_marks_students.html', student=student, grades_by_subject=grades_by_subject)
+    else:
+        return "Student not found", 404
 
 
 

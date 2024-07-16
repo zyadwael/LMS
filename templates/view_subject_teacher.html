@@ -37,14 +37,15 @@
             color: #ecf0f1;
             padding: 20px;
             box-sizing: border-box;
-            position: fixed;
+            position: absolute;
             top: 0;
             bottom: 0;
-            left: 0;
-            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto; /* Enable vertical scrolling */
         }
 
         .sidebar.closed {
@@ -69,6 +70,7 @@
             margin: 15px 0;
             border-bottom: 1px solid #ecf0f1;
             padding-bottom: 5px;
+            position: relative; /* Added for badge positioning */
         }
 
         .sidebar ul li:last-child {
@@ -236,29 +238,64 @@
     display: inline-block;
     margin: 5px 0;
 }
+                .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+                .messages {
+            flex: 1; /* Make messages section take up remaining space */
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right; /* Make it float to the right */
+        }
+
+        .messages::before {
+            content: "";
+            display: flex; /* Change to flexbox for side-by-side layout */
+            width: 30px;  /* Increase width to make icon bigger */
+            height: 30px; /* Increase height to make icon bigger */
+            align-items: left; /* Vertically align icon and text */
+            margin-right: 5px; /* Reduce gap between icon and text (optional) */
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain; /* Maintain aspect ratio */
+        }
 
     </style>
 </head>
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="sidebar" id="sidebar">
-        <div class="logo-container">
-            <a href="../templates/index.html">
-                <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
-            </a>
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <a href="../templates/index.html">
+                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+                </a>
+            </div>
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/view_timetable">Timetable</a></li>
+                <li><a href="/my_subjects">My Subjects</a></li>
+                <li><a href="/students">My Students</a></li>
+                <li><a href="#">Attendance</a></li>
+                <li><a href="#">Sessions</a></li>
+                <li><a href="#">Assessments & Assignments</a></li>
+                <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
+                <li><a href="/results/{{user.id}}" onclick="showQuizResults()">Quiz Results</a></li>
+                <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+            </ul>
         </div>
-        <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="#">Timetable</a></li>
-            <li><a href="/my_subjects">My Subjects</a></li>
-            <li><a href="/my_teachers">My Teachers</a></li>
-            <li><a href="#">Attendance</a></li>
-            <li><a href="#">Sessions</a></li>
-            <li><a href="#">Assessments & Assignments</a></li>
-            <li><a href="#">Remarks & Actions</a></li>
-            <li><a href="#">Quizzes/Surveys</a></li>
-        </ul>
-    </div>
 
     <div class="container">
         <div class="main-content">
@@ -275,7 +312,8 @@
         <p>
             <a href="/video/{{ video.id }}">Video On the Lesson</a>
         {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take Quiz</a>
-
+            {% else %}
+                        <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
         {% endif %}
         </p>
         {% endfor %}
@@ -292,7 +330,7 @@
                 <button type="submit" class="add-lesson-btn">Add File</button>
             </form>
             {% endif %}
-            <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
+
             <a href="/edit_lesson/{{ lesson.id }}" class="add-quiz-btn">Edit Lesson</a>
         </div>
     </div>

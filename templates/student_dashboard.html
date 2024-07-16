@@ -184,43 +184,55 @@
         }
 
         /* Media Queries for Responsive Design */
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(0%);
-        width: 250px;
-    }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(0%);
+                width: 250px;
+            }
 
-    .sidebar.closed {
-        transform: translateX(-100%);
-    }
+            .sidebar.closed {
+                transform: translateX(-100%);
+            }
 
-    .main-content {
-        margin-left: 0;
-    }
-}
-.messages {
-    flex: 1; /* Make messages section take up remaining space */
-    background-color: transparent;
-    padding: 20px;
-    box-sizing: border-box;
-    border: 0;
-    float: right; /* Make it float to the right */
+            .main-content {
+                margin-left: 0;
+            }
+        }
 
-}
+        .messages {
+            flex: 1; /* Make messages section take up remaining space */
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right; /* Make it float to the right */
+        }
 
+        .messages::before {
+            content: "";
+            display: flex; /* Change to flexbox for side-by-side layout */
+            width: 30px;  /* Increase width to make icon bigger */
+            height: 30px; /* Increase height to make icon bigger */
+            align-items: left; /* Vertically align icon and text */
+            margin-right: 5px; /* Reduce gap between icon and text (optional) */
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain; /* Maintain aspect ratio */
+        }
 
-.messages::before {
-    content: "";
-    display: flex; /* Change to flexbox for side-by-side layout */
-    width: 30px;  /* Increase width to make icon bigger */
-    height: 30px; /* Increase height to make icon bigger */
-    align-items: left; /* Vertically align icon and text */
-    margin-right: 5px; /* Reduce gap between icon and text (optional) */
-    background-image: url("static/assets/images/notification.png");
-    background-size: contain; /* Maintain aspect ratio */
-}
+        .notification {
+            position: relative;
+        }
 
-
+        .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
 
     </style>
 </head>
@@ -243,17 +255,17 @@
                 <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
                 <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
                 <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+
             </ul>
         </div>
 
-
         <div class="main-content" id="main-content">
-                        <a href="/messages">
+            <a href="/messages">
                 <button class="messages" ></button>
             </a>
             <div class="dashboard-header">
-
-
                 <h1 style="color: #543310;">Dashboard</h1>
             </div>
             <div class="dashboard-sections">
@@ -262,14 +274,6 @@
                     <ul>
                         {% for teacher in teachers %}
                             <li>{{ teacher.name }} - {{ teacher.subject }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="section">
-                    <h2>Marks</h2>
-                    <ul>
-                        {% for quiz in quizzes %}
-                            <li>{{ quiz.title }}: {{ quiz.score }}%</li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -336,7 +340,49 @@
 
         window.addEventListener('resize', checkSidebarState);
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
+    console.log("Document loaded");
+
+    // Function to fetch unread messages count from the backend
+    function fetchUnreadMessagesCount() {
+        console.log("Fetching unread messages count");
+        return fetch('/api/unread_messages_count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Received data:", data);
+                return data.count;
+            })
+            .catch(error => {
+                console.error("Failed to fetch unread messages count:", error);
+                return 0;
+            });
+    }
+
+    // Function to update the message badge
+    function updateMessageBadge() {
+        fetchUnreadMessagesCount().then(count => {
+            console.log("Updating message badge with count:", count);
+            const messageBadge = document.getElementById('message-badge');
+            if (messageBadge) {
+                messageBadge.textContent = count;
+            }
+        });
+    }
+
+    // Initially update the badge when the page loads
+    updateMessageBadge();
+
+    // Periodically update the badge (e.g., every 10 seconds)
+    setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
+});
+
+
+                document.addEventListener('DOMContentLoaded', function () {
             checkSidebarState();
 
             var calendarEl = document.getElementById('calendar');
@@ -364,6 +410,7 @@
             });
             calendar.render();
         });
+
     </script>
 </body>
 </html>

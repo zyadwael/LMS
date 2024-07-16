@@ -483,6 +483,8 @@ def edit_lesson(lesson_id):
 
     return render_template("edit_lesson.html", lesson=lesson,video=video)
 
+# app.py
+
 @app.route('/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def edit_quiz(quiz_id):
@@ -530,7 +532,54 @@ def edit_quiz(quiz_id):
 
     return render_template('edit_quiz.html', quiz=quiz, quiz_questions=quiz_questions)
 
+@app.route('/add_quiz_question/<int:quiz_id>', methods=['GET','POST'])
+@login_required
+def add_quiz_question(quiz_id):
 
+    if request.method == "POST":
+        # Retrieve the quiz based on quiz_id
+        quiz = Quizzes.query.get_or_404(quiz_id)
+
+        # Parse form data for the new question
+        question_text = request.form.get('question_text', '')
+        question_type = request.form.get('question_type', '')
+        score = request.form.get('score', 0, type=int)
+
+        # Create a new QuizQuestion instance
+        new_question = QuizQuestion(
+            quiz_id=quiz.id,
+            question_text=question_text,
+            question_type=question_type,
+            score=score
+        )
+
+        if question_type == 'multiple':
+            choices = [
+                request.form.get(f'option{i}', '')
+                for i in range(1, 5)  # Assuming maximum 4 choices
+            ]
+            new_question.options = json.dumps(choices) if choices else json.dumps([])
+            correct_answer_index = int(request.form.get('correct_answer', '1')) - 1
+            new_question.correct_answer = choices[correct_answer_index] if choices[correct_answer_index] else ''
+
+        elif question_type == 'true_false':
+            new_question.options = json.dumps(['True', 'False'])
+            new_question.correct_answer = request.form.get('true_false_answer', 'true')
+
+        elif question_type == 'complete':
+            new_question.options = json.dumps([])
+            new_question.correct_answer = request.form.get('complete_answer', '')
+
+        db.session.add(new_question)
+        db.session.commit()
+
+        flash("Question added successfully!", "success")
+        return redirect(url_for('edit_quiz', quiz_id=quiz_id))
+
+    else :
+        db.session.rollback()
+        flash("Error adding question:", "error")
+        return redirect(url_for('edit_quiz', quiz_id=quiz_id))
 
 @app.route('/delete_question/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):
@@ -547,40 +596,6 @@ def delete_question(question_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-
-
-
-@app.route('/add_question', methods=['POST'])
-def add_question():
-    # Extract form data
-    quiz_id = request.form.get('quiz_id')
-    question_id = request.form.get('question_id')  # Get question ID from the form (if applicable)
-    question_text = request.form.get('questionText')
-    question_type = request.form.get('questionType')
-
-
-    try:
-        options = [choice for choice in request.form.getlist(f'choices_{question_id}')] if question_id else []  # Access options with question ID (if present)
-        options_json = json.dumps(options)  # Convert options list to JSON string
-
-        correct_answer = request.form.get(f'correct_answer_{question_id}')  # Access correct answer with question ID (if present)
-
-        # Create and save QuizQuestion object
-        new_question = QuizQuestion(
-            quiz_id=quiz_id,
-            question_text=question_text,
-            question_type=question_type,
-            options=options_json,  # Use options_json string
-            correct_answer=correct_answer,
-            score=1  # Assuming score is not used yet
-        )
-        db.session.add(new_question)
-        db.session.commit()
-
-        return jsonify({'message': 'Question added successfully'})
-    except Exception as e:
-        print(f"Error adding question: {e}")
-        return jsonify({'error': 'An error occurred while adding the question.'}), 500
 
 
 

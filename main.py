@@ -196,6 +196,7 @@ with app.app_context():
         receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         content = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        read = db.Column(db.Boolean, default=False)  # Add this line
 
         sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_messages')
         receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_messages')
@@ -210,7 +211,6 @@ with app.app_context():
                 'read': self.read,
                 'type': self.type,
             }
-
 
     # Define the Event model
     class Event(db.Model):
@@ -1032,11 +1032,22 @@ def notifications():
     return {'unread_messages_count': unread_messages_count}
 
 
-@app.route('/api/unread_messages_count', methods=['GET'])
+@app.route('/unread_messages_count', methods=['GET'])
+@login_required
 def unread_messages_count():
-    # Replace this with your actual logic to count unread messages
-    unread_count = 5  # Example count
-    return jsonify({'count': unread_count})
+    user_id = current_user.id
+    unread_count = db.session.query(Messages).filter_by(receiver_id=user_id, read=False).count()
+    return jsonify(unread_count=unread_count)
+
+@app.route('/mark_message_as_read/<int:message_id>', methods=['POST'])
+@login_required
+def mark_message_as_read(message_id):
+    message = Messages.query.get(message_id)
+    if message and message.receiver_id == current_user.id:
+        message.read = True
+        db.session.commit()
+        return jsonify(success=True)
+    return jsonify(success=False), 403
 
 
 @app.route("/test")

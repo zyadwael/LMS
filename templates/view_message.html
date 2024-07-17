@@ -50,6 +50,7 @@
             margin: 10px 0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative; /* Position relative for absolute button */
         }
 
         .message-list li p {
@@ -80,10 +81,12 @@
         .send-message-btn-container a:hover {
             background-color: #6b4427;
         }
+
         .notification {
             position: relative;
             display: inline-block;
         }
+
         .notification .badge {
             position: absolute;
             top: -10px;
@@ -93,17 +96,24 @@
             background: red;
             color: white;
         }
-    </style>
-    <script>
-        async function checkNotifications() {
-            const response = await fetch('/notifications');
-            const data = await response.json();
-            const notificationElement = document.getElementById('notification-count');
-            notificationElement.textContent = data.unread_messages_count;
+
+        .read-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #6b4427;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
         }
 
-        setInterval(checkNotifications, 5000);  // Check for new notifications every 5 seconds
-    </script>
+        .read-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -126,6 +136,11 @@
                         <p><strong>From:</strong> {{ message.sender.name }} ({{ message.sender.email }})</p>
                         <p>{{ message.content }}</p>
                         <p><em>Received at: {{ message.timestamp }}</em></p>
+                        {% if not message.read %}
+                            <form action="/mark_message_as_read/{{ message.id }}" method="post">
+                                <button class="read-btn">Mark as Read</button>
+                            </form>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
@@ -145,48 +160,47 @@
         </div>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    console.log("Document loaded");
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Document loaded");
 
-    // Function to fetch unread messages count from the backend
-    function fetchUnreadMessagesCount() {
-        console.log("Fetching unread messages count");
-        return fetch('/api/unread_messages_count')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Received data:", data);
-                return data.count;
-            })
-            .catch(error => {
-                console.error("Failed to fetch unread messages count:", error);
-                return 0;
-            });
-    }
-
-    // Function to update the message badge
-    function updateMessageBadge() {
-        fetchUnreadMessagesCount().then(count => {
-            console.log("Updating message badge with count:", count);
-            const messageBadge = document.getElementById('message-badge');
-            if (messageBadge) {
-                messageBadge.textContent = count;
+            // Function to fetch unread messages count from the backend
+            function fetchUnreadMessagesCount() {
+                console.log("Fetching unread messages count");
+                return fetch('/api/unread_messages_count')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Received data:", data);
+                        return data.count;
+                    })
+                    .catch(error => {
+                        console.error("Failed to fetch unread messages count:", error);
+                        return 0;
+                    });
             }
+
+            // Function to update the message badge
+            function updateMessageBadge() {
+                fetchUnreadMessagesCount().then(count => {
+                    console.log("Updating message badge with count:", count);
+                    const messageBadge = document.getElementById('message-badge');
+                    if (messageBadge) {
+                        messageBadge.textContent = count;
+                    }
+                });
+            }
+
+            // Initially update the badge when the page loads
+            updateMessageBadge();
+
+            // Periodically update the badge (e.g., every 10 seconds)
+            setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
         });
-    }
-
-    // Initially update the badge when the page loads
-    updateMessageBadge();
-
-    // Periodically update the badge (e.g., every 10 seconds)
-    setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
-});
-
-</script>
+    </script>
 </body>
 </html>

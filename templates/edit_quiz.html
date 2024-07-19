@@ -95,7 +95,7 @@
                         <select name="questionType{{ question.id }}" id="questionType{{ question.id }}" onchange="handleQuestionTypeChange(this)">
                             <option value="multiple" {% if question.question_type == 'multiple' %} selected {% endif %}>Multiple Choice</option>
                             <option value="true_false" {% if question.question_type == 'true_false' %} selected {% endif %}>True/False</option>
-                            <option value="fill_in_blank" {% if question.question_type == 'fill_in_blank' %} selected {% endif %}>Fill in the Blank</option>
+                            <option value="complete" {% if question.question_type == 'complete' %} selected {% endif %}>Complete</option>
                         </select>
 
                         <div class="options-container" id="optionsContainer{{ question.id }}" {% if question.question_type != 'multiple' %}style="display:none;"{% endif %}>
@@ -119,9 +119,9 @@
                             </select>
                         </div>
 
-                        <div class="fill-in-blank-container" id="fillInBlankContainer{{ question.id }}" {% if question.question_type != 'fill_in_blank' %}style="display:none;"{% endif %}>
-                            <label for="fillInBlank{{ question.id }}">Correct Answer:</label>
-                            <input type="text" name="fillInBlank{{ question.id }}" id="fillInBlank{{ question.id }}" value="{{ question.correct_answer }}">
+                        <div class="complete-container" id="completeContainer{{ question.id }}" {% if question.question_type != 'complete' %}style="display:none;"{% endif %}>
+                            <label for="complete{{ question.id }}">Correct Answer:</label>
+                            <input type="text" name="complete{{ question.id }}" id="complete{{ question.id }}" value="{{ question.correct_answer }}">
                         </div>
 
                         <button type="button" onclick="deleteQuestion({{ question.id }})">Delete Question</button>
@@ -130,52 +130,7 @@
                 {% endif %}
             </div>
 
-            <!-- Container for new questions -->
-            <div id="newQuestionsContainer">
-                <div id="newQuestionTemplate" style="display:none;">
-                    <div class="container question-container">
-                        <label for="newQuestionText">Question Text:</label>
-                        <textarea name="newQuestionText" id="newQuestionText"></textarea>
 
-                        <label for="newQuestionType">Question Type:</label>
-                        <select name="newQuestionType" id="newQuestionType" onchange="handleNewQuestionTypeChange(this)">
-                            <option value="multiple">Multiple Choice</option>
-                            <option value="true_false">True/False</option>
-                            <option value="fill_in_blank">Fill in the Blank</option>
-                        </select>
-
-                        <div class="options-container" id="newOptionsContainer">
-                            <label>Choices:</label>
-                            <input type="text" name="newChoice1" placeholder="Choice 1"><br>
-                            <input type="text" name="newChoice2" placeholder="Choice 2"><br>
-                            <input type="text" name="newChoice3" placeholder="Choice 3"><br>
-                            <input type="text" name="newChoice4" placeholder="Choice 4"><br>
-                            <label for="newCorrectAnswer">Correct Answer:</label>
-                            <select name="newCorrectAnswer" id="newCorrectAnswer">
-                                <option value="1">Choice 1</option>
-                                <option value="2">Choice 2</option>
-                                <option value="3">Choice 3</option>
-                                <option value="4">Choice 4</option>
-                            </select>
-                        </div>
-
-                        <div class="true-false-container" style="display:none;">
-                            <label for="newTrueFalse">Correct Answer:</label>
-                            <select name="newTrueFalse" id="newTrueFalse">
-                                <option value="true">True</option>
-                                <option value="false">False</option>
-                            </select>
-                        </div>
-
-                        <div class="fill-in-blank-container" style="display:none;">
-                            <label for="newFillInBlank">Correct Answer:</label>
-                            <input type="text" name="newFillInBlank" id="newFillInBlank">
-                        </div>
-
-
-                    </div>
-                </div>
-            </div>
         <a href="{{ url_for('add_quiz_question', quiz_id=quiz.id) }}">
             <button type="button">Add Question</button>
         </a>

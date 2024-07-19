@@ -229,6 +229,8 @@
                     <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
+
+            {% if current_user.role == "student" %}
             <ul>
                 <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
                 <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
@@ -243,6 +245,24 @@
                 <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
 
             </ul>
+
+            {% elif current_user.role == "parent" %}
+                        <ul>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Child's Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">Child's Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">Child's Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Child's Attendance</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Child's Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Child's Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Child's Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Child's Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+
+            </ul>
+
+            {% endif %}
         </div>
 
         <!-- cards for each subject -->
@@ -253,6 +273,8 @@
     <div class="dashboard-sections">
         {% for subject in subjects %}
         <div class="section">
+
+        {% if current_user.role == "student" %}
             <a href="/view_subject/{{ subject.id }}">
             <h2>{{ subject.name }}</h2>
             </a>
@@ -264,6 +286,21 @@
                 <!-- Add more details as needed -->
             </ul>
                         </a>
+
+        {% elif current_user.role =="parent" %}
+<a href="{{ url_for('view_subject', subject_id=subject.id) }}?child_id={{ current_user.child_id }}">
+    <h2>{{ subject.name }}</h2>
+</a>
+                        <a href="/view_teacher/{{ subject.id }}">
+            <ul>
+
+                <li>Teacher: {{ subject.teacher_name }}</li>
+
+                <!-- Add more details as needed -->
+            </ul>
+                        </a>
+
+            {% endif %}
         </div>
         <br> <!-- Optional: Use CSS margin or padding for spacing instead -->
         {% endfor %}
@@ -293,6 +330,8 @@
             sidebar.classList.toggle('open');
             mainContent.classList.toggle('expanded');
         }
+
+
     </script>
 </body>
 </html>

@@ -50,7 +50,7 @@
             margin: 10px 0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            position: relative; /* Position relative for absolute button */
+            position: relative;
         }
 
         .message-list li p {
@@ -137,9 +137,7 @@
                         <p>{{ message.content }}</p>
                         <p><em>Received at: {{ message.timestamp }}</em></p>
                         {% if not message.read %}
-                            <form action="/mark_message_as_read/{{ message.id }}" method="post">
-                                <button class="read-btn">Mark as Read</button>
-                            </form>
+                            <button class="read-btn" data-id="{{ message.id }}">Mark as Read</button>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -164,7 +162,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log("Document loaded");
 
-            // Function to fetch unread messages count from the backend
+            document.querySelectorAll('.read-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const messageId = this.getAttribute('data-id');
+                    fetch('/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message_id: messageId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.parentElement.remove();
+                            updateMessageBadge();
+                        } else {
+                            console.error(data.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+
             function fetchUnreadMessagesCount() {
                 console.log("Fetching unread messages count");
                 return fetch('/api/unread_messages_count')
@@ -184,22 +204,18 @@
                     });
             }
 
-            // Function to update the message badge
             function updateMessageBadge() {
                 fetchUnreadMessagesCount().then(count => {
                     console.log("Updating message badge with count:", count);
-                    const messageBadge = document.getElementById('message-badge');
+                    const messageBadge = document.getElementById('notification-count');
                     if (messageBadge) {
                         messageBadge.textContent = count;
                     }
                 });
             }
 
-            // Initially update the badge when the page loads
             updateMessageBadge();
-
-            // Periodically update the badge (e.g., every 10 seconds)
-            setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
+            setInterval(updateMessageBadge, 10000);
         });
     </script>
 </body>

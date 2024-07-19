@@ -74,7 +74,7 @@
 <body>
     <div class="form-wrapper">
         <h1>Add Quiz Question</h1>
-        <form action="{{ url_for('add_quiz_question', quiz_id=quiz.id) }}" method="post" id="addQuestionForm">
+        <form action="{{ url_for('add_quiz_question', quiz_id=quiz_id) }}" method="post" id="addQuestionForm">
             <input type="hidden" name="quiz_id" value="{{ quiz_id }}">
 
             <div class="container">

@@ -72,6 +72,17 @@
                 <label for="name">Subject Name</label>
                 <input type="text" id="name" name="name" required>
             </div>
+
+            <div class="form-group">
+                <label for="teacher_email">Teacher</label>
+                <select id="teacher_email" name="teacher_email" required>
+                    <option value="">Select Teacher</option>
+                    {% for teacher in teachers %}
+                    <option value="{{teacher.email}}">{{teacher.email}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <div class="form-group">
                 <label for="grade">Grade</label>
                 <select id="grade" name="grade" required>
@@ -90,6 +101,18 @@
                     <option value="12">12th Grade</option>
                 </select>
             </div>
+
+            <div class="form-group">
+                <label for="Class">Class</label>
+                <select id="Class" name="Class" required>
+                    <option value="">Select Class</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+
             <button type="submit">Create</button>
         </form>
         <div id="message"></div>
@@ -99,14 +122,21 @@
         document.getElementById('subjectForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const subjectName = document.getElementById('name').value;
+            const teacherEmail = document.getElementById('teacher_email').value;
             const grade = document.getElementById('grade').value;
+            const Class = document.getElementById('Class').value;
 
             fetch('/create_subject', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name: subjectName, grade: grade })
+                body: JSON.stringify({
+                    name: subjectName,
+                    teacher_email: teacherEmail,
+                    grade: grade,
+                    Class: Class
+                })
             })
             .then(response => response.json())
             .then(data => {

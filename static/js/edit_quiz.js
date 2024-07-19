@@ -54,57 +54,26 @@ function addNewQuestion() {
 }
 
 
-function handleNewQuestionTypeChange(selectElement, questionId) {
-    var questionType = selectElement.value;
-    var optionsContainer = document.querySelector(`#optionsContainer${questionId}`);
-    var trueFalseContainer = document.querySelector(`#trueFalseContainer${questionId}`);
-    var fillInBlankContainer = document.querySelector(`#fillInBlankContainer${questionId}`);
+function handleQuestionTypeChange(selectElement, questionId) {
+    var questionContainer = selectElement.closest('.question-container');
+    var optionsContainer = questionContainer.querySelector('.options-container');
+    var trueFalseContainer = questionContainer.querySelector('.true-false-container');
+    var completeContainer = questionContainer.querySelector('.complete-container');
 
-    if (optionsContainer && trueFalseContainer && fillInBlankContainer) {
+    if (selectElement.value === 'multiple') {
+        optionsContainer.style.display = 'block';
+        trueFalseContainer.style.display = 'none';
+        completeContainer.style.display = 'none';
+    } else if (selectElement.value === 'true_false') {
+        optionsContainer.style.display = 'none';
+        trueFalseContainer.style.display = 'block';
+        completeContainer.style.display = 'none';
+    } else if (selectElement.value === 'complete') {
         optionsContainer.style.display = 'none';
         trueFalseContainer.style.display = 'none';
-        fillInBlankContainer.style.display = 'none';
-
-        if (questionType === 'multiple') {
-            optionsContainer.style.display = 'block';
-        } else if (questionType === 'true_false') {
-            trueFalseContainer.style.display = 'block';
-        } else if (questionType === 'fill_in_blank') {
-            fillInBlankContainer.style.display = 'block';
-        }
+        completeContainer.style.display = 'block';
     }
 }
-
-// edit_quiz.js
-
-// edit_quiz.js
-
-// edit_quiz.js
-
-function handleQuestionTypeChange(selectElement) {
-    var questionId = selectElement.id.replace('questionType', '');
-    var questionType = selectElement.value;
-    var optionsContainer = document.querySelector(`#optionsContainer${questionId}`);
-    var trueFalseContainer = document.querySelector(`#trueFalseContainer${questionId}`);
-    var fillInBlankContainer = document.querySelector(`#fillInBlankContainer${questionId}`);
-
-    if (optionsContainer && trueFalseContainer && fillInBlankContainer) {
-        optionsContainer.style.display = 'none';
-        trueFalseContainer.style.display = 'none';
-        fillInBlankContainer.style.display = 'none';
-
-        if (questionType === 'multiple') {
-            optionsContainer.style.display = 'block';
-        } else if (questionType === 'true_false') {
-            trueFalseContainer.style.display = 'block';
-        } else if (questionType === 'fill_in_blank') {
-            fillInBlankContainer.style.display = 'block';
-        }
-    }
-}
-
-// edit_quiz.js
-
 
 function deleteQuestion(questionId) {
     var questionElement = document.getElementById(`question${questionId}`);
@@ -146,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var questionId = questionElement.id.replace('question', '');
         var questionTypeSelect = document.getElementById(`questionType${questionId}`);
         if (questionTypeSelect) {
-            handleQuestionTypeChange(questionTypeSelect);
+            handleQuestionTypeChange(questionTypeSelect, questionId);
         }
     });
 });

@@ -179,13 +179,14 @@ with app.app_context():
         behavior = db.Column(db.String(100))
         oral_exam = db.Column(db.String(100))
         written_exam = db.Column(db.String(100))
-        comments = db.Column(db.String(255))
+        comments = db.Column(db.String(1000))
         attendance = db.Column(db.String(100))
         assignments = db.Column(db.String(100))
         class_projects = db.Column(db.String(100))
         subject_projects = db.Column(db.String(100))
         participation = db.Column(db.String(100))
         class_work = db.Column(db.String(100))
+        total = db.Column(db.String(100))
         subject_id = db.Column(db.String(100))
         teacher_id = db.Column(db.String(100))
 
@@ -291,19 +292,30 @@ def login():
 
 
 @app.route("/dashboard")
+@login_required
 def dashboard():
-    user = Users.query.all()
+    # Calculate notification count (similar to how you did for messages)
+    unread_count = Messages.query.filter_by(receiver_id=current_user.id, read=False).count()
+
     latest_news = News.query.all()
-    teachers = Teacher.query.filter_by(grade=current_user.grade).all()
+    teachers = []
+
     if current_user.role == "student":
-        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers)
-    if current_user.role == "teacher":
-        return render_template("teacher_dashboard.html", latest_news=latest_news, teachers=teachers,
-                              user=current_user)
-    if current_user.role == "parent":
+        subjects = Subjects.query.filter_by(grade=current_user.grade, Class=current_user.Class).all()
+        teacher_ids = {subject.teacher_id for subject in subjects}  # Use a set to avoid duplicates
+        teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
+        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers, unread_count=unread_count)
+    elif current_user.role == "teacher":
+        teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+        students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
+                                         Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
+        number_of_students = len(students)
+        return render_template("teacher_dashboard.html", latest_news=latest_news,
+                               user=current_user, number=number_of_students)
+    elif current_user.role == "parent":
         my_students = Students.query.filter_by(parent_email=current_user.email).all()
         return render_template("parent_dashboard.html", children=my_students)
-    if current_user.role == "admin":
+    elif current_user.role == "admin":
         return render_template("admin_dashboard.html")
     else:
         return redirect(url_for('unauthorized'))
@@ -325,7 +337,8 @@ def my_teachers():
 
     if current_user.role == 'student':
         filtered_subjects = Subjects.query.filter_by(grade=current_user.grade).all()
-        teachers = [subject.teacher_name for subject in filtered_subjects]
+        teacher_ids = {subject.teacher_id for subject in filtered_subjects}  # Use a set to avoid duplicates
+        teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
 
         return render_template("my_teachers.html", teachers=teachers)
 
@@ -333,15 +346,32 @@ def my_teachers():
     return render_template("my_teachers.html", teachers=[])  # Return empty list if no teachers found
 
 
+
 @app.route("/students")
+@login_required
 def students():
-    students = Students.query.all()
-    return render_template("my_students.html", students=students)
+    if current_user.role != 'teacher':
+        flash('You are not authorized to view this page.', 'warning')
+        return redirect(url_for('dashboard'))
+
+    teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+    teacher_subject_ids = [subject.id for subject in teacher_subjects]
+
+    students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
+                                     Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
+
+    number_of_students = len(students)
+
+    return render_template("my_students.html", students=students, number=number_of_students, user=current_user)
 
 
 @app.route("/send-email/<email>", methods=['GET'])
 def send_email_page(email):
     return render_template('send_email.html', email=email)
+
+
+
+
 
 
 @app.route("/my_subjects")
@@ -354,7 +384,7 @@ def my_subjects():
         all_subjects = Subjects.query.all()
         current_user_grade = current_user.grade
         filtered_subjects = [subject for subject in all_subjects if subject.grade == current_user_grade]
-        return render_template("my_subjects.html", subjects=filtered_subjects)
+        return render_template("my_subjects.html", subjects=filtered_subjects, user=current_user)
 
     elif current_user.role == 'teacher':
         teacher = Users.query.filter_by(id=current_user.id).first()
@@ -363,7 +393,7 @@ def my_subjects():
         if teacher:
             filtered_subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
             print(f"Number of subjects found: {len(filtered_subjects)}")
-            return render_template("my_subjects_teacher.html", subjects=filtered_subjects)
+            return render_template("my_subjects_teacher.html", subjects=filtered_subjects, user=current_user)
         else:
             print("Teacher record not found.")  # Debug statement
             return redirect("/")
@@ -378,7 +408,7 @@ def my_subjects():
         if child:
             filtered_subjects = Subjects.query.filter_by(grade=child.grade).all()
             print(f"Number of subjects found for child {child_id}: {len(filtered_subjects)}")
-            return render_template("my_subjects.html", subjects=filtered_subjects)
+            return render_template("my_subjects.html", subjects=filtered_subjects, user=current_user)
         else:
             print("Child record not found or does not belong to the current parent.")  # Debug statement
             return redirect("/")
@@ -389,7 +419,7 @@ def my_subjects():
 
 @app.route("/sessions")
 def sessions():
-    return render_template("sessions.html")
+    return render_template("sessions.html", user=current_user)
 
 
 @app.route("/assessments")
@@ -419,37 +449,24 @@ def view_subject(subject_id):
     subject = Subjects.query.get_or_404(subject_id)
     print(f"Subject ID: {subject_id}")
 
-    if current_user.role == "student":
-        lessons = Lessons.query.filter_by(subject_id=subject.id).all()
-        lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quizzes=lesson_quizzes)
+    lessons = Lessons.query.filter_by(subject_id=subject.id).all()
+    lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+    lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+    lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
 
+    if current_user.role == "student":
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes, user=current_user)
     elif current_user.role == "teacher":
         if subject.teacher_id == current_user.id:
-            lessons = Lessons.query.filter_by(subject_id=subject.id).all()
-            lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quizzes=lesson_quizzes)
+            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes, user=current_user)
         else:
             flash("You are not assigned to this subject.", "danger")
             return redirect(url_for('dashboard'))
-
     elif current_user.role == "parent":
         if request.method == 'POST':
             child_id = request.form.get('child_id')
-            # Add logic to handle child_id if needed
             print(f"Child ID: {child_id}")
-
-        lessons = Lessons.query.filter_by(subject_id=subject.id).all()
-        lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos,
-                               lesson_files=lesson_files, lesson_quiz=lesson_quizzes)
-
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes)
     else:
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
@@ -667,16 +684,17 @@ def create_subject():
 
             # Fetch the teacher based on the provided email
             teacher = Teacher.query.filter_by(email=teacher_email).first()
+            user = Users.query.filter_by(email=teacher_email).first()
+
             if not teacher:
                 return jsonify({'error': 'Teacher not found'}), 404
-
             new_subject = Subjects(
                 name=subject_name,
                 grade=grade,
-                Class=Class,
-                teacher_id=teacher.id,
+                Class=Class.lower(),
+                teacher_id=user.id,
                 teacher_name=teacher.name,
-                teacher_email=teacher_email
+                teacher_email=teacher_email,
             )
             db.session.add(new_subject)
             db.session.commit()
@@ -687,7 +705,6 @@ def create_subject():
             return jsonify({'error': 'An error occurred while creating the subject'}), 500
 
     return render_template('create_subject.html', teachers=teachers)
-
 
 
 @app.route('/create_lesson/<int:subject_id>', methods=['GET', 'POST'])
@@ -900,7 +917,7 @@ def results(user_id):
     if current_user.role == "teacher" and current_user.id == user_id:
         teacher = Users.query.get_or_404(user_id)
         quizzes = Quizzes.query.filter_by(user_id=user_id).all()
-        return render_template('results.html', teacher_name=teacher.name, quizzes=quizzes)
+        return render_template('results.html', teacher_name=teacher.name, quizzes=quizzes, user=current_user)
     else:
         # Handle unauthorized access
         return redirect(url_for('index'))
@@ -927,7 +944,7 @@ def quizzes_surveys():
         return redirect(url_for('take_quiz', quiz_id=quiz_id))
 
     quizzes = Quizzes.query.all()  # Fetch all quizzes from the database
-    return render_template('quizzes_surveys.html', quizzes=quizzes)
+    return render_template('quizzes_surveys.html', quizzes=quizzes, user=current_user)
 
 
 
@@ -988,7 +1005,6 @@ def timetable():
     else:
         teachers = Teacher.query.all()
         return render_template('create_timetable.html', teachers=teachers)
-
 @app.route("/view_timetable")
 @login_required
 def view_timetable():
@@ -1030,12 +1046,11 @@ def view_timetable():
             if time not in schedule[day]:
                 schedule[day][time] = []
             schedule[day][time].append(entry)
-        return render_template('view_timetable_student.html', schedule=schedule)
+        return render_template('view_timetable_student.html', schedule=schedule, user=current_user)
 
     else:
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
-
 
 
 @app.route("/print_timetable")
@@ -1093,7 +1108,6 @@ def messages():
     return render_template('view_message.html', received_messages=received_messages, sent_messages=sent_messages)
 
 
-
 @app.route('/notifications')
 @login_required
 def notifications():
@@ -1131,7 +1145,9 @@ def test():
 def term_marks():
     if current_user.role == "teacher":
         subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
-        return render_template("term_marks.html", subjects=subjects)
+        return render_template("term_marks.html", subjects=subjects, user=current_user)
+    elif current_user.role == "student":
+        return render_template("student_mars.html")
     else:
         return redirect(url_for('dashboard'))  # Redirect non-teachers to the dashboard or another appropriate page
 
@@ -1148,7 +1164,6 @@ def grade_marks():
         teacher_id = current_user.id
 
         student_ids = request.form.getlist('student_id')
-        print(student_ids)
 
         for student_id in student_ids:
             behavior = request.form.get(f'behavior{student_id}')
@@ -1161,6 +1176,7 @@ def grade_marks():
             subject_projects = request.form.get(f'subject_projects{student_id}')
             participation = request.form.get(f'participation{student_id}')
             class_work = request.form.get(f'class_work{student_id}')
+            total = request.form.get(f'total{student_id}')
 
             grade_record = Grades.query.filter_by(student_id=student_id, subject_id=subject_id).first()
             if grade_record:
@@ -1174,6 +1190,7 @@ def grade_marks():
                 grade_record.subject_projects = subject_projects
                 grade_record.participation = participation
                 grade_record.class_work = class_work
+                grade_record.total = total
                 grade_record.teacher_id = teacher_id
             else:
                 new_grade = Grades(
@@ -1189,6 +1206,7 @@ def grade_marks():
                     subject_projects=subject_projects,
                     participation=participation,
                     class_work=class_work,
+                    total=total,
                     teacher_id=teacher_id
                 )
                 db.session.add(new_grade)
@@ -1204,7 +1222,7 @@ def grade_marks():
         subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
 
         if subject_id and grade and Class:
-            students = Students.query.filter_by(grade=grade, Class=Class).all()  # Assuming Users model has grade and class_ fields
+            students = Students.query.filter_by(grade=grade, Class=Class).all()
             student_ids = [student.id for student in students]
             grades = {g.student_id: g for g in Grades.query.filter(Grades.student_id.in_(student_ids), Grades.subject_id == subject_id).all()}
         else:
@@ -1245,17 +1263,14 @@ def student_marks():
     else:
         return "Student not found", 404
 
-
-
 @app.route("/child_detail/<int:child_id>")
 @login_required
 def child_detail(child_id):
+    latest_news = News.query.all()
     child = Students.query.filter_by(id=child_id, parent_email=current_user.email).first_or_404()
     child_grade = child.grade
     child_subjects = Subjects.query.filter_by(grade=child_grade).all()
-    return render_template('child_detail.html', child=child, child_subjects=child_subjects)
-
-
+    return render_template('child_detail.html', child=child, child_subjects=child_subjects,latest_news=latest_news)
 
 if __name__ == "__main__":
      app.run(debug=True)

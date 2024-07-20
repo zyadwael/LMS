@@ -301,8 +301,8 @@ def dashboard():
     teachers = []
 
     if current_user.role == "student":
-        subjects = Subjects.query.filter_by(grade=current_user.grade, Class=current_user.Class).all()
-        teacher_ids = {subject.teacher_id for subject in subjects}  # Use a set to avoid duplicates
+        filtered_subjects = Subjects.query.filter_by(grade=current_user.grade).all()
+        teacher_ids = {subject.teacher_id for subject in filtered_subjects}  # Use a set to avoid duplicates
         teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
         return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers, unread_count=unread_count)
     elif current_user.role == "teacher":

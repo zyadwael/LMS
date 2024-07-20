@@ -246,13 +246,20 @@
             position: relative;
         }
 
-        /* CSS for the notification count badge */
         .badge {
-            background-color: ; /* Background color */
-            color: white; /* Text color */
-            padding: 5px 8px; /* Padding around text */
-            border-radius: 10%; /* Make it round */
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+
         /* CSS to make the image smaller */
         .icon-img {
             width: 20px; /* Adjust the width as per your preference */
@@ -284,7 +291,7 @@
                 <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
                 <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
                 <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
-                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span id="notification-count" class="badge">{{ unread_count }}</span></a></li>
             </ul>
         </div>
 
@@ -313,9 +320,14 @@
                     </ul>
                 </div>
                 <div class="latest-news-section">
-                            <a href="/messages"> Latest News</a>
-                    <span id="notification-count" class="badge">{{ unread_count }}</span>
+                    <h2>Latest News</h2>
+                    <ul>
+                        {% for news in latest_news %}
+                            <li>{{ news.title }} - {{ news.content }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
+
 
     </div>
             </div>

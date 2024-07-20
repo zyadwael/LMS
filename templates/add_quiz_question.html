@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Quiz Question</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #DFD3C3;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #8B4513;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #A0522D;
+        }
+
+        .options-container {
+            margin-top: 10px;
+        }
+
+        .question-container {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-wrapper">
+        <h1>Add Quiz Question</h1>
+        <form action="{{ url_for('add_quiz_question', quiz_id=quiz_id) }}" method="post" id="addQuestionForm">
+            <input type="hidden" name="quiz_id" value="{{ quiz_id }}">
+
+            <div class="container">
+                <label for="question_text">Question Text:</label>
+                <textarea name="question_text" id="question_text" required></textarea>
+            </div>
+
+            <div class="container">
+                <label for="question_type">Question Type:</label>
+                <select name="question_type" id="question_type" onchange="handleQuestionTypeChange(this)" required>
+                    <option value="multiple">Multiple Choice</option>
+                    <option value="true_false">True/False</option>
+                    <option value="complete">Complete</option>
+                </select>
+            </div>
+
+            <div id="optionsContainer" class="options-container" style="display: none;">
+                <label for="options">Options:</label><br>
+                <input type="text" name="option1" placeholder="Option 1"><br>
+                <input type="text" name="option2" placeholder="Option 2"><br>
+                <input type="text" name="option3" placeholder="Option 3"><br>
+                <input type="text" name="option4" placeholder="Option 4"><br>
+
+                <label for="correct_answer">Correct Answer:</label><br>
+                <select name="correct_answer" id="correct_answer">
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                    <option value="4">Option 4</option>
+                </select>
+            </div>
+
+            <div id="trueFalseContainer" class="options-container" style="display: none;">
+                <label for="true_false_answer">Correct Answer:</label><br>
+                <select name="true_false_answer" id="true_false_answer">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+            </div>
+
+            <div id="completeContainer" class="options-container" style="display: none;">
+                <label for="complete_answer">Correct Answer:</label><br>
+                <input type="text" name="complete_answer" id="complete_answer">
+            </div>
+
+            <div class="container">
+                <label for="score">Score:</label>
+                <input type="number" name="score" id="score" required>
+            </div>
+
+            <button type="button" onclick="addQuestion()">Add Question</button>
+
+        </form>
+    </div>
+
+    <script>
+        function handleQuestionTypeChange(selectElement) {
+            var optionsContainer = document.getElementById('optionsContainer');
+            var trueFalseContainer = document.getElementById('trueFalseContainer');
+            var completeContainer = document.getElementById('completeContainer');
+
+            optionsContainer.style.display = 'none';
+            trueFalseContainer.style.display = 'none';
+            completeContainer.style.display = 'none';
+
+            if (selectElement.value === 'multiple') {
+                optionsContainer.style.display = 'block';
+            } else if (selectElement.value === 'true_false') {
+                trueFalseContainer.style.display = 'block';
+            } else if (selectElement.value === 'complete') {
+                completeContainer.style.display = 'block';
+            }
+        }
+
+        function addQuestion() {
+            var form = document.getElementById('addQuestionForm');
+            form.submit();
+        }
+    </script>
+</body>
+</html>

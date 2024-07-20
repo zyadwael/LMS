@@ -37,14 +37,15 @@
             color: #ecf0f1;
             padding: 20px;
             box-sizing: border-box;
-            position: fixed;
+            position: absolute;
             top: 0;
             bottom: 0;
-            left: 0;
-            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto; /* Enable vertical scrolling */
         }
 
         .sidebar.closed {
@@ -69,6 +70,7 @@
             margin: 15px 0;
             border-bottom: 1px solid #ecf0f1;
             padding-bottom: 5px;
+            position: relative; /* Added for badge positioning */
         }
 
         .sidebar ul li:last-child {
@@ -85,7 +87,6 @@
         .sidebar ul li a:hover {
             text-decoration: underline;
         }
-
         .main-content {
             margin-left: 250px;
             flex: 1;
@@ -186,6 +187,40 @@
                 margin: 10px 0; /* Adjust margin for spacing */
             }
         }
+
+                                  .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+                .messages {
+            flex: 1; /* Make messages section take up remaining space */
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right; /* Make it float to the right */
+        }
+
+        .messages::before {
+            content: "";
+            display: flex; /* Change to flexbox for side-by-side layout */
+            width: 30px;  /* Increase width to make icon bigger */
+            height: 30px; /* Increase height to make icon bigger */
+            align-items: left; /* Vertically align icon and text */
+            margin-right: 5px; /* Reduce gap between icon and text (optional) */
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain; /* Maintain aspect ratio */
+        }
     </style>
 </head>
 <body>
@@ -194,22 +229,42 @@
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
                 <a href="../templates/index.html">
-                    <img src="{{ url_for('static', filename='assets/images/logo.png') }}" alt="School Logo" style="width: 100px; height: auto;">
+                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
+            {% if current_user.role == "student" %}
             <ul>
-                <li><a href="{{ url_for('dashboard') }}"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
-                <li><a href="#"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
-                <li><a href="{{ url_for('my_subjects') }}"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
-                <li><a href="{{ url_for('my_teachers') }}"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
                 <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
-                <li><a href="#"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
-                <li><a href="#"><i class="feather icon-users"></i><span class="link-text">Assessments & Assignments</span></a></li>
-                <li><a href="#"><i class="feather icon-users"></i><span class="link-text">Remarks & Actions</span></a></li>
-                <li><a href="/quizzes_surveys"><i class="feather icon-users"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
 
             </ul>
 
+            {% elif current_user.role == "parent" %}
+                        <ul>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Child's Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">Child's Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">Child's Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Child's Attendance</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Child's Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Child's Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Child's Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Child's Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+
+            </ul>
+
+            {% endif %}
         </div>
         <div class="main-content">
             <div class="dashboard-header">

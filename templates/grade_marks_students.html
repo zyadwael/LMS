@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ subject.name }} - Posts</title>
+
     <link rel="stylesheet" href="../static/css/simplebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/feather.css">
@@ -87,7 +87,6 @@
         .sidebar ul li a:hover {
             text-decoration: underline;
         }
-
         .main-content {
             margin-left: 250px;
             flex: 1;
@@ -189,6 +188,7 @@
         .take-quiz-btn:hover {
             background-color: #543310;
         }
+
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
             .section {
@@ -219,26 +219,62 @@
                 margin: 10px 0; /* Adjust margin for spacing */
             }
         }
-       .post {
-    position: relative;
-    padding-bottom: 60px; /* Ensure there is space for the buttons */
-}
 
-.button-container {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .post {
+            position: relative;
+            padding-bottom: 60px; /* Ensure there is space for the buttons */
+        }
 
-.button-container button,
-.button-container a {
-    display: inline-block;
-    margin: 5px 0;
-}
-                .badge {
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-container button,
+        .button-container a {
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #543310;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #543310;
+        }
+
+        td input:focus {
+            outline: none;
+        }
+
+                                  .badge {
             background-color: red;
             color: white;
             border-radius: 50%;
@@ -283,82 +319,94 @@
                 </a>
             </div>
             <ul>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/view_timetable">Timetable</a></li>
-                <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/students">My Students</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
-                <li><a href="#">Assessments & Assignments</a></li>
-                <li><a href="#">Remarks & Actions</a></li>
-                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
-                <li><a href="/results/{{user.id}}" onclick="showQuizResults()">Quiz Results</a></li>
-                <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+
             </ul>
         </div>
 
-    <div class="container">
-        <div class="main-content">
-            <div class="dashboard-header">
-                <h1 style="color: #543310;">{{ subject.name }}</h1>
-                <a href="/create_lesson/{{ subject.id }}" class="add-lesson-btn">Add New Lesson</a>
-            </div>
-            <div class="posts">
-    {% for lesson in lessons %}
-    <div class="post">
-        <h2>{{ lesson.name }}</h2>
-        {% if lesson_videos[lesson.id] %}
-        {% for video in lesson_videos[lesson.id] %}
-        <p>
-            <a href="/video/{{ video.id }}">Video On the Lesson</a>
-        {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take Quiz</a>
-            {% else %}
-                        <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
-        {% endif %}
-        </p>
-        {% endfor %}
-        {% endif %}
-        {% if lesson.files %}
-            {% for file in lesson.files %}
-                <a href="{{ url_for('download_file', filename=file.path.split('/')[-1]) }}">{{ file.name }}</a>
-            {% endfor %}
-        {% endif %}
+<div class="container">
+    <div class="main-content">
+        <div class="content">
+            <h1>Grade Marks</h1>
 
-        <div class="button-container">
-            {% if not lesson.files %}
-            <form action="/create_file/{{ lesson.id }}" method="GET">
-                <button type="submit" class="add-lesson-btn">Add File</button>
+            <form id="gradeForm" method="POST" action="/grade_marks">
+                <input type="hidden" name="subject_id" value="{{ subject_id }}">
+                <input type="hidden" name="grade" value="{{ grade }}">
+                <input type="hidden" name="class" value="{{ class }}">
+                <table id="gradeTable">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Behavior</th>
+                            <th>Oral Exam</th>
+                            <th>Written Exam</th>
+                            <th>Comments</th>
+                            <th>Attendance</th>
+                            <th>Assignments</th>
+                            <th>Class Projects</th>
+                            <th>Subject Projects</th>
+                            <th>Participation</th>
+                            <th>Class Work</th>
+                            <th>Total Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        {% set grade = grades.get(student.id) %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td><input type="number" name="behavior{{ student.id }}" class="grade-input" value="{{ grade.behavior if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="oral_exam{{ student.id }}" class="grade-input" value="{{ grade.oral_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="written_exam{{ student.id }}" class="grade-input" value="{{ grade.written_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="comments{{ student.id }}" class="grade-input" value="{{ grade.comments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="attendance{{ student.id }}" class="grade-input" value="{{ grade.attendance if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="assignments{{ student.id }}" class="grade-input" value="{{ grade.assignments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="class_projects{{ student.id }}" class="grade-input" value="{{ grade.class_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="subject_projects{{ student.id }}" class="grade-input" value="{{ grade.subject_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="participation{{ student.id }}" class="grade-input" value="{{ grade.participation if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td><input type="number" name="class_work{{ student.id }}" class="grade-input" value="{{ grade.class_work if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
+                            <td class="total" id="totalMarks{{ student.id }}">0</td>
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="submit">Save Edits</button>
             </form>
-            {% endif %}
-
-            <a href="/edit_lesson/{{ lesson.id }}" class="add-quiz-btn">Edit Lesson</a>
         </div>
     </div>
-    {% endfor %}
 </div>
 
-        </div>
-    </div>
-    <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/popper.min.js"></script>
-    <script src="../static/js/moment.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/simplebar.min.js"></script>
-    <script src="../static/js/daterangepicker.js"></script>
-    <script src="../static/js/jquery.stickOnScroll.js"></script>
-    <script src="../static/js/tinycolor-min.js"></script>
-    <script src="../static/js/config.js"></script>
-    <script src="../static/js/fullcalendar.js"></script>
-    <script src="../static/js/fullcalendar.custom.js"></script>
-    <script src="../static/js/apps.js"></script>
+
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
             var mainContent = document.getElementById('main-content');
             sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
+            mainContent.classList.toggle('full-width');
+        }
+
+        function calculateTotal(studentId) {
+            var total = 0;
+            var inputs = document.querySelectorAll(input[name^="${studentId}"]);
+            inputs.forEach(function(input) {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById(totalMarks${studentId}).innerText = total;
         }
     </script>
 </body>
+
+
+
 </html>

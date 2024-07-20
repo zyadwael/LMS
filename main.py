@@ -69,6 +69,7 @@ with app.app_context():
         subjects = db.relationship('Subjects', backref='teacher')
         quizzes = db.relationship('Quizzes', backref='user')
         parents = db.relationship('Parents', backref='user')
+        grades = db.relationship('Grades', backref='student')
 
 
     class Subjects(db.Model):
@@ -76,6 +77,7 @@ with app.app_context():
         name = db.Column(db.String(100))
         teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         grade = db.Column(db.String(1000))
+        Class = db.Column(db.String(1000))
         teacher_name = db.Column(db.String(1000))
         teacher_email = db.Column(db.String(100))
         lessons = db.relationship('Lessons', backref='subject')
@@ -171,12 +173,30 @@ with app.app_context():
         content = db.Column(db.String(100))
 
 
+    class Grades(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        behavior = db.Column(db.String(100))
+        oral_exam = db.Column(db.String(100))
+        written_exam = db.Column(db.String(100))
+        comments = db.Column(db.String(255))
+        attendance = db.Column(db.String(100))
+        assignments = db.Column(db.String(100))
+        class_projects = db.Column(db.String(100))
+        subject_projects = db.Column(db.String(100))
+        participation = db.Column(db.String(100))
+        class_work = db.Column(db.String(100))
+        subject_id = db.Column(db.String(100))
+        teacher_id = db.Column(db.String(100))
+
+
     class Messages(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
         content = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        read = db.Column(db.Boolean, default=False)  # Add this line
 
         sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_messages')
         receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_messages')
@@ -191,7 +211,6 @@ with app.app_context():
                 'read': self.read,
                 'type': self.type,
             }
-
 
     # Define the Event model
     class Event(db.Model):
@@ -235,7 +254,7 @@ admin.add_view(MyModelView(QuizQuestion, db.session))
 admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
-
+admin.add_view(MyModelView(Grades, db.session))
 
 
 
@@ -245,7 +264,16 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'ppt', 'pptx', 'png', 'jpg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.template_filter('json_loads')
+def json_loads_filter(s):
+    if s:
+        return json.loads(s)
+    return []
 
+
+@app.context_processor
+def utility_processor():
+    return dict(enumerate=enumerate)
 @app.route("/", methods=['POST', 'GET'])
 def login():
     if request.method == "POST":
@@ -284,11 +312,6 @@ def dashboard():
 
 
 
-
-
-
-
-# API endpoint to get all events for the dashboard
 @app.route('/events', methods=['GET'])
 def get_events():
     events = Event.query.all()
@@ -298,8 +321,6 @@ def get_events():
 @app.route("/my_teachers")
 def my_teachers():
     if not current_user.is_authenticated:
-        # Handle case where user is not authenticated (if applicable)
-        # Redirect to login page or handle as per your application's logic
         return redirect(url_for('login'))
 
     if current_user.role == 'student':
@@ -323,10 +344,6 @@ def send_email_page(email):
     return render_template('send_email.html', email=email)
 
 
-
-
-
-
 @app.route("/my_subjects")
 @login_required
 def my_subjects():
@@ -346,16 +363,29 @@ def my_subjects():
         if teacher:
             filtered_subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
             print(f"Number of subjects found: {len(filtered_subjects)}")
-
             return render_template("my_subjects_teacher.html", subjects=filtered_subjects)
         else:
             print("Teacher record not found.")  # Debug statement
             return redirect("/")
 
+    elif current_user.role == 'parent':
+        child_id = request.args.get('child_id')
+        if not child_id:
+            print("Child ID not provided.")  # Debug statement
+            return redirect("/")
+
+        child = Students.query.filter_by(id=child_id, parent_email=current_user.email).first()
+        if child:
+            filtered_subjects = Subjects.query.filter_by(grade=child.grade).all()
+            print(f"Number of subjects found for child {child_id}: {len(filtered_subjects)}")
+            return render_template("my_subjects.html", subjects=filtered_subjects)
+        else:
+            print("Child record not found or does not belong to the current parent.")  # Debug statement
+            return redirect("/")
+
     else:
         print("Role not recognized.")  # Debug statement
         return redirect("/")
-
 
 @app.route("/sessions")
 def sessions():
@@ -384,25 +414,42 @@ def unauthorized():
     return "You are not authorized to view this page.", 403
 
 @app.route('/view_subject/<int:subject_id>')
+@login_required
 def view_subject(subject_id):
-    subject = Subjects.query.get(subject_id)
+    subject = Subjects.query.get_or_404(subject_id)
+    print(f"Subject ID: {subject_id}")
+
     if current_user.role == "student":
         lessons = Lessons.query.filter_by(subject_id=subject.id).all()
         lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
         lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files , lesson_quiz=lesson_quiz)
+        lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quizzes=lesson_quizzes)
+
     elif current_user.role == "teacher":
         if subject.teacher_id == current_user.id:
             lessons = Lessons.query.filter_by(subject_id=subject.id).all()
             lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-            lesson_quiz = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).first() for lesson in lessons}  # Get only the first quiz
             lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
-
-            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files,lesson_quiz=lesson_quiz)
+            lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+            return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quizzes=lesson_quizzes)
         else:
             flash("You are not assigned to this subject.", "danger")
             return redirect(url_for('dashboard'))
+
+    elif current_user.role == "parent":
+        if request.method == 'POST':
+            child_id = request.form.get('child_id')
+            # Add logic to handle child_id if needed
+            print(f"Child ID: {child_id}")
+
+        lessons = Lessons.query.filter_by(subject_id=subject.id).all()
+        lesson_videos = {lesson.id: Videos.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        lesson_files = {lesson.id: Files.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos,
+                               lesson_files=lesson_files, lesson_quiz=lesson_quizzes)
+
     else:
         flash("You do not have the necessary permissions to view this page.", "danger")
         return redirect(url_for('dashboard'))
@@ -460,38 +507,111 @@ def edit_lesson(lesson_id):
 
     return render_template("edit_lesson.html", lesson=lesson,video=video)
 
-@app.route("/edit_quiz/<int:lesson_id>", methods=["GET", "POST"])
+# app.py
+
+@app.route('/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
-def edit_quiz(lesson_id):
-    lesson = Lessons.query.get(lesson_id)
-    quiz = Quizzes.query.filter_by(lesson_id=lesson_id).first()
-    quiz_id = quiz.id
-    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).first()
-    if lesson is None:
-        flash("Lesson not found!", "danger")
-        return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logi
+def edit_quiz(quiz_id):
+    if current_user.role != "teacher":
+        abort(403)
 
-    if quiz.start_date:
-        return jsonify("Quiz Time Started, Cannot edit.", "danger")
+    quiz = Quizzes.query.get_or_404(quiz_id)
+    quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz.id).all()
 
-
-    if request.method == "POST":
+    if request.method == 'POST':
+        # Update quiz details
         quiz.name = request.form['name']
-        quiz_questions.question_text = request.form['questions']
-        quiz_questions.question_type = request.form['type']
-        quiz_questions.correct_answer = request.form['correct_answer']
-        quiz.start_date = request.form['start_date']
-        quiz.end_date = request.form['end_date']
+        quiz.description = request.form['description']
+        db.session.commit()
+
+        # Process each question
+        for question in quiz_questions:
+            question_text = request.form.get(f'questionText{question.id}', '')
+            question_type = request.form.get(f'questionType{question.id}', '')
+
+            # Update question attributes
+            question.question_text = question_text
+            question.question_type = question_type
+
+            if question_type == 'multiple':
+                choices = [
+                    request.form.get(f'choice{question.id}_{i + 1}', '')
+                    for i in range(4)  # Assuming maximum 4 choices
+                ]
+                question.options = json.dumps(choices) if choices else json.dumps([])
+                correct_answer_index = request.form.get(f'correct_answer{question.id}', '1')
+                question.correct_answer = choices[int(correct_answer_index) - 1]
+
+            elif question_type == 'true_false':
+                question.options = json.dumps(['True', 'False'])
+                question.correct_answer = request.form.get(f'trueFalse{question.id}', 'true')
+
+            elif question_type == 'short_answer':
+                question.options = json.dumps([])
+                question.correct_answer = request.form.get(f'short_answer{question.id}', '')
+
+        db.session.commit()
+        flash("Quiz updated successfully!", "success")
+        return redirect(url_for('edit_quiz', quiz_id=quiz_id))
+
+    return render_template('edit_quiz.html', quiz=quiz, quiz_questions=quiz_questions)
+
+@app.route('/add_quiz_question/<int:quiz_id>', methods=['GET', 'POST'])
+def add_quiz_question(quiz_id):
+    if request.method == 'POST':
+        question_text = request.form['question_text']
+        question_type = request.form['question_type']
+        score = request.form['score']
+        correct_answer = ""
+        options = ""
+
+        if question_type == 'multiple':
+            option1 = request.form['option1']
+            option2 = request.form['option2']
+            option3 = request.form['option3']
+            option4 = request.form['option4']
+            options = json.dumps([option1, option2, option3, option4])
+            correct_answer = request.form['correct_answer']
+        elif question_type == 'true_false':
+            correct_answer = request.form['true_false_answer']
+        elif question_type == 'complete':
+            correct_answer = request.form['complete_answer']
+
+        new_question = QuizQuestion(
+            quiz_id=quiz_id,
+            question_text=question_text,
+            question_type=question_type,
+            options=options,
+            correct_answer=correct_answer,
+            score=score
+        )
 
         try:
+            db.session.add(new_question)
             db.session.commit()
-            flash("Lesson edited successfully!", "success")
-            return redirect(url_for("view_subject", subject_id=lesson.subject_id))  # Adjust URL based on your logic
+            flash('Question added successfully!', 'success')
+            return redirect(url_for('add_quiz_question', quiz_id=quiz_id))
         except Exception as e:
             db.session.rollback()
-            flash(f"Error editing lesson: {e}", "danger")
+            flash('Error adding question: {}'.format(str(e)), 'danger')
 
-    return render_template("edit_quiz.html", lesson=lesson,quiz=quiz,quiz_questions=quiz_questions)
+    return render_template('add_quiz_question.html', quiz_id=quiz_id)
+
+@app.route('/delete_question/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    try:
+        # Retrieve the question to be deleted
+        question = QuizQuestion.query.get_or_404(question_id)
+
+        # Delete the question from the database
+        db.session.delete(question)
+        db.session.commit()
+
+        return jsonify({'message': f'Question {question_id} deleted successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 
@@ -530,22 +650,44 @@ def notification():
 @app.route('/create_subject', methods=['GET', 'POST'])
 @login_required
 def create_subject():
+    teachers = Teacher.query.all()
     if request.method == 'POST':
-        teacher = Users.query.filter_by(id=current_user.id).first()
-        teacher_email = teacher.email
-        data = request.get_json()
-        subject_name = data.get('name')
-        grade = data.get('grade')
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'Invalid JSON data'}), 400
 
-        if not subject_name or not grade:
-            return jsonify({'error': 'Subject name and grade are required'}), 400
+            teacher_email = data.get('teacher_email')
+            subject_name = data.get('name')
+            grade = data.get('grade')
+            Class = data.get('Class')
 
-        new_subject = Subjects(name=subject_name, grade=grade, teacher_id=current_user.id,teacher_name=current_user.name,teacher_email=teacher_email)
-        db.session.add(new_subject)
-        db.session.commit()
+            if not subject_name or not grade or not teacher_email:
+                return jsonify({'error': 'Subject name, grade, and teacher email are required'}), 400
 
-        return jsonify({'message': 'Subject created successfully'}), 201
-    return render_template('create_subject.html')
+            # Fetch the teacher based on the provided email
+            teacher = Teacher.query.filter_by(email=teacher_email).first()
+            if not teacher:
+                return jsonify({'error': 'Teacher not found'}), 404
+
+            new_subject = Subjects(
+                name=subject_name,
+                grade=grade,
+                Class=Class,
+                teacher_id=teacher.id,
+                teacher_name=teacher.name,
+                teacher_email=teacher_email
+            )
+            db.session.add(new_subject)
+            db.session.commit()
+
+            return jsonify({'message': 'Subject created successfully'}), 201
+        except Exception as e:
+            print(f"Error: {e}")  # Log the error to the console
+            return jsonify({'error': 'An error occurred while creating the subject'}), 500
+
+    return render_template('create_subject.html', teachers=teachers)
+
 
 
 @app.route('/create_lesson/<int:subject_id>', methods=['GET', 'POST'])
@@ -847,28 +989,53 @@ def timetable():
         teachers = Teacher.query.all()
         return render_template('create_timetable.html', teachers=teachers)
 
-
 @app.route("/view_timetable")
 @login_required
 def view_timetable():
+    schedule = {day: {} for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
+
     if current_user.role == "teacher":
         teacher_email = current_user.email
         timetables = Timetable.query.filter_by(teacher_email=teacher_email).all()
+        for entry in timetables:
+            day = entry.day_of_week
+            time = entry.time_of_day
+            if time not in schedule[day]:
+                schedule[day][time] = []
+            schedule[day][time].append(entry)
+        return render_template('view_timetable.html', schedule=schedule)
+
     elif current_user.role == "student":
         grade = current_user.grade
         Class = current_user.Class
         timetables = Timetable.query.filter_by(grade=grade, Class=Class).all()
+        for entry in timetables:
+            day = entry.day_of_week
+            time = entry.time_of_day
+            if time not in schedule[day]:
+                schedule[day][time] = []
+            schedule[day][time].append(entry)
+        return render_template('view_timetable_student.html', schedule=schedule)
 
-    schedule = {day: {} for day in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]}
+    elif current_user.role == "parent":
+        # Assuming the parent can view the timetable based on their child's grade and class
+        child_id = request.args.get('child_id')  # You might get child_id from query parameters
+        child = Students.query.get_or_404(child_id)
+        grade = child.grade
+        Class = child.Class
+        timetables = Timetable.query.filter_by(grade=grade, Class=Class).all()
+        for entry in timetables:
+            day = entry.day_of_week
+            time = entry.time_of_day
+            if time not in schedule[day]:
+                schedule[day][time] = []
+            schedule[day][time].append(entry)
+        return render_template('view_timetable_student.html', schedule=schedule)
 
-    for entry in timetables:
-        day = entry.day_of_week
-        time = entry.time_of_day
-        if time not in schedule[day]:
-            schedule[day][time] = []
-        schedule[day][time].append(entry)
+    else:
+        flash("You do not have the necessary permissions to view this page.", "danger")
+        return redirect(url_for('dashboard'))
 
-    return render_template('view_timetable.html', schedule=schedule)
 
 
 @app.route("/print_timetable")
@@ -908,12 +1075,185 @@ def send_message():
 
     return render_template('send_message.html')
 
-@app.route('/messages')
+@app.route('/messages', methods=['GET', 'POST'])
 @login_required
-def view_messages():
-    received_messages = Messages.query.filter_by(receiver_id=current_user.id).all()
-    sent_messages = Messages.query.filter_by(sender_id=current_user.id).all()
-    return render_template('view_messages.html', received_messages=received_messages, sent_messages=sent_messages)
+def messages():
+    if request.method == 'POST':
+        data = request.get_json()
+        message_id = data.get('message_id')
+        message = Messages.query.get(message_id)
+        if message and message.receiver_id == current_user.id:
+            message.read = True
+            db.session.commit()
+            return jsonify(success=True)
+
+    received_messages = Messages.query.filter_by(receiver_id=current_user.id).order_by(Messages.timestamp.desc()).all()
+    sent_messages = Messages.query.filter_by(sender_id=current_user.id).order_by(Messages.timestamp.desc()).all()
+
+    return render_template('view_message.html', received_messages=received_messages, sent_messages=sent_messages)
+
+
+
+@app.route('/notifications')
+@login_required
+def notifications():
+    unread_messages_count = Messages.query.filter_by(receiver_id=current_user.id, read=False).count()
+    return {'unread_messages_count': unread_messages_count}
+
+
+@app.route('/unread_messages_count', methods=['GET'])
+@login_required
+def unread_messages_count():
+    user_id = current_user.id
+    unread_count = db.session.query(Messages).filter_by(receiver_id=user_id, read=False).count()
+    return jsonify(unread_count=unread_count)
+
+@app.route('/mark_message_as_read/<int:message_id>', methods=['POST'])
+@login_required
+def mark_message_as_read(message_id):
+    message = Messages.query.get(message_id)
+    if message and message.receiver_id == current_user.id:
+        message.read = True
+        db.session.commit()
+        return jsonify(success=True)
+    return jsonify(success=False), 403
+
+
+@app.route("/test")
+def test():
+    s=1
+    subject = Subjects.query.get(s)
+    print(subject)
+
+
+@app.route("/term_marks")
+@login_required
+def term_marks():
+    if current_user.role == "teacher":
+        subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+        return render_template("term_marks.html", subjects=subjects)
+    else:
+        return redirect(url_for('dashboard'))  # Redirect non-teachers to the dashboard or another appropriate page
+
+@app.route('/grade_marks', methods=['GET', 'POST'])
+@login_required
+def grade_marks():
+    if current_user.role != "teacher":
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        subject_id = request.form.get('subject_id')
+        grade = request.form.get('grade')
+        class_ = request.form.get('class')
+        teacher_id = current_user.id
+
+        student_ids = request.form.getlist('student_id')
+        print(student_ids)
+
+        for student_id in student_ids:
+            behavior = request.form.get(f'behavior{student_id}')
+            oral_exam = request.form.get(f'oral_exam{student_id}')
+            written_exam = request.form.get(f'written_exam{student_id}')
+            comments = request.form.get(f'comments{student_id}')
+            attendance = request.form.get(f'attendance{student_id}')
+            assignments = request.form.get(f'assignments{student_id}')
+            class_projects = request.form.get(f'class_projects{student_id}')
+            subject_projects = request.form.get(f'subject_projects{student_id}')
+            participation = request.form.get(f'participation{student_id}')
+            class_work = request.form.get(f'class_work{student_id}')
+
+            grade_record = Grades.query.filter_by(student_id=student_id, subject_id=subject_id).first()
+            if grade_record:
+                grade_record.behavior = behavior
+                grade_record.oral_exam = oral_exam
+                grade_record.written_exam = written_exam
+                grade_record.comments = comments
+                grade_record.attendance = attendance
+                grade_record.assignments = assignments
+                grade_record.class_projects = class_projects
+                grade_record.subject_projects = subject_projects
+                grade_record.participation = participation
+                grade_record.class_work = class_work
+                grade_record.teacher_id = teacher_id
+            else:
+                new_grade = Grades(
+                    student_id=student_id,
+                    subject_id=subject_id,
+                    behavior=behavior,
+                    oral_exam=oral_exam,
+                    written_exam=written_exam,
+                    comments=comments,
+                    attendance=attendance,
+                    assignments=assignments,
+                    class_projects=class_projects,
+                    subject_projects=subject_projects,
+                    participation=participation,
+                    class_work=class_work,
+                    teacher_id=teacher_id
+                )
+                db.session.add(new_grade)
+        db.session.commit()
+        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_))
+
+    else:
+        subject_id = request.args.get('subject_id')
+        grade = request.args.get('grade')
+        Class = request.args.get('class')
+
+        teacher_email = current_user.email
+        subjects = Subjects.query.filter_by(teacher_email=teacher_email).all()
+
+        if subject_id and grade and Class:
+            students = Students.query.filter_by(grade=grade, Class=Class).all()  # Assuming Users model has grade and class_ fields
+            student_ids = [student.id for student in students]
+            grades = {g.student_id: g for g in Grades.query.filter(Grades.student_id.in_(student_ids), Grades.subject_id == subject_id).all()}
+        else:
+            students = []
+            grades = {}
+
+        return render_template('grade_marks_students.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class)
+
+
+@app.route('/student_marks')
+@login_required  # Ensure the user is logged in
+def student_marks():
+    user_email = current_user.email
+    print(f"Current user email: {user_email}")
+
+    student = Users.query.filter_by(email=user_email).first()
+    print(f"Student object: {student}")
+
+    if student:
+        # Fetch all grades for this student
+        grades = Grades.query.filter_by(student_id=student.id).all()
+        print(grades)
+
+        # Fetch the subjects associated with these grades
+        subjects = Subjects.query.filter(Subjects.id.in_([grade.subject_id for grade in grades])).all()
+        subject_dict = {subject.id: subject.name for subject in subjects}
+
+        # Organize grades by subject
+        grades_by_subject = {}
+        for grade in grades:
+            subject_name = subject_dict.get(grade.subject_id, "Unknown Subject")
+            if subject_name not in grades_by_subject:
+                grades_by_subject[subject_name] = []
+            grades_by_subject[subject_name].append(grade)
+
+        print(f"Grades by subject: {grades_by_subject}")  # Print grades for debugging
+        return render_template('grade_marks_students.html', student=student, grades_by_subject=grades_by_subject)
+    else:
+        return "Student not found", 404
+
+
+
+@app.route("/child_detail/<int:child_id>")
+@login_required
+def child_detail(child_id):
+    child = Students.query.filter_by(id=child_id, parent_email=current_user.email).first_or_404()
+    child_grade = child.grade
+    child_subjects = Subjects.query.filter_by(grade=child_grade).all()
+    return render_template('child_detail.html', child=child, child_subjects=child_subjects)
 
 
 

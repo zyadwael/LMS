@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        .sidebar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .posts {
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            color: #543310;
+        }
+
+        .post {
+            background-color: #C7B198;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .post h2 {
+            margin: 0 0 30px 0;
+        }
+
+        .post a {
+            color: #543310;
+            ;
+        }
+
+        .post a:hover {
+            text-decoration: none;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001; /* Ensure the button is above all other elements */
+            border-radius: 5px;
+        }
+
+        .add-lesson-btn {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            margin-left: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .add-lesson-btn:hover {
+            background-color: #725238;
+        }
+
+        .add-quiz-btn {
+            background-color: #543310 !important;
+            color: #ecf0f1 !important;
+            border: none;
+            padding: 7px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .add-quiz-btn:hover {
+            background-color: #725238 !important;
+        }
+
+        .take-quiz-btn {
+            background-color: #725238;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 20px;
+        }
+
+        .take-quiz-btn:hover {
+            background-color: #543310;
+        }
+
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%; /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
+            }
+        }
+
+        .post {
+            position: relative;
+            padding-bottom: 60px; /* Ensure there is space for the buttons */
+        }
+
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .button-container button,
+        .button-container a {
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            border: 1px solid #543310;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #543310;
+        }
+
+        td input:focus {
+            outline: none;
+        }
+
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <a href="../templates/index.html">
+                <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+            </a>
+        </div>
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="#">Timetable</a></li>
+            <li><a href="/my_subjects">My Subjects</a></li>
+            <li><a href="/my_teachers">My Teachers</a></li>
+            <li><a href="#">Attendance</a></li>
+            <li><a href="#">Sessions</a></li>
+            <li><a href="#">Assessments & Assignments</a></li>
+            <li><a href="#">Remarks & Actions</a></li>
+            <li><a href="#">Quizzes/Surveys</a></li>
+        </ul>
+    </div>
+
+
+<div class="container">
+        <div class="main-content">
+            <div class="content">
+                <h1>Grade Marks</h1>
+
+                <label for="gradeSelect">Select Grade:</label>
+                <select id="gradeSelect" onchange="fetchStudentsByGrade()">
+                    <option value="">Select a grade</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+
+                <form id="gradeForm" method="POST" action="/save_term_marks">
+                    <table id="gradeTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Behavior</th>
+                                <th>Oral Exam</th>
+                                <th>Written Exam</th>
+                                <th>Comments</th>
+                                <th>Attendance</th>
+                                <th>Assignments</th>
+                                <th>Class Projects</th>
+                                <th>Subject Projects</th>
+                                <th>Participation</th>
+                                <th>Class Work</th>
+                                <th>Total Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            {% set grade = grades.get(student.id) %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td><input type="number" name="behavior{{ student.id }}" class="grade-input" value="{{ grade.behavior if grade else '' }}"></td>
+                                <td><input type="number" name="oral_exam{{ student.id }}" class="grade-input" value="{{ grade.oral_exam if grade else '' }}"></td>
+                                <td><input type="number" name="written_exam{{ student.id }}" class="grade-input" value="{{ grade.written_exam if grade else '' }}"></td>
+                                <td><input type="number" name="comments{{ student.id }}" class="grade-input" value="{{ grade.comments if grade else '' }}"></td>
+                                <td><input type="number" name="attendance{{ student.id }}" class="grade-input" value="{{ grade.attendance if grade else '' }}"></td>
+                                <td><input type="number" name="assignments{{ student.id }}" class="grade-input" value="{{ grade.assignments if grade else '' }}"></td>
+                                <td><input type="number" name="class_projects{{ student.id }}" class="grade-input" value="{{ grade.class_projects if grade else '' }}"></td>
+                                <td><input type="number" name="subject_projects{{ student.id }}" class="grade-input" value="{{ grade.subject_projects if grade else '' }}"></td>
+                                <td><input type="number" name="participation{{ student.id }}" class="grade-input" value="{{ grade.participation if grade else '' }}"></td>
+                                <td><input type="number" name="class_work{{ student.id }}" class="grade-input" value="{{ grade.class_work if grade else '' }}"></td>
+                                <td class="total" id="totalMarks{{ student.id }}">0</td>
+                                <input type="hidden" name="student_id" value="{{ student.id }}">
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit">Save Edits</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('closed');
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('expanded');
+        }
+
+function fetchStudentsByGrade() {
+    var grade = document.getElementById('gradeSelect').value;
+    if (grade) {
+        $.ajax({
+            url: '/get_students_by_grade',
+            method: 'POST',
+            data: { grade: grade },
+            success: function(response) {
+                // Update the HTML table with the received student data
+                updateStudentTable(response.students);
+            },
+            error: function(error) {
+                console.error("Error fetching students:", error);
+                // Handle errors appropriately (e.g., display an error message)
+            }
+        });
+    }
+}
+
+function updateStudentTable(students) {
+    // Clear existing student rows
+    var tableBody = document.getElementById('gradeTable').getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = "";
+
+    // Create new rows for each student
+    students.forEach(function(student) {
+        // Create table row elements and populate with student data
+        // ... (your code to create table rows and populate them)
+    });
+
+    // Recalculate totals after updating students
+    calculateTotal();
+}
+
+
+        function calculateTotal() {
+            var rows = document.querySelectorAll('#gradeTable tbody tr');
+            rows.forEach(function(row) {
+                var total = 0;
+                var inputs = row.querySelectorAll('.grade-input');
+                inputs.forEach(function(input) {
+                    total += parseFloat(input.value) || 0;
+                });
+                var totalCell = row.querySelector('.total');
+                totalCell.textContent = total;
+            });
+        }
+
+        document.querySelectorAll('.grade-input').forEach(function(input) {
+            input.addEventListener('input', calculateTotal);
+        });
+
+        calculateTotal();
+    </script>
+</body>
+</html>

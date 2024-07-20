@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #EDE0D4;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #543310;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .message-section {
+            margin-bottom: 40px;
+        }
+
+        .message-section h2 {
+            color: #543310;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #C7B198;
+            padding-bottom: 10px;
+        }
+
+        .message-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .message-list li {
+            background-color: #C7B198;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .message-list li p {
+            margin: 5px 0;
+            color: #543310;
+        }
+
+        .message-list li p strong {
+            display: inline-block;
+            width: 60px;
+        }
+
+        .send-message-btn-container {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .send-message-btn-container a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .send-message-btn-container a:hover {
+            background-color: #6b4427;
+        }
+
+        .notification {
+            position: relative;
+            display: inline-block;
+        }
+
+        .notification .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 5px 10px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+        }
+
+        .read-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #6b4427;
+            color: #ecf0f1;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .read-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Messages</h1>
+
+        <div class="notification">
+            <a href="/messages">Messages</a>
+            <span id="notification-count" class="badge">0</span>
+        </div>
+
+        <div class="send-message-btn-container">
+            <a href="/send_message">Send Message</a>
+        </div>
+
+        <div class="message-section">
+            <h2>Received Messages</h2>
+            <ul class="message-list">
+                {% for message in received_messages %}
+                    <li>
+                        <p><strong>From:</strong> {{ message.sender.name }} ({{ message.sender.email }})</p>
+                        <p>{{ message.content }}</p>
+                        <p><em>Received at: {{ message.timestamp }}</em></p>
+                        {% if not message.read %}
+                            <button class="read-btn" data-id="{{ message.id }}">Mark as Read</button>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="message-section">
+            <h2>Sent Messages</h2>
+            <ul class="message-list">
+                {% for message in sent_messages %}
+                    <li>
+                        <p><strong>To:</strong> {{ message.receiver.name }} ({{ message.receiver.email }})</p>
+                        <p>{{ message.content }}</p>
+                        <p><em>Sent at: {{ message.timestamp }}</em></p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Document loaded");
+
+            document.querySelectorAll('.read-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const messageId = this.getAttribute('data-id');
+                    fetch('/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message_id: messageId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.parentElement.remove();
+                            updateMessageBadge();
+                        } else {
+                            console.error(data.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+
+            function fetchUnreadMessagesCount() {
+                console.log("Fetching unread messages count");
+                return fetch('/api/unread_messages_count')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Received data:", data);
+                        return data.count;
+                    })
+                    .catch(error => {
+                        console.error("Failed to fetch unread messages count:", error);
+                        return 0;
+                    });
+            }
+
+            function updateMessageBadge() {
+                fetchUnreadMessagesCount().then(count => {
+                    console.log("Updating message badge with count:", count);
+                    const messageBadge = document.getElementById('notification-count');
+                    if (messageBadge) {
+                        messageBadge.textContent = count;
+                    }
+                });
+            }
+
+            updateMessageBadge();
+            setInterval(updateMessageBadge, 10000);
+        });
+    </script>
+</body>
+</html>

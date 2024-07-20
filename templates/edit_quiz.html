@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Quiz</title>
     <style>
         body {
@@ -11,31 +13,37 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
-        .container {
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 800px;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            overflow-y: auto;
+            margin: 20px;
         }
+
         h1 {
             text-align: center;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
+
         label {
             display: block;
             margin-bottom: 5px;
         }
+
         input, select, textarea {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
+            margin-bottom: 10px;
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -44,60 +52,93 @@
             color: #fff;
             border-radius: 4px;
             cursor: pointer;
+            margin-top: 10px;
         }
+
         button:hover {
             background-color: #A0522D;
         }
-        #message {
-            margin-top: 15px;
-            text-align: center;
+
+        .options-container {
+            margin-top: 10px;
+        }
+
+        .question-container {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="main_content">
+    <div class="form-wrapper">
+        <h1>Edit Quiz</h1>
+        <form method="post" action="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" id="editQuizForm" enctype="multipart/form-data">
+            <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
 
-    <h1>Edit Quiz</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endwith %}
-    <form method="POST">
-        <div class="container">
-        <label for="name">Quiz Name:</label>
-        <input type="text" name="name" id="name" value="{{ quiz.name }}">
-        </div>
-                <div class="container">
-        <label for="type">Quiz Type:</label>
-                    <select  name="type" id="type" >
-                        <option value="multiple-choice">Multiple Choice</option>
-                        <option value="true-false">True/False</option>
-                        <option value="short-answer">Short Answer</option>
-                    </select>
-            </div>
-        <div class="container">
-        <label for="questions">Quiz Questions:</label>
-        <input type="text" name="questions" id="questions" value="{{ quiz_questions.question_text }}">
-            </div>
             <div class="container">
-        <label for="options">Options:</label>
-        <input type="text" name="options" id="options" value="{{ quiz_questions.options }}">
+                <label for="name">Quiz Name:</label>
+                <input type="text" name="name" id="name" value="{{ quiz.name }}">
+                <label for="description">Quiz Description:</label>
+                <textarea name="description" id="description">{{ quiz.description }}</textarea>
             </div>
-           <div class="container">
-        <label for="correct_answer">Options:</label>
-        <input type="text" name="correct_answer" id="correct_answer" value="{{ quiz_questions.correct_answer }}">
-            </div>
-                <div class="container">
-        <label for="duration">Quiz Dureation:</label>
-        <input type="number" name="duration" id="duration" min="1" value="{{ quiz.duration }}">
-            </div>
-    <button type="submit" class="button">Save Changes</button>
-    </form>
+
+            <div id="questions-container">
+                {% if quiz_questions %}
+                    {% for question in quiz_questions %}
+                    <div class="container question-container" id="question{{ question.id }}">
+                        <label for="questionText{{ question.id }}">Question Text:</label>
+                        <textarea name="questionText{{ question.id }}" id="questionText{{ question.id }}">{{ question.question_text }}</textarea>
+
+                        <label for="questionType{{ question.id }}">Question Type:</label>
+                        <select name="questionType{{ question.id }}" id="questionType{{ question.id }}" onchange="handleQuestionTypeChange(this)">
+                            <option value="multiple" {% if question.question_type == 'multiple' %} selected {% endif %}>Multiple Choice</option>
+                            <option value="true_false" {% if question.question_type == 'true_false' %} selected {% endif %}>True/False</option>
+                            <option value="complete" {% if question.question_type == 'complete' %} selected {% endif %}>Complete</option>
+                        </select>
+
+                        <div class="options-container" id="optionsContainer{{ question.id }}" {% if question.question_type != 'multiple' %}style="display:none;"{% endif %}>
+                            <label>Choices:</label>
+                            {% for option in quiz_questions.options %}
+                                <input type="text" name="choice{{ question.id }}_{{ loop.index }}" value="{{ option }}">
+                            {% endfor %}
+                            <label for="correctAnswer{{ question.id }}">Correct Answer:</label>
+                            <select name="correctAnswer{{ question.id }}" id="correctAnswer{{ question.id }}">
+                                {% for option in quiz_questions.options %}
+                                    <option value="{{ loop.index }}" {% if loop.index == question.correct_answer %} selected {% endif %}>Choice {{ loop.index }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="true-false-container" id="trueFalseContainer{{ question.id }}" {% if question.question_type != 'true_false' %}style="display:none;"{% endif %}>
+                            <label for="trueFalse{{ question.id }}">Correct Answer:</label>
+                            <select name="trueFalse{{ question.id }}" id="trueFalse{{ question.id }}">
+                                <option value="true" {% if question.correct_answer == 'true' %} selected {% endif %}>True</option>
+                                <option value="false" {% if question.correct_answer == 'false' %} selected {% endif %}>False</option>
+                            </select>
+                        </div>
+
+                        <div class="complete-container" id="completeContainer{{ question.id }}" {% if question.question_type != 'complete' %}style="display:none;"{% endif %}>
+                            <label for="complete{{ question.id }}">Correct Answer:</label>
+                            <input type="text" name="complete{{ question.id }}" id="complete{{ question.id }}" value="{{ question.correct_answer }}">
+                        </div>
+
+                        <button type="button" onclick="deleteQuestion({{ question.id }})">Delete Question</button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
             </div>
 
 
+        <a href="{{ url_for('add_quiz_question', quiz_id=quiz.id) }}">
+            <button type="button">Add Question</button>
+        </a>
+
+            <button type="submit">Save Quiz</button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/edit_quiz.js') }}"></script>
 </body>
 </html>

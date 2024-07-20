@@ -270,13 +270,16 @@
 
 
         <div class="section">
-                        <a href="/view_teacher/{{ teachers.id }}">
-            <h2>{{ teachers.name }} - Teaches {{ teachers.subject}}</h2>
+
+                            {% for teacher in teachers %}
+                                    <a href="/view_teacher/{{ teacher.id }}">
+            <h2>{{ teacher.name }} - Teaches {{ teacher.subject}}</h2>
             <ul>
                 <li><a href="/message"><button class="message-btn">Message</button></a></li>
                 <!-- Add more details as needed -->
             </ul>
                         </a>
+            {% endfor %}
         </div>
         <br> <!-- Optional: Use CSS margin or padding for spacing instead -->
 

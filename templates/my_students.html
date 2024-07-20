@@ -277,6 +277,7 @@
                 <li><a href="#">Sessions</a></li>
                 <li><a href="#">Assessments & Assignments</a></li>
                 <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/term_marks">Term Marks</a></li>
                 <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
                 <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
                 <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
@@ -297,16 +298,20 @@
                                         <tr>
                                             <th>Name</th>
                                             <th>Email</th>
+                                            <th>Grade</th>
+                                            <th>Class</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for student in students %}
                                         <tr>
-                                            <td><a href="{{ url_for('send_email_page', email=student.email) }}">{{ student.name }}</a></td>
+                                            <td><a href="{{ url_for('send_message', email=student.email) }}">{{ student.name }}</a></td>
                                             <td>{{ student.email }}</td>
+                                            <td>{{ student.grade }}</td>
+                                            <td>{{ student.Class }}</td>
                                             <td>
-                                                <a href="{{ url_for('send_email_page', email=student.email) }}">Send Message</a>
+                                                <a href="{{ url_for('send_message', email=student.email) }}">Send Message</a>
                                             </td>
                                         </tr>
                                         {% endfor %}

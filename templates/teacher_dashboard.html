@@ -251,9 +251,10 @@
                 <li><a href="/my_subjects">My Subjects</a></li>
                 <li><a href="/students">My Students</a></li>
                 <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
+                <li><a href="/zoom">Sessions</a></li>
                 <li><a href="#">Assessments & Assignments</a></li>
                 <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/term_marks">Term Marks</a></li>
                 <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
                 <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
                 <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
@@ -277,7 +278,7 @@
                 </div>
             </div>
             <div class="students-section">
-                <h2>60 Students</h2>
+                <a style="color: #543310;" href="/students"><h2>{{ number }} Students</h2></a>
                 <p>My Students</p>
             </div>
         </div>

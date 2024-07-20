@@ -9,246 +9,83 @@
             background: #DFD3C3;
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow-x: hidden;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .container {
-            display: flex;
-            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .sidebar {
-            width: 250px;
-            background-color: #543310;
-            color: #ecf0f1;
-            padding: 20px;
-            box-sizing: border-box;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            transform: translateX(0);
-            transition: transform 0.3s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .sidebar.closed {
-            transform: translateX(-100%);
-        }
-
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
+        .header {
+            text-align: center;
             margin-bottom: 20px;
         }
 
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            width: 100%;
+        .header h1 {
+            color: #543310;
         }
 
-        .sidebar ul li {
-            margin: 15px 0;
-            border-bottom: 1px solid #ecf0f1;
-            padding-bottom: 5px;
+        .quiz-names {
+            background-color: #DFD3C3;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
         }
 
-        .sidebar ul li:last-child {
-            border-bottom: none;
+        .quiz-names h2 {
+            text-align: center;
         }
 
-        .sidebar ul li a {
-            color: #ecf0f1;
+        .quiz-box {
+            background-color: #C7B198;
+            color: #543310;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-box a {
+            color: inherit;
             text-decoration: none;
-            display: block;
-            width: 100%;
         }
 
-        .sidebar ul li a:hover {
+        .quiz-box a:hover {
             text-decoration: underline;
         }
 
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            box-sizing: border-box;
-            margin-left: 250px;
-            transition: margin-left 0.3s ease-in-out;
-        }
-
-        .main-content.expanded {
-            margin-left: 0;
-        }
-
-        .dashboard-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .dashboard-sections {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-
-        .section {
-            flex: 1;
-            background-color: #C7B198;
-            padding: 20px;
-            box-sizing: border-box;
-            margin: 0 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #543310;
-        }
-
-        .section h2 {
-            text-align: center;
-        }
-
-        .section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .section ul li {
-            margin: 10px 0;
-        }
-
-        .students-section {
-            text-align: center;
-            background-color: #C7B198;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #543310;
-        }
-
-        .latest-news-section {
-            flex: 1;
-            background-color: #C7B198;
-            padding: 20px;
-            box-sizing: border-box;
-            margin: 0 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #543310;
-        }
-
-        .latest-news-section h2 {
-            text-align: center;
-        }
-
-        .latest-news-section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .latest-news-section ul li {
-            margin: 10px 0;
-        }
-
-        .toggle-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
             background-color: #543310;
             color: #ecf0f1;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            z-index: 1;
-            border-radius: 5px;
-        }
-
-        .quiz-btn {
-            background-color: #725238;
-            color: #ecf0f1;
-            border: none;
-            padding: 5px 10px;
-            margin-left: 10px;
-            border-radius: 5px;
-            cursor: pointer;
             text-decoration: none;
-            font-size: 14px;
+            text-align: center;
+            border-radius: 5px;
         }
 
-        .quiz-btn:hover {
-            background-color: #543310;
-        }
-        /* Media Queries for Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                position: fixed;
-                transform: translateX(-100%);
-                width: 250px;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .dashboard-sections {
-                flex-direction: column;
-            }
-
-            .section, .latest-news-section {
-                margin: 10px 0;
-            }
+        .back-btn:hover {
+            background-color: #3c250d;
         }
     </style>
 </head>
 <body>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="container">
-
-        <div class="sidebar" id="sidebar">
-            <div class="logo-container">
-                <a href="../templates/index.html">
-                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
-                </a>
-            </div>
-            <ul>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="#">Timetable</a></li>
-                <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/students">My Students</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
-                <li><a href="#">Assessments & Assignments</a></li>
-                <li><a href="#">Remarks & Actions</a></li>
-                <li><a href="/results/{{ user_id }}" onclick="showQuizResults()">Quizzes/Surveys</a></li>
-
-            </ul>
-        </div>
-    <div class="main-content">
         <div class="header">
             <h1>Quizzes of {{ teacher_name }}</h1>
         </div>
         <div class="quiz-names">
             {% for quiz in quizzes %}
-                <div>
-                    <ol>
-                    <a href="{{ url_for('all_results', quiz_id=quiz.id) }}" class="quiz-btn">{{ quiz.name }}</a>
-                     </ol>
+                <div class="quiz-box">
+                    <a href="{{ url_for('all_results', quiz_id=quiz.id) }}">{{ quiz.name }}</a>
                 </div>
             {% endfor %}
         </div>
+        <a href="/dashboard" class="back-btn">Back to Dashboard</a>
     </div>
 </body>
 </html>

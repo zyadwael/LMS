@@ -146,29 +146,52 @@
             color: #543310;
         }
 
-        .latest-news-section {
-            flex: 1;
-            background-color: #C7B198;
-            padding: 20px;
-            box-sizing: border-box;
-            margin: 0 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #543310;
-        }
+.latest-news-section {
+    flex: 1;
+    background-color: #C7B198;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #543310;
+}
 
-        .latest-news-section h2 {
-            text-align: center;
-        }
+.latest-news-section h2 {
+    text-align: center;
+}
 
-        .latest-news-section ul {
-            list-style: none;
-            padding: 0;
-        }
+.latest-news-section a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #543310;
+    margin-bottom: 10px;
+    padding: 20px;
 
-        .latest-news-section ul li {
-            margin: 10px 0;
-        }
+}
+
+.latest-news-section a:hover {
+    background-color: #e0d4c1;
+}
+
+.latest-news-section .badge {
+    background-color: red;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+.latest-news-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.latest-news-section ul li {
+    margin: 10px 0;
+}
+
 
         .toggle-btn {
             position: fixed;
@@ -223,19 +246,24 @@
             position: relative;
         }
 
+        /* CSS for the notification count badge */
         .badge {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: red;
-            color: white;
-            border-radius: 50%;
-            padding: 5px 10px;
-            font-size: 12px;
+            background-color: ; /* Background color */
+            color: white; /* Text color */
+            padding: 5px 8px; /* Padding around text */
+            border-radius: 10%; /* Make it round */
+        }
+        /* CSS to make the image smaller */
+        .icon-img {
+            width: 20px; /* Adjust the width as per your preference */
+            height: auto; /* Maintain aspect ratio */
+            vertical-align: middle; /* Align vertically */
+            margin-right: 5px; /* Optional: Adds some space between icon and text */
         }
 
     </style>
 </head>
+
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="container">
@@ -245,6 +273,7 @@
                     <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
+
             <ul>
                 <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
                 <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
@@ -256,8 +285,6 @@
                 <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
                 <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
                 <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
-                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
-
             </ul>
         </div>
 
@@ -267,7 +294,7 @@
             </a>
             <div class="dashboard-header">
                 <h1 style="color: #543310;">Dashboard</h1>
-            </div>
+
             <div class="dashboard-sections">
                 <div class="section">
                     <h2>Teachers</h2>
@@ -277,14 +304,20 @@
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="latest-news-section">
-                    <h2>Latest News</h2>
+                <div class="section">
+                    <h2>Marks</h2>
                     <ul>
-                        {% for news in latest_news %}
-                            <li>{{ news.title }} - {{ news.content }}</li>
+                        {% for quiz in quizzes %}
+                            <li>{{ quiz.title }}: {{ quiz.score }}%</li>
                         {% endfor %}
                     </ul>
                 </div>
+                <div class="latest-news-section">
+                            <a href="/messages"> Latest News</a>
+                    <span id="notification-count" class="badge">{{ unread_count }}</span>
+                </div>
+
+    </div>
             </div>
             <hr>
             <div id="calendar"></div> <!-- Calendar container -->

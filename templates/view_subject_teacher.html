@@ -311,7 +311,7 @@
         {% for video in lesson_videos[lesson.id] %}
         <p>
             <a href="/video/{{ video.id }}">Video On the Lesson</a>
-        {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Take Quiz</a>
+        {% if lesson_quiz.get(lesson.id) %}  <a href="/take_quiz/{{ lesson.id }}" class="take-quiz-btn">Preview Quiz</a>
             {% else %}
                         <a href="/create_quiz/{{ lesson.id }}" class="add-quiz-btn">Add Quiz</a>
         {% endif %}

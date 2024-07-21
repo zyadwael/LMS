@@ -74,7 +74,7 @@
             background-color: #F5F5F5;
         }
 
-        button {
+        .button {
             background-color: #543310; /* Matches the theme button color */
             color: #ecf0f1; /* Light text color */
             padding: 10px 20px;
@@ -123,7 +123,17 @@
             {% endif %}
         </div>
         {% endfor %}
+
+        {% if current_user.role =="teacher" %}
+
+        <a href="/edit_quiz/{{quiz.id}}" class="button">
+
+           Edit Quiz
+            </a>
+
+        {% else %}
         <button type="submit" id="submitQuiz">Submit Quiz</button>
+        {% endif %}
     </form>
     <script>
         var app = {

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit News</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            box-sizing: border-box;
+        }
+
+        .form-container h2 {
+            text-align: center;
+            color: #543310;
+            margin-bottom: 20px;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container label {
+            margin-bottom: 5px;
+            color: #543310;
+        }
+
+        .form-container input, .form-container textarea {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #543310;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .form-container button:hover {
+            background-color: #3a2509;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Edit News</h2>
+        <form action="/edit_news/{{ news_item.id }}" method="POST">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" value="{{ news_item.title }}" required>
+            <label for="content">Content</label>
+            <textarea id="content" name="content" required>{{ news_item.content }}</textarea>
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" value="{{ news_item.start_date }}" required>
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" value="{{ news_item.end_date }}" required>
+            <button type="submit">Update News</button>
+        </form>
+    </div>
+</body>
+</html>

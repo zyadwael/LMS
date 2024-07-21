@@ -138,27 +138,42 @@
         }
 
         .section {
-            flex-basis: calc(50% - 20px);
-            margin: 0 10px 20px;
             background-color: #C7B198;
-            padding: 20px;
+            padding: 30px; /* Increased padding for larger content area */
             box-sizing: border-box;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             color: #543310;
+            margin: 20px 0; /* Added margin to separate sections */
+            flex: 1; /* Make section grow to fill available space */
+            max-width: 100%; /* Ensure section does not overflow */
         }
+
 
         .section h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        .section ul {
-            list-style: none;
-            padding: 0;
+        .section table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .section ul li {
-            margin: 10px 0;
+        .section th, .section td {
+            border: 1px solid #543310;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .section th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        .section td {
+            background-color: #DFD3C3;
+            color: #543310;
         }
 
         table {
@@ -268,6 +283,7 @@
                     <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
+            {% if current_user.role == "teacher" %}
             <ul>
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/view_timetable">Timetable</a></li>
@@ -282,8 +298,23 @@
                 <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
                 <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
             </ul>
-        </div>
+            {% elif current_user.role == "admin" %}
+                <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/timetable">Timetable</a></li>
+                <li><a href="/my_subjects">My Subjects</a></li>
+                <li><a href="/my_teachers">My Teachers</a></li>
+                <li><a href="/students">My Students</a></li>
+                <li><a href="#">Attendance</a></li>
+                <li><a href="#">Sessions</a></li>
+                <li><a href="#">Assessments & Assignments</a></li>
+                <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
+            </ul>
 
+            {% endif %}
+        </div>
+    {% if current_user.role == "teacher" %}
         <main role="main" class="main-content" id="main-content">
             <div class="dashboard-section">
                 <div class="row justify-content-center">
@@ -324,6 +355,51 @@
             </div>
         </main>
     </div>
+  {% else %}
+            <div class="main-content" id="main-content">
+            <a href="/messages">
+                <button class="messages"></button>
+            </a>
+            <div class="dashboard-header">
+                    <h1>My Students</h1>
+            </div>
+                {% if current_user.role == "admin" %}
+                    <a href="{{ url_for('add_student') }}">
+        <button class="add-subject-btn">Add New Student</button>
+    </a>
+                                {% endif %}
+            <div class="dashboard-sections">
+
+                <div class="section">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Grade</th>
+                                <th>Class</th>
+                                <th>Parent Email</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>{{ student.grade }}</td>
+                                <td>{{ student.Class }}</td>
+                                <td>{{ student.parent_email }}</td>
+                                <td><a href="{{ url_for('edit_student', student_id=student.id) }}">Edit</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% endif %}
+
 
     <script>
         function toggleSidebar() {

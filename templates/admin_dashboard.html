@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard</title>
+    <title>Admin Dashboard</title>
     <style>
         body {
             background: #DFD3C3;
@@ -94,16 +94,15 @@
 
         .dashboard-sections {
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
+            gap: 20px;
             margin-bottom: 20px;
         }
 
         .section {
-            flex: 1;
             background-color: #C7B198;
             padding: 20px;
             box-sizing: border-box;
-            margin: 0 10px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             color: #543310;
@@ -111,48 +110,28 @@
 
         .section h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
 
-        .section ul {
-            list-style: none;
-            padding: 0;
+        .section table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .section ul li {
-            margin: 10px 0;
+        .section th, .section td {
+            border: 1px solid #543310;
+            padding: 8px;
+            text-align: left;
         }
 
-        .students-section {
-            text-align: center;
-            background-color: #C7B198;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .section th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        .section td {
+            background-color: #DFD3C3;
             color: #543310;
-        }
-
-        .latest-news-section {
-            flex: 1;
-            background-color: #C7B198;
-            padding: 20px;
-            box-sizing: border-box;
-            margin: 0 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            color: #543310;
-        }
-
-        .latest-news-section h2 {
-            text-align: center;
-        }
-
-        .latest-news-section ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .latest-news-section ul li {
-            margin: 10px 0;
         }
 
         .toggle-btn {
@@ -166,6 +145,24 @@
             cursor: pointer;
             z-index: 1;
             border-radius: 5px;
+        }
+
+        .messages {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .messages::before {
+            content: "";
+            display: block;
+            width: 30px;
+            height: 30px;
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain;
         }
 
         /* Media Queries for Responsive Design */
@@ -192,38 +189,15 @@
                 flex-direction: column;
             }
 
-            .section, .latest-news-section {
+            .section {
                 margin: 10px 0;
             }
         }
-.messages {
-    flex: 1; /* Make messages section take up remaining space */
-    background-color: transparent;
-    padding: 20px;
-    box-sizing: border-box;
-    border: 0;
-    float: right; /* Make it float to the right */
-
-}
-
-
-.messages::before {
-    content: "";
-    display: flex; /* Change to flexbox for side-by-side layout */
-    width: 30px;  /* Increase width to make icon bigger */
-    height: 30px; /* Increase height to make icon bigger */
-    align-items: left; /* Vertically align icon and text */
-    margin-right: 5px; /* Reduce gap between icon and text (optional) */
-    background-image: url("static/assets/images/notification.png");
-    background-size: contain; /* Maintain aspect ratio */
-}
-
     </style>
 </head>
 <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <div class="container">
-
         <div class="sidebar" id="sidebar">
             <div class="logo-container">
                 <a href="../templates/index.html">
@@ -234,112 +208,49 @@
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/timetable">Timetable</a></li>
                 <li><a href="/my_subjects">My Subjects</a></li>
+                <li><a href="/my_teachers">My Teachers</a></li>
                 <li><a href="/students">My Students</a></li>
                 <li><a href="#">Attendance</a></li>
                 <li><a href="#">Sessions</a></li>
                 <li><a href="#">Assessments & Assignments</a></li>
                 <li><a href="#">Remarks & Actions</a></li>
                 <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
-
-
             </ul>
         </div>
         <div class="main-content" id="main-content">
-                        <a href="/messages">
-                <button class="messages" ></button>
+            <a href="/messages">
+                <button class="messages"></button>
             </a>
             <div class="dashboard-header">
-
                 <h1 style="color: #543310;">Dashboard</h1>
             </div>
             <div class="dashboard-sections">
                 <div class="section">
+                    <h2>Latest News</h2>
+                    <ul>
+                        {% for news_item in latest_news %}
 
+                            {{ news_item.title }} - {{ news_item.content }}
+                            <a href="/edit_news/{{ news_item.id }}">
+                                <button style="background-color: #543310; color: #ecf0f1; border: none; padding: 5px; cursor: pointer;">Edit</button>
+                            </a>
+
+                        {% endfor %}
+                    </ul>
+                    <a href="/create_news">
+                        <button style="background-color: #543310; color: #ecf0f1; border: none; padding: 10px; cursor: pointer;">Create News</button>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     <script>
         function toggleSidebar() {
-            var sidebar = document.getElementById('sidebar');
-            var mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
+            var sidebar = document.getElementById("sidebar");
+            var mainContent = document.getElementById("main-content");
+            sidebar.classList.toggle("closed");
+            mainContent.classList.toggle("expanded");
         }
-
-        function showQuizResults() {
-            var quizResultsSection = document.getElementById('quiz-results');
-            var mainContent = document.getElementById('main-content');
-
-            // Hide all other sections
-            var sections = mainContent.getElementsByClassName('section');
-            for (var i = 0; i < sections.length; i++) {
-                sections[i].style.display = 'none';
-            }
-            var studentsSection = document.getElementsByClassName('students-section')[0];
-            studentsSection.style.display = 'none';
-            var latestNewsSection = document.getElementsByClassName('latest-news-section')[0];
-            latestNewsSection.style.display = 'none';
-
-            // Show quiz results section
-            quizResultsSection.style.display = 'block';
-
-            fetchQuizResults();
-        }
-
-        function fetchQuizResults() {
-            // Mocked data for demonstration purposes
-            var quizResults = [
-                { student: 'John Doe', score: '85%' },
-                { student: 'Jane Smith', score: '92%' },
-                { student: 'Jim Brown', score: '78%' },
-                // Add more quiz results as needed
-            ];
-
-            // Clear existing results
-            var quizResultsList = document.getElementById('quiz-results-list');
-            quizResultsList.innerHTML = '';
-
-            // Insert new results
-            quizResults.forEach(function(result) {
-                var listItem = document.createElement('li');
-                listItem.textContent = result.student + ': ' + result.score;
-                quizResultsList.appendChild(listItem);
-            });
-        }
-
-        function sendSessionNotification(sessionInfo) {
-            if (Notification.permission === 'granted') {
-                new Notification('Session Notification', {
-                    body: You have a session: ${sessionInfo.title} at ${sessionInfo.time},
-                    icon: '../static/assets/images/logo.png' // Optional: URL to an icon image
-                });
-            }
-        }
-
-        function checkForSessions() {
-            // Mocked session data for demonstration purposes
-            var sessions = [
-                { title: 'Math Class', time: '10:00 AM' },
-                { title: 'Science Lab', time: '1:00 PM' },
-                // Add more sessions as needed
-            ];
-
-            sessions.forEach(function(session) {
-                sendSessionNotification(session);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            if (Notification.permission !== 'granted') {
-                Notification.requestPermission().then(function(permission) {
-                    if (permission === 'granted') {
-                        checkForSessions();
-                    }
-                });
-            } else {
-                checkForSessions();
-            }
-        });
     </script>
 </body>
 </html>

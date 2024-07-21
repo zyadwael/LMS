@@ -144,8 +144,6 @@ with app.app_context():
         name = db.Column(db.String(100))
         email = db.Column(db.String(100))
         subject = db.Column(db.String(100))
-        grade = db.Column(db.String(100))
-        Class = db.Column(db.String(100))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
         timetable_id = db.Column(db.Integer, db.ForeignKey('timetable.id'))  # Foreign key to Timetable
 
@@ -171,7 +169,8 @@ with app.app_context():
         id = db.Column(db.Integer, primary_key=True)
         title = db.Column(db.String(100))
         content = db.Column(db.String(100))
-
+        start_date = db.Column(db.String(100))
+        end_date = db.Column(db.String(100))
 
     class Grades(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -296,8 +295,8 @@ def login():
 def dashboard():
     # Calculate notification count (similar to how you did for messages)
     unread_count = Messages.query.filter_by(receiver_id=current_user.id, read=False).count()
-
-    latest_news = News.query.all()
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    latest_news = News.query.filter(News.start_date <= current_date, News.end_date >= current_date).all()
     teachers = []
 
     if current_user.role == "student":
@@ -316,7 +315,7 @@ def dashboard():
         my_students = Students.query.filter_by(parent_email=current_user.email).all()
         return render_template("parent_dashboard.html", children=my_students)
     elif current_user.role == "admin":
-        return render_template("admin_dashboard.html")
+        return render_template("admin_dashboard.html",latest_news=latest_news)
     else:
         return redirect(url_for('unauthorized'))
 
@@ -341,7 +340,9 @@ def my_teachers():
         teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
 
         return render_template("my_teachers.html", teachers=teachers)
-
+    elif current_user.role == "admin":
+        teachers = Teacher.query.all()
+        return render_template("my_teachers.html",teachers=teachers)
     # Handle other roles or scenarios (if applicable)
     return render_template("my_teachers.html", teachers=[])  # Return empty list if no teachers found
 
@@ -350,21 +351,20 @@ def my_teachers():
 @app.route("/students")
 @login_required
 def students():
-    if current_user.role != 'teacher':
-        flash('You are not authorized to view this page.', 'warning')
-        return redirect(url_for('dashboard'))
+    if current_user.role == "teacher":
+        teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+        teacher_subject_ids = [subject.id for subject in teacher_subjects]
 
-    teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
-    teacher_subject_ids = [subject.id for subject in teacher_subjects]
+        students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
+                                         Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
+        print(students)
 
-    students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
-                                     Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
+        number_of_students = len(students)
 
-    number_of_students = len(students)
-
-    return render_template("my_students.html", students=students, number=number_of_students, user=current_user)
-
-
+        return render_template("my_students.html", students=students, number=number_of_students, user=current_user)
+    else :
+        students = Students.query.order_by(Students.grade.asc()).all()
+        return render_template("my_students.html" , students=students ,user=current_user)
 @app.route("/send-email/<email>", methods=['GET'])
 def send_email_page(email):
     return render_template('send_email.html', email=email)
@@ -412,6 +412,9 @@ def my_subjects():
         else:
             print("Child record not found or does not belong to the current parent.")  # Debug statement
             return redirect("/")
+    elif current_user.role == "admin":
+        subjects = Subjects.query.all()
+        return render_template("my_subjects_teacher.html" ,subjects=subjects, user=current_user)
 
     else:
         print("Role not recognized.")  # Debug statement
@@ -1271,6 +1274,140 @@ def child_detail(child_id):
     child_grade = child.grade
     child_subjects = Subjects.query.filter_by(grade=child_grade).all()
     return render_template('child_detail.html', child=child, child_subjects=child_subjects,latest_news=latest_news)
+
+
+
+
+@app.route('/edit_student/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def edit_student(student_id):
+    student = Students.query.get_or_404(student_id)
+    if request.method == 'POST':
+        student.name = request.form['name']
+        student.email = request.form['email']
+        student.grade = request.form['grade']
+        student.Class = request.form['Class']
+        student.parent_email = request.form['parent_email']
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    return render_template('edit_student.html', student=student)
+
+
+@app.route('/edit_teacher/<int:teacher_id>', methods=['GET', 'POST'])
+@login_required
+def edit_teacher(teacher_id):
+    teacher = Teacher.query.get_or_404(teacher_id)
+    if request.method == 'POST':
+        teacher.name = request.form['name']
+        teacher.email = request.form['email']
+        teacher.subject = request.form['subject']
+
+        db.session.commit()
+        flash('Teacher details updated successfully!', 'success')
+        return redirect(url_for('dashboard'))  # Redirect to a suitable page, e.g., the dashboard
+
+    return render_template('edit_teacher.html', teacher=teacher)
+
+
+@app.route('/create_news', methods=['GET', 'POST'])
+@login_required
+def create_news():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        new_news = News(title=title, content=content, start_date=start_date, end_date=end_date)
+        db.session.add(new_news)
+        db.session.commit()
+
+        flash('News item created successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('create_news.html')
+
+
+@app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
+@login_required
+def edit_news(news_id):
+    news_item = News.query.get_or_404(news_id)
+    if request.method == 'POST':
+        news_item.title = request.form['title']
+        news_item.content = request.form['content']
+        news_item.start_date = request.form['start_date']
+        news_item.end_date = request.form['end_date']
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    return render_template('edit_news.html', news_item=news_item)
+
+
+@app.route('/add_student', methods=['GET', 'POST'])
+@login_required
+def add_student():
+    if current_user.role != 'admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('students'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        grade = request.form.get('grade')
+        Class = request.form.get('class')
+        parent_email = request.form.get('parent_email')
+        password = request.form.get('password')
+        phone_number = request.form.get('phone_number')
+        gender = request.form.get('gender')
+        religion = request.form.get('religion')
+
+        # Create new user and student records
+        new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
+                         religion=religion, role='user')
+        db.session.add(new_user)
+        db.session.commit()
+
+        new_student = Students(name=name, email=email, grade=grade, Class=Class, parent_email=parent_email,
+                               user_id=new_user.id)
+        db.session.add(new_student)
+        db.session.commit()
+
+        flash('Student added successfully!')
+        return redirect(url_for('students'))
+
+    return render_template('add_student.html')
+
+
+@app.route('/add_teacher', methods=['GET', 'POST'])
+@login_required
+def add_teacher():
+    if current_user.role != 'admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('students'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        phone_number = request.form.get('phone_number')
+        gender = request.form.get('gender')
+        religion = request.form.get('religion')
+        subject = request.form.get('subject')
+
+        # Create new user and student records
+        new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
+                         religion=religion, role='teacher')
+        db.session.add(new_user)
+        db.session.commit()
+
+        new_teacher = Teacher(name=name, email=email, subject=subject,
+                               user_id=new_user.id)
+        db.session.add(new_teacher)
+        db.session.commit()
+
+        flash('Teacher added successfully!')
+        return redirect(url_for('my_teachers'))
+
+    return render_template('add_teacher.html')
 
 if __name__ == "__main__":
      app.run(debug=True)

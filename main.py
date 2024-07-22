@@ -1342,51 +1342,17 @@ def edit_news(news_id):
     return render_template('edit_news.html', news_item=news_item)
 
 
-@app.route('/add_student', methods=['GET', 'POST'])
+@app.route('/add_user', methods=['GET', 'POST'])
 @login_required
-def add_student():
+def add_user():
     if current_user.role != 'admin':
         flash('You do not have permission to access this page.')
-        return redirect(url_for('students'))
+        return redirect(url_for('dashboard'))  # Redirect to a suitable page
 
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
-        grade = request.form.get('grade')
-        Class = request.form.get('class')
-        parent_email = request.form.get('parent_email')
-        password = request.form.get('password')
-        phone_number = request.form.get('phone_number')
-        gender = request.form.get('gender')
-        religion = request.form.get('religion')
-
-        # Create new user and student records
-        new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
-                         religion=religion, role='user')
-        db.session.add(new_user)
-        db.session.commit()
-
-        new_student = Students(name=name, email=email, grade=grade, Class=Class, parent_email=parent_email,
-                               user_id=new_user.id)
-        db.session.add(new_student)
-        db.session.commit()
-
-        flash('Student added successfully!')
-        return redirect(url_for('students'))
-
-    return render_template('add_student.html')
-
-@app.route('/add_teacher', methods=['GET', 'POST'])
-@login_required
-def add_teacher():
-    if current_user.role != 'admin':
-        flash('You do not have permission to access this page.')
-        return redirect(url_for('teachers'))
-
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        subject = request.form.get('subject')
+        role = request.form.get('role')
         password = request.form.get('password')
         phone_number = request.form.get('phone_number')
         gender = request.form.get('gender')
@@ -1396,22 +1362,39 @@ def add_teacher():
         existing_user = Users.query.filter((Users.email == email) | (Users.phone_number == phone_number)).first()
         if existing_user:
             flash('Email or phone number already exists. Please use a different one.')
-            return redirect(url_for('add_teacher'))
+            return redirect(url_for('add_user'))
 
-        # Create new user and teacher records
+        # Create new user record
         new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
-                         religion=religion, role='teacher')
+                         religion=religion, role=role.lower())
         db.session.add(new_user)
         db.session.commit()
 
-        new_teacher = Teacher(name=name, email=email, subject=subject, user_id=new_user.id)
-        db.session.add(new_teacher)
-        db.session.commit()
+        if role == 'Student':
+            grade = request.form.get('grade')
+            Class = request.form.get('class')
+            parent_email = request.form.get('parent_email')
+            new_student = Students(name=name, email=email, grade=grade, Class=Class, parent_email=parent_email,
+                                   user_id=new_user.id)
+            db.session.add(new_student)
+            db.session.commit()
 
-        flash('Teacher added successfully!')
-        return redirect(url_for('my_teachers'))
+        elif role == 'Teacher':
+            subject = request.form.get('subject')
+            new_teacher = Teacher(name=name, email=email, subject=subject, user_id=new_user.id)
+            db.session.add(new_teacher)
+            db.session.commit()
 
-    return render_template('add_teacher.html')
+        elif role == 'Parent':
+            new_parent = Parents(name=name, email=email, user_id=new_user.id)
+            db.session.add(new_parent)
+            db.session.commit()
+
+        flash(f'{role} added successfully!')
+        return redirect(url_for('dashboard'))  # Redirect to a suitable page
+
+    return render_template('add_user.html')
+
 
 if __name__ == "__main__":
      app.run(debug=True)

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMS SCHOOL - Add User</title>
+    <style>
+        body {
+            background-color: #DFD3C3;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .add-student-form {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        .add-student-form h2 {
+            text-align: center;
+            color: #543310;
+        }
+
+        .add-student-form label {
+            display: block;
+            margin-top: 10px;
+            color: #543310;
+        }
+
+        .add-student-form input, .add-student-form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #543310;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .add-student-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-student-form button:hover {
+            background-color: #7a4a0e;
+        }
+    </style>
+    <script>
+        function adjustForm() {
+            var role = document.getElementById("role").value;
+            var gradeField = document.getElementById("grade-field");
+            var classField = document.getElementById("class-field");
+            var subjectField = document.getElementById("subject-field");
+            var parentEmailField = document.getElementById("parent-email-field");
+
+            if (role === "Student") {
+                gradeField.style.display = "block";
+                classField.style.display = "block";
+                subjectField.style.display = "none";
+                parentEmailField.style.display = "block";
+            } else if (role === "Teacher") {
+                gradeField.style.display = "none";
+                classField.style.display = "none";
+                subjectField.style.display = "block";
+                parentEmailField.style.display = "none";
+            } else {
+                gradeField.style.display = "none";
+                classField.style.display = "none";
+                subjectField.style.display = "none";
+                parentEmailField.style.display = "none";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            adjustForm(); // Adjust the form based on the initial role selection
+            document.getElementById("role").addEventListener("change", adjustForm);
+        });
+    </script>
+</head>
+<body>
+    <div class="add-student-form">
+        <h2>Add New User</h2>
+        <form method="POST" action="{{ url_for('add_user') }}">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Parent">Parent</option>
+                <option value="Admin">Admin</option>
+            </select>
+
+            <div id="grade-field">
+                <label for="grade">Grade</label>
+                <input type="text" id="grade" name="grade">
+            </div>
+
+            <div id="class-field">
+                <label for="class">Class</label>
+                <input type="text" id="class" name="class">
+            </div>
+
+            <div id="subject-field" style="display: none;">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject">
+            </div>
+
+            <div id="parent-email-field">
+                <label for="parent_email">Parent Email</label>
+                <input type="email" id="parent_email" name="parent_email">
+            </div>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <label for="phone_number">Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number" required>
+
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <label for="religion">Religion</label>
+            <input type="text" id="religion" name="religion" required>
+
+            <button type="submit">Add User</button>
+        </form>
+    </div>
+</body>
+</html>

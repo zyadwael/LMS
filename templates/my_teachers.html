@@ -319,7 +319,7 @@
         <h1>My Teachers</h1>
     </div>
                 {% if current_user.role == "admin" %}
-                    <a href="{{ url_for('add_teacher') }}" class="button">Add New Teacher</a>
+                    <a href="{{ url_for('add_user') }}" class="button">Add New Teacher</a>
                 {% endif %}
     <div class="dashboard-sections">
 {% if current_user.role == "student" %}

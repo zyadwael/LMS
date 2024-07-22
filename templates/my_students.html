@@ -364,7 +364,7 @@
                     <h1>My Students</h1>
             </div>
                 {% if current_user.role == "admin" %}
-                    <a href="{{ url_for('add_student') }}">
+                    <a href="{{ url_for('add_user') }}">
         <button class="add-subject-btn">Add New Student</button>
     </a>
                                 {% endif %}

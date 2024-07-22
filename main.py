@@ -197,7 +197,6 @@ with app.app_context():
         content = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime, default=datetime.utcnow)
         read = db.Column(db.Boolean, default=False)  # Add this line
-
         sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_messages')
         receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_messages')
 
@@ -210,6 +209,33 @@ with app.app_context():
                 'timestamp': self.timestamp.isoformat(),
                 'read': self.read,
                 'type': self.type,
+            }
+
+
+    class Reports(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        student_email = db.Column(db.String(100), nullable=False)
+        content = db.Column(db.Text, nullable=False)
+        timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+        read = db.Column(db.Boolean, default=False)
+        subject_name = db.Column(db.String(100), nullable=False)
+        subject_teacher_email = db.Column(db.String(100), nullable=False)
+
+        sender = db.relationship('Users', foreign_keys=[sender_id], backref='sent_reports')
+        receiver = db.relationship('Users', foreign_keys=[receiver_id], backref='received_reports')
+
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'sender_email': self.sender.email,
+                'receiver_email': self.receiver.email,
+                'content': self.content,
+                'timestamp': self.timestamp.isoformat(),
+                'read': self.read,
+                'subject_name': self.subject_name,
+                'subject_teacher_email': self.subject_teacher_email
             }
 
     # Define the Event model
@@ -246,6 +272,7 @@ admin.add_view(MyModelView(Parents, db.session))
 admin.add_view(MyModelView(Subjects, db.session))
 admin.add_view(MyModelView(Event, db.session))
 admin.add_view(MyModelView(News, db.session))
+admin.add_view(MyModelView(Reports, db.session))
 admin.add_view(MyModelView(Messages, db.session))
 admin.add_view(MyModelView(Lessons, db.session))
 admin.add_view(MyModelView(Quizzes, db.session))
@@ -694,7 +721,7 @@ def create_subject():
             new_subject = Subjects(
                 name=subject_name,
                 grade=grade,
-                Class=Class.lower(),
+                Class=Class.upper(),
                 teacher_id=user.id,
                 teacher_name=teacher.name,
                 teacher_email=teacher_email,
@@ -1354,6 +1381,8 @@ def add_user():
         email = request.form.get('email')
         role = request.form.get('role')
         password = request.form.get('password')
+        grade = request.form.get('grade')
+        Class = request.form.get('class')
         phone_number = request.form.get('phone_number')
         gender = request.form.get('gender')
         religion = request.form.get('religion')
@@ -1366,7 +1395,7 @@ def add_user():
 
         # Create new user record
         new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
-                         religion=religion, role=role.lower())
+                         religion=religion, role=role.lower() ,grade=grade,Class=Class)
         db.session.add(new_user)
         db.session.commit()
 
@@ -1394,6 +1423,148 @@ def add_user():
         return redirect(url_for('dashboard'))  # Redirect to a suitable page
 
     return render_template('add_user.html')
+
+
+
+@app.route('/send_report', methods=['GET', 'POST'])
+@login_required
+def send_report():
+    students = Users.query.filter_by(role='student').all()
+    subjects = []
+
+    if request.method == 'POST':
+        student_email = request.form.get('student_email')
+        subject_name = request.form.get('subject_name')
+        subject_teacher_email = request.form.get('subject_teacher_email')
+        content = request.form.get('content')
+
+        # Validate that the current user is a parent
+        if current_user.role != 'parent':
+            flash('Only parents can send reports.', 'danger')
+            return redirect(url_for('dashboard'))  # Adjust the redirection URL based on your app
+
+        # Retrieve the student based on email
+        student = Users.query.filter_by(email=student_email, role='student').first()
+        if not student:
+            flash('Student with the provided email does not exist.', 'danger')
+            return redirect(url_for('send_report'))  # Adjust the redirection URL based on your app
+
+        # Retrieve subjects based on the selected student's grade and class
+        subjects = Subjects.query.filter_by(grade=student.grade, Class=student.Class).all()
+
+        if not subject_name or not subject_teacher_email or not content:
+            flash('All fields are required.', 'danger')
+            return render_template('send_report.html', students=students, subjects=subjects)
+
+        # Retrieve the teacher's user ID using their email
+        teacher = Users.query.filter_by(email=subject_teacher_email).first()
+        if not teacher:
+            flash('Teacher with the provided email does not exist.', 'danger')
+            return redirect(url_for('send_report'))  # Adjust the redirection URL based on your app
+
+        # Check if a report with the same student email and subject name already exists
+        existing_report = Reports.query.filter_by(
+            student_email=student_email,
+            subject_name=subject_name
+        ).first()
+
+        if existing_report:
+            flash('A report for this student and subject already exists.', 'danger')
+            return render_template('send_report.html', students=students, subjects=subjects)
+
+        # Create a new report
+        report = Reports(
+            sender_id=current_user.id,
+            receiver_id=teacher.id,
+            student_email=student_email,
+            content=content,
+            subject_name=subject_name,
+            subject_teacher_email=subject_teacher_email,
+            timestamp=datetime.utcnow()
+        )
+
+        # Add the report to the database
+        db.session.add(report)
+        db.session.commit()
+
+        flash('Report sent successfully!', 'success')
+        return redirect(url_for('dashboard'))  # Adjust the redirection URL based on your app
+
+    return render_template('send_report.html', students=students, subjects=subjects)
+
+
+@app.route('/get_subjects/<student_email>')
+@login_required
+def get_subjects(student_email):
+    student = Users.query.filter_by(email=student_email, role='student').first()
+    if not student:
+        return jsonify({'subjects': []})
+
+    subjects = Subjects.query.filter_by(grade=student.grade, Class=student.Class).all()
+    subject_names = [{'name': subject.name} for subject in subjects]
+    return jsonify({'subjects': subject_names})
+
+
+
+
+@app.route('/view_reports')
+@login_required
+def view_reports():
+    if current_user.role == 'teacher':
+        # Display reports where the teacher's email matches the subject_teacher_email
+        reports = Reports.query.filter_by(subject_teacher_email=current_user.email).all()
+    elif current_user.role == 'admin':
+        # Display all reports
+        reports = Reports.query.all()
+    else:
+        flash('You do not have permission to view reports.', 'danger')
+        return redirect(url_for('dashboard'))  # Adjust the redirection URL based on your app
+
+    return render_template('view_reports.html', reports=reports)
+
+
+@app.route('/api/teachers', methods=['GET'])
+def get_teachers():
+    teachers = Teacher.query.all()
+    return jsonify([{
+        'id': teacher.id,
+        'name': teacher.name,
+        'subject': teacher.subject,
+    } for teacher in teachers])
+
+
+@app.route('/teacher_details/<int:teacher_id>', methods=['GET'])
+def teacher_details(teacher_id):
+    teacher = Teacher.query.get_or_404(teacher_id)
+    return render_template('teacher_details.html', teacher=teacher)
+
+
+@app.route('/api/students', methods=['GET'])
+def get_students():
+    grade = request.args.get('grade')
+    cls = request.args.get('class')
+
+    query = Students.query
+    if grade:
+        query = query.filter_by(grade=grade)
+    if cls:
+        query = query.filter_by(Class=cls)
+
+    students = query.all()
+    return jsonify([{
+        'id': student.id,
+        'name': student.name,
+        'email': student.email,
+        'grade': student.grade,
+        'class': student.Class,
+        'parent_email': student.parent_email
+    } for student in students])
+
+
+@app.route('/student_details/<int:student_id>')
+def student_details(student_id):
+    student = Students.query.get_or_404(student_id)
+    return render_template('student_details.html', student=student)
 
 
 if __name__ == "__main__":

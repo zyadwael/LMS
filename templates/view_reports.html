@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Reports</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #543310;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #543310;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F5F5F5;
+        }
+
+        button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button:hover {
+            background-color: #3e2715;
+        }
+
+        .alert {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .alert-danger {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reports</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ 'alert-danger' if category == 'danger' else '' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Teacher's Email</th>
+                    <th>Student's Email</th>  <!-- Added column for student's email -->
+                    <th>Content</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>{{ report.subject_name }}</td>
+                        <td>{{ report.subject_teacher_email }}</td>
+                        <td>{{ report.student_email }}</td>  <!-- Display student's email -->
+                        <td>{{ report.content }}</td>
+                        <td>{{ report.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5">No reports found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
+    </div>
+</body>
+</html>

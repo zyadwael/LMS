@@ -94,15 +94,16 @@
 
         .dashboard-sections {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            justify-content: space-around;
             margin-bottom: 20px;
         }
 
         .section {
+            flex: 1;
             background-color: #C7B198;
             padding: 20px;
             box-sizing: border-box;
+            margin: 0 10px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             color: #543310;
@@ -110,28 +111,48 @@
 
         .section h2 {
             text-align: center;
-            margin-bottom: 20px;
         }
 
-        .section table {
-            width: 100%;
-            border-collapse: collapse;
+        .section ul {
+            list-style: none;
+            padding: 0;
         }
 
-        .section th, .section td {
-            border: 1px solid #543310;
-            padding: 8px;
-            text-align: left;
+        .section ul li {
+            margin: 10px 0;
         }
 
-        .section th {
-            background-color: #543310;
-            color: #ecf0f1;
-        }
-
-        .section td {
-            background-color: #DFD3C3;
+        .students-section {
+            text-align: center;
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             color: #543310;
+        }
+
+        .latest-news-section {
+            flex: 1;
+            background-color: #C7B198;
+            padding: 20px;
+            box-sizing: border-box;
+            margin: 0 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+        }
+
+        .latest-news-section h2 {
+            text-align: center;
+        }
+
+        .latest-news-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .latest-news-section ul li {
+            margin: 10px 0;
         }
 
         .toggle-btn {
@@ -147,51 +168,91 @@
             border-radius: 5px;
         }
 
-        .messages {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: transparent;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .modal-content button {
+            background-color: #543310;
+            color: #ecf0f1;
             border: none;
+            padding: 10px 20px;
             cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .modal-content button:hover {
+            background-color: #76502c;
+        }
+
+        .modal-content .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .modal-content .close-btn:hover,
+        .modal-content .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .students-list, .teacher-details {
+            margin-top: 20px;
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+        }
+
+        .messages {
+            flex: 1;
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right;
         }
 
         .messages::before {
             content: "";
-            display: block;
+            display: flex;
             width: 30px;
             height: 30px;
+            align-items: left;
+            margin-right: 5px;
             background-image: url("static/assets/images/notification.png");
             background-size: contain;
-        }
-
-        /* Media Queries for Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                position: fixed;
-                transform: translateX(-100%);
-                width: 250px;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .dashboard-sections {
-                flex-direction: column;
-            }
-
-            .section {
-                margin: 10px 0;
-            }
         }
     </style>
 </head>
@@ -208,8 +269,8 @@
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/timetable">Timetable</a></li>
                 <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/my_teachers">My Teachers</a></li>
-                <li><a href="/students">My Students</a></li>
+                <li><a href="#" onclick="showTeacherModal()">My Teacher</a></li>
+                <li><a href="#" onclick="showStudentModal()">My Students</a></li>
                 <li><a href="#">Attendance</a></li>
                 <li><a href="#">Sessions</a></li>
                 <li><a href="#">Assessments & Assignments</a></li>
@@ -244,13 +305,144 @@
             </div>
         </div>
     </div>
+
+    <!-- Student Modal -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeStudentModal()">&times;</span>
+            <h2>Select Grade and Class</h2>
+            <select id="grade-select">
+                <option value="">Select Grade</option>
+                <!-- Grade options will be generated by JavaScript -->
+            </select>
+            <select id="class-select">
+                <option value="">Select Class</option>
+                <!-- Class options will be generated by JavaScript -->
+            </select>
+            <button onclick="fetchStudentDetails()">Show Students</button>
+            <div id="students-details" class="students-list" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Teacher Modal -->
+    <div id="teacher-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeTeacherModal()">&times;</span>
+            <h2>Select Teacher</h2>
+            <select id="teacher-select">
+                <option value="">Select Teacher</option>
+                 Teacher options will be generated by JavaScript
+            </select>
+            <button onclick="fetchTeacherDetails()">Show Details</button>
+            <div id="teacher-details" class="teacher-details" style="display: none;"></div>
+        </div>
+    </div>
+
     <script>
-        function toggleSidebar() {
-            var sidebar = document.getElementById("sidebar");
-            var mainContent = document.getElementById("main-content");
-            sidebar.classList.toggle("closed");
-            mainContent.classList.toggle("expanded");
-        }
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    var mainContent = document.getElementById('main-content');
+    sidebar.classList.toggle('closed');
+    mainContent.classList.toggle('expanded');
+}
+
+function showStudentModal() {
+    document.getElementById('student-modal').style.display = 'block';
+    populateGrades();
+    populateClasses();
+}
+
+function showTeacherModal() {
+    document.getElementById('teacher-modal').style.display = 'block';
+    populateTeachers();
+}
+
+function populateGrades() {
+    var gradeSelect = document.getElementById('grade-select');
+    var grades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    grades.forEach(grade => {
+        var option = document.createElement('option');
+        option.value = grade;
+        option.textContent = `Grade ${grade}`;
+        gradeSelect.appendChild(option);
+    });
+}
+
+function populateClasses() {
+    var classSelect = document.getElementById('class-select');
+    var classes = ['A', 'B', 'C', 'D'];
+    classes.forEach(cls => {
+        var option = document.createElement('option');
+        option.value = cls;
+        option.textContent = `Class ${cls}`;
+        classSelect.appendChild(option);
+    });
+}
+
+function populateTeachers() {
+    var teacherSelect = document.getElementById('teacher-select');
+    fetch('/api/teachers')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(teacher => {
+                var option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.name;
+                teacherSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching teachers:', error));
+}
+
+function fetchStudentDetails() {
+    var grade = document.getElementById('grade-select').value;
+    var cls = document.getElementById('class-select').value;
+
+    if (grade && cls) {
+        fetch(`/api/students?grade=${grade}&class=${cls}`)
+            .then(response => response.json())
+            .then(data => {
+                var studentsList = document.getElementById('students-details');
+                studentsList.innerHTML = '<h3>Student Details</h3>';
+                data.forEach(student => {
+                    var studentDiv = document.createElement('div');
+                    studentDiv.textContent = `Name: ${student.name}, Email: ${student.email}`;
+                    var viewButton = document.createElement('button');
+                    viewButton.textContent = 'View Details';
+                    viewButton.onclick = () => {
+                        window.location.href = `/student_details/${student.id}`;
+                    };
+                    studentDiv.appendChild(viewButton);
+                    studentsList.appendChild(studentDiv);
+                });
+                studentsList.style.display = 'block';
+            })
+            .catch(error => console.error('Error fetching student details:', error));
+    } else {
+        alert('Please select both grade and class');
+    }
+}
+
+
+function fetchTeacherDetails() {
+    var teacherId = document.getElementById('teacher-select').value;
+
+    if (teacherId) {
+        window.location.href = `/teacher_details/${teacherId}`;
+    } else {
+        alert('Please select a teacher');
+    }
+}
+
+
+function closeStudentModal() {
+    document.getElementById('student-modal').style.display = 'none';
+}
+
+function closeTeacherModal() {
+    document.getElementById('teacher-modal').style.display = 'none';
+}
+
     </script>
 </body>
 </html>

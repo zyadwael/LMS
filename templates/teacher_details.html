@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Details</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .teacher-details {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+            max-width: 600px;
+            margin: auto;
+        }
+        .teacher-details h1 {
+            text-align: center;
+            margin-top: 0;
+        }
+        .teacher-info {
+            font-size: 18px;
+        }
+        .teacher-info p {
+            margin: 10px 0;
+        }
+        .teacher-info strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="teacher-details">
+            <h1>Teacher Details</h1>
+            <div class="teacher-info">
+                <p><strong>Name:</strong> {{ teacher.name }}</p>
+                <p><strong>Email:</strong> {{ teacher.email }}</p>
+                <p><strong>Phone:</strong> {{ teacher.phone }}</p>
+                <p><strong>Subject:</strong> {{ teacher.subject }}</p>
+                <p><strong>Grade:</strong> {{ teacher.grade }}</p>
+                <p><strong>Class:</strong> {{ teacher.Class }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

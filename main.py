@@ -339,7 +339,7 @@ def my_teachers():
         teacher_ids = {subject.teacher_id for subject in filtered_subjects}  # Use a set to avoid duplicates
         teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
 
-        return render_template("my_teachers.html", teachers=teachers)
+        return render_template("my_teachers.html", teachers=teachers,user=current_user)
     elif current_user.role == "admin":
         teachers = Teacher.query.all()
         return render_template("my_teachers.html",teachers=teachers)
@@ -1376,31 +1376,35 @@ def add_student():
 
     return render_template('add_student.html')
 
-
 @app.route('/add_teacher', methods=['GET', 'POST'])
 @login_required
 def add_teacher():
     if current_user.role != 'admin':
         flash('You do not have permission to access this page.')
-        return redirect(url_for('students'))
+        return redirect(url_for('teachers'))
 
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
+        subject = request.form.get('subject')
         password = request.form.get('password')
         phone_number = request.form.get('phone_number')
         gender = request.form.get('gender')
         religion = request.form.get('religion')
-        subject = request.form.get('subject')
 
-        # Create new user and student records
+        # Check if email or phone number already exists
+        existing_user = Users.query.filter((Users.email == email) | (Users.phone_number == phone_number)).first()
+        if existing_user:
+            flash('Email or phone number already exists. Please use a different one.')
+            return redirect(url_for('add_teacher'))
+
+        # Create new user and teacher records
         new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
                          religion=religion, role='teacher')
         db.session.add(new_user)
         db.session.commit()
 
-        new_teacher = Teacher(name=name, email=email, subject=subject,
-                               user_id=new_user.id)
+        new_teacher = Teacher(name=name, email=email, subject=subject, user_id=new_user.id)
         db.session.add(new_teacher)
         db.session.commit()
 

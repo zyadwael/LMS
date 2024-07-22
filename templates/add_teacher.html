@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Teacher</title>
-    <link rel="stylesheet" href="../static/css/styles.css"> <!-- Link to your common CSS file -->
+    <title>AMS SCHOOL - Add Teacher</title>
     <style>
         body {
             background-color: #DFD3C3;
@@ -16,27 +15,27 @@
             margin: 0;
         }
 
-        .form-container {
+        .add-teacher-form {
             background-color: #C7B198;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 400px; /* Adjust width as needed */
-            max-width: 100%;
+            width: 300px;
         }
 
-        .form-container h2 {
+        .add-teacher-form h2 {
             text-align: center;
             color: #543310;
         }
 
-        .form-container label {
+        .add-teacher-form label {
             display: block;
             margin-top: 10px;
             color: #543310;
         }
 
-        .form-container input {
+        .add-teacher-form input,
+        .add-teacher-form select {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
@@ -46,7 +45,7 @@
             box-sizing: border-box;
         }
 
-        .form-container button {
+        .add-teacher-form button {
             width: 100%;
             padding: 10px;
             background-color: #543310;
@@ -56,36 +55,33 @@
             cursor: pointer;
         }
 
-        .form-container button:hover {
+        .add-teacher-form button:hover {
             background-color: #7a4a0e;
         }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <form action="{{ url_for('add_teacher') }}" method="POST">
-            <h2>Add Teacher</h2>
+    <div class="add-teacher-form">
+        <h2>Add New Teacher</h2>
+        <form method="POST" action="{{ url_for('add_teacher') }}">
             <label for="name">Name</label>
             <input type="text" id="name" name="name" required>
-
             <label for="email">Email</label>
             <input type="email" id="email" name="email" required>
-
-            <label for="phone_number">Phone Number</label>
-            <input type="text" id="phone_number" name="phone_number" required>
-
-            <label for="gender">Gender</label>
-            <input type="text" id="gender" name="gender" required>
-
-            <label for="religion">Religion</label>
-            <input type="text" id="religion" name="religion" required>
-
             <label for="subject">Subject</label>
             <input type="text" id="subject" name="subject" required>
-
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
-
+            <label for="phone_number">Phone Number</label>
+            <input type="text" id="phone_number" name="phone_number">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <label for="religion">Religion</label>
+            <input type="text" id="religion" name="religion">
             <button type="submit">Add Teacher</button>
         </form>
     </div>

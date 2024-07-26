@@ -339,50 +339,46 @@
         <div class="content">
             <h1>Grade Marks</h1>
 
-            <form id="gradeForm" method="POST" action="/grade_marks">
-                <input type="hidden" name="subject_id" value="{{ subject_id }}">
-                <input type="hidden" name="grade" value="{{ grade }}">
-                <input type="hidden" name="class" value="{{ class }}">
-                <table id="gradeTable">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Behavior</th>
-                            <th>Oral Exam</th>
-                            <th>Written Exam</th>
-                            <th>Comments</th>
-                            <th>Attendance</th>
-                            <th>Assignments</th>
-                            <th>Class Projects</th>
-                            <th>Subject Projects</th>
-                            <th>Participation</th>
-                            <th>Class Work</th>
-                            <th>Total Marks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for student in students %}
-                        {% set grade = grades.get(student.id) %}
-                        <tr>
-                            <td>{{ student.name }}</td>
-                            <td><input type="number" name="behavior{{ student.id }}" class="grade-input" value="{{ grade.behavior if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="oral_exam{{ student.id }}" class="grade-input" value="{{ grade.oral_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="written_exam{{ student.id }}" class="grade-input" value="{{ grade.written_exam if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="comments{{ student.id }}" class="grade-input" value="{{ grade.comments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="attendance{{ student.id }}" class="grade-input" value="{{ grade.attendance if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="assignments{{ student.id }}" class="grade-input" value="{{ grade.assignments if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="class_projects{{ student.id }}" class="grade-input" value="{{ grade.class_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="subject_projects{{ student.id }}" class="grade-input" value="{{ grade.subject_projects if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="participation{{ student.id }}" class="grade-input" value="{{ grade.participation if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td><input type="number" name="class_work{{ student.id }}" class="grade-input" value="{{ grade.class_work if grade else '' }}" oninput="calculateTotal('{{ student.id }}')"></td>
-                            <td class="total" id="totalMarks{{ student.id }}">0</td>
-                            <input type="hidden" name="student_id" value="{{ student.id }}">
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="submit">Save Edits</button>
-            </form>
+                    <form method="get" action="{{ url_for('grade_marks') }}">
+
+                        <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Behavior</th>
+                    <th>Oral Exam</th>
+                    <th>Written Exam</th>
+                    <th>Commitments</th>
+                    <th>Attendance</th>
+                    <th>Assignments</th>
+                    <th>Class Projects</th>
+                    <th>Subject Projects</th>
+                    <th>Participation</th>
+                    <th>Class Work</th>
+                    <th>Total Marks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject, grade in subjects_grades %}
+                <tr>
+                    <td>{{ subject.name }}</td>
+                    <td>{{ grade.behavior }}</td>
+                    <td>{{ grade.oral_exam }}</td>
+                    <td>{{ grade.written_exam }}</td>
+                    <td>{{ grade.comments }}</td>
+                    <td>{{ grade.attendance }}</td>
+                    <td>{{ grade.assignments }}</td>
+                    <td>{{ grade.class_projects }}</td>
+                    <td>{{ grade.subject_projects }}</td>
+                    <td>{{ grade.participation }}</td>
+                    <td>{{ grade.class_work }}</td>
+                    <td>{{ grade.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+                        </form>
         </div>
     </div>
 </div>

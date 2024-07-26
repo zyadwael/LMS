@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="../static/css/simplebar.css">
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/feather.css">
@@ -36,14 +37,15 @@
             color: #ecf0f1;
             padding: 20px;
             box-sizing: border-box;
-            position: fixed;
+            position: absolute;
             top: 0;
             bottom: 0;
-            left: 0;
-            z-index: 1000;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-y: auto; /* Enable vertical scrolling */
         }
 
         .sidebar.closed {
@@ -68,6 +70,7 @@
             margin: 15px 0;
             border-bottom: 1px solid #ecf0f1;
             padding-bottom: 5px;
+            position: relative; /* Added for badge positioning */
         }
 
         .sidebar ul li:last-child {
@@ -84,7 +87,6 @@
         .sidebar ul li a:hover {
             text-decoration: underline;
         }
-
         .main-content {
             margin-left: 250px;
             flex: 1;
@@ -119,6 +121,7 @@
 
         .post a {
             color: #543310;
+            ;
         }
 
         .post a:hover {
@@ -134,7 +137,7 @@
             border: none;
             padding: 10px;
             cursor: pointer;
-            z-index: 1001;
+            z-index: 1001; /* Ensure the button is above all other elements */
             border-radius: 5px;
         }
 
@@ -186,13 +189,20 @@
             background-color: #543310;
         }
 
+        /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                position: fixed;
+            .section {
+                flex-basis: calc(100% - 20px); /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
             }
 
-            .sidebar.closed {
+            .sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            .sidebar.open {
                 transform: translateX(0);
             }
 
@@ -200,112 +210,135 @@
                 margin-left: 0;
             }
 
-            .toggle-btn {
-                display: block;
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%; /* Full width on smaller screens */
+                margin: 10px 0; /* Adjust margin for spacing */
             }
         }
 
-        form {
-            max-width: 100%;
-            background-color: #FFFFFF;
-            padding: 30px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .post {
+            position: relative;
+            padding-bottom: 60px; /* Ensure there is space for the buttons */
+        }
+
+        .button-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
         }
 
-        label, input {
-            margin-bottom: 10px;
-        }
-
-        button[type="submit"] {
-            align-self: flex-end;
-            padding: 10px 20px;
-            background-color: #543310;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #725238;
-        }
-
-        .table-container {
-            max-width: 100%;
-            overflow-x: auto;
-            background-color: #FFFFFF;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .button-container button,
+        .button-container a {
+            display: inline-block;
+            margin: 5px 0;
         }
 
         table {
-            width: 100%;
+            width: 80%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        table th {
-            background-color: #C7B198;
-            color: white;
-        }
-
-        table td input {
-            width: 100%;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-
-        table td textarea {
-            width: 100%;
-            height: 60px;
-            resize: none;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-
-        .total-marks {
-            font-weight: bold;
-            text-align: center;
-            background-color: #C7B198;
-            padding: 10px;
-            border-radius: 5px;
             margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        th,
+        td {
+            border: 1px solid #543310;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #543310;
+        }
+
+        td input:focus {
+            outline: none;
+        }
+
+                                  .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+                .messages {
+            flex: 1; /* Make messages section take up remaining space */
+            background-color: transparent;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 0;
+            float: right; /* Make it float to the right */
+        }
+
+        .messages::before {
+            content: "";
+            display: flex; /* Change to flexbox for side-by-side layout */
+            width: 30px;  /* Increase width to make icon bigger */
+            height: 30px; /* Increase height to make icon bigger */
+            align-items: left; /* Vertically align icon and text */
+            margin-right: 5px; /* Reduce gap between icon and text (optional) */
+            background-image: url("static/assets/images/notification.png");
+            background-size: contain; /* Maintain aspect ratio */
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar closed">
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="sidebar" id="sidebar">
             <div class="logo-container">
-                <a href="/dashboard">
-                    <img src="../static/images/Logo.png" alt="Logo">
+                <a href="../templates/index.html">
+                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
                 </a>
             </div>
             <ul>
-                <li><a href="#">View Profile</a></li>
-                <li><a href="#">Subject Materials</a></li>
-                <li><a href="#">Subject Schedule</a></li>
-                <li><a href="/term_marks">Term Marks</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Assignments</a></li>
-                <li><a href="#">Notifications</a></li>
-                <li><a href="#">Messages</a></li>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+
             </ul>
         </div>
-        <div class="main-content">
-            <h2 class="dashboard-header">Teacher Dashboard</h2>
-            <div class="posts">
-                <div class="post">
+
+<div class="container">
+    <div class="main-content">
+        <div class="content">
+            <h1>Grade Marks</h1>
+
                     <form method="POST" action="{{ url_for('grade_marks') }}">
                         <label for="subject_id">Subject:</label>
                         <select name="subject_id">
@@ -328,7 +361,7 @@
                                         <th>Behavior</th>
                                         <th>Oral Exam</th>
                                         <th>Written Exam</th>
-                                        <th>Comments</th>
+                                        <th>Commitments</th>
                                         <th>Attendance</th>
                                         <th>Assignments</th>
                                         <th>Class Projects</th>
@@ -347,31 +380,45 @@
                                             <input type="number" name="behavior{{ student.id }}" value="{{ grades[student.id].behavior if grades[student.id] else '' }}">
                                         </td>
                                         <td><input type="number" name="oral_exam{{ student.id }}" value="{{ grades[student.id].oral_exam if grades[student.id] else '' }}"></td>
-                                        <td><input type="number" name="written_exam{{ student.id }}" value="{{ grades[student.id].written_exam if grades[student.id] else '' }}"></td>
-                                        <td><textarea name="comments{{ student.id }}">{{ grades[student.id].comments if grades[student.id] else '' }}</textarea></td>
+                                        <td><input type="number" name="written_exam{{ student.id }}" value="{{ grades[student.id].comments if grades[student.id] else '' }}"></td>
+                                        <td><input type="number" name="comments{{ student.id }}" value="{{ grades[student.id].attendance if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="attendance{{ student.id }}" value="{{ grades[student.id].attendance if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="assignments{{ student.id }}" value="{{ grades[student.id].assignments if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="class_projects{{ student.id }}" value="{{ grades[student.id].class_projects if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="subject_projects{{ student.id }}" value="{{ grades[student.id].subject_projects if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="participation{{ student.id }}" value="{{ grades[student.id].participation if grades[student.id] else '' }}"></td>
                                         <td><input type="number" name="class_work{{ student.id }}" value="{{ grades[student.id].class_work if grades[student.id] else '' }}"></td>
-                                        <td><input type="number" name="total{{ student.id }}" value="{{ grades[student.id].total if grades[student.id] else 0 }}"></td>
+                                        <td><input type="number" name="total{{ student.id }}" value="{{ grades[student.id].total if grades[student.id] else 0 }}" readonly></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
-                        <button type="submit">Save Marks</button>
-                    </form>
-                </div>
-            </div>
+                <button type="submit">Save Edits</button>
+            </form>
         </div>
     </div>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+</div>
+
+
     <script>
         function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('closed');
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('closed');
+            mainContent.classList.toggle('full-width');
+        }
+
+        function calculateTotal(studentId) {
+            var total = 0;
+            var inputs = document.querySelectorAll(input[name^="${studentId}"]);
+            inputs.forEach(function(input) {
+                total += parseFloat(input.value) || 0;
+            });
+            document.getElementById(totalMarks${studentId}).innerText = total;
         }
     </script>
 </body>
+
+
+
 </html>

@@ -1283,16 +1283,13 @@ def term_marks():
         subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
         return render_template("term_marks.html", subjects=subjects, user=current_user)
     elif current_user.role == "student":
-        return render_template("student_marks.html")
+        return redirect("/student_marks")
     else:
         return redirect(url_for('dashboard'))  # Redirect non-teachers to the dashboard or another appropriate page
 
 @app.route('/grade_marks', methods=['GET', 'POST'])
 @login_required
 def grade_marks():
-    if current_user.role != "teacher":
-        return redirect(url_for('dashboard'))
-
     if request.method == 'POST':
         subject_id = request.form.get('subject_id')
         grade = request.form.get('grade')
@@ -1305,7 +1302,7 @@ def grade_marks():
             behavior = float(request.form.get(f'behavior{student_id}') or 0)
             oral_exam = float(request.form.get(f'oral_exam{student_id}') or 0)
             written_exam = float(request.form.get(f'written_exam{student_id}') or 0)
-            comments = request.form.get(f'comments{student_id}')
+            comments = float(request.form.get(f'comments{student_id}') or 0)
             attendance = float(request.form.get(f'attendance{student_id}') or 0)
             assignments = float(request.form.get(f'assignments{student_id}') or 0)
             class_projects = float(request.form.get(f'class_projects{student_id}') or 0)
@@ -1315,7 +1312,7 @@ def grade_marks():
 
             # Calculate the total
             total = (behavior + oral_exam + written_exam + attendance +
-                     assignments + class_projects + subject_projects +
+                     assignments + class_projects + subject_projects + comments +
                      participation + class_work)
 
             grade_record = Grades.query.filter_by(student_id=student_id, subject_id=subject_id).first()
@@ -1369,39 +1366,26 @@ def grade_marks():
             students = []
             grades = {}
 
-        return render_template('grade_marks_students.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class)
+        return render_template('grade_marks.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class)
 
 
-@app.route('/student_marks')
-@login_required  # Ensure the user is logged in
-def student_marks():
-    user_email = current_user.email
-    print(f"Current user email: {user_email}")
+@app.route('/student_marks/<int:student_id>')
+def student_grades(student_id):
+    # Fetch all grades associated with the student
+    grades_list = Grades.query.filter_by(student_id=student_id).all()
+    if not grades_list:
+        abort(404, description="Grades not found for the student")
 
-    student = Users.query.filter_by(email=user_email).first()
-    print(f"Student object: {student}")
+    # Create a list to store subject and grade pairs
+    subjects_grades = []
+    for grade in grades_list:
+        subject = Subjects.query.filter_by(id=grade.subject_id).first()
+        if subject:
+            subjects_grades.append((subject, grade))
 
-    if student:
-        # Fetch all grades for this student
-        grades = Grades.query.filter_by(student_id=student.id).all()
-        print(grades)
+    return render_template('grade_marks_students.html', subjects_grades=subjects_grades)
 
-        # Fetch the subjects associated with these grades
-        subjects = Subjects.query.filter(Subjects.id.in_([grade.subject_id for grade in grades])).all()
-        subject_dict = {subject.id: subject.name for subject in subjects}
 
-        # Organize grades by subject
-        grades_by_subject = {}
-        for grade in grades:
-            subject_name = subject_dict.get(grade.subject_id, "Unknown Subject")
-            if subject_name not in grades_by_subject:
-                grades_by_subject[subject_name] = []
-            grades_by_subject[subject_name].append(grade)
-
-        print(f"Grades by subject: {grades_by_subject}")  # Print grades for debugging
-        return render_template('grade_marks_students.html', student=student, grades_by_subject=grades_by_subject)
-    else:
-        return "Student not found", 404
 
 @app.route("/child_detail/<int:child_id>")
 @login_required

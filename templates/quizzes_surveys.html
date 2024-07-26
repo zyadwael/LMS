@@ -65,12 +65,23 @@
     <div class="container">
         <h1>Quizzes and Surveys</h1>
         <ul class="quiz-list">
+            
+            
             {% for quiz in quizzes %}
                 <li>
+                                            {% if current_user.role == "student" %}
                     <a href="/take_quiz/{{ quiz.id }}">{{ quiz.name }}</a>
                     <form action="/quizzes_surveys" method="POST">
                         <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                        {% elif current_user.role == "parent" %}
+                        <a href="/all_results/{{ quiz.id }}">{{ quiz.name }}</a>
+                        <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                            {% endif %}
+                        {% if current_user.role == "student" %}
                         <button type="submit" class="btn btn-primary">Take the Quiz</button>
+                        {% elif current_user.role == "parent" %}
+                        <a href="/all_results/{{quiz.id}}">See Your Child Results</a>
+                        {% endif %}
                     </form>
                 </li>
             {% endfor %}

@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
     <link rel="stylesheet" href="../static/css/quill.snow.css">
     <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/bootstrap/main.min.css">
     <style>
         body {
             background: #DFD3C3;
@@ -268,6 +273,12 @@
             margin-right: 5px; /* Optional: Adds some space between icon and text */
         }
 
+                #calendar {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
     </style>
 </head>
 
@@ -353,8 +364,29 @@
     <script src="../static/js/fullcalendar.js"></script>
     <script src="../static/js/fullcalendar.custom.js"></script>
     <script src="../static/js/apps.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/interaction/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['interaction', 'dayGrid', 'timeGrid', 'list', 'bootstrap'],
+                themeSystem: 'bootstrap',
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                events: '/events', // Fetch events from the backend route
+                eventColor: '#378006' // Example color for events
+            });
+            calendar.render();
+        });
 
-    <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
             var mainContent = document.getElementById('main-content');
@@ -425,36 +457,6 @@
     // Periodically update the badge (e.g., every 10 seconds)
     setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
 });
-
-
-                document.addEventListener('DOMContentLoaded', function () {
-            checkSidebarState();
-
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                plugins: ['dayGrid', 'timeGrid', 'list', 'bootstrap'],
-                timeZone: 'UTC',
-                themeSystem: 'bootstrap',
-                header: {
-                    left: 'today prev,next',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-                },
-                events: function(fetchInfo, successCallback, failureCallback) {
-                    $.ajax({
-                        url: '/events',
-                        method: 'GET',
-                        success: function(data) {
-                            successCallback(data);
-                        },
-                        error: function() {
-                            failureCallback();
-                        }
-                    });
-                }
-            });
-            calendar.render();
-        });
 
     </script>
 </body>

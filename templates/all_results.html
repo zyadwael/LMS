@@ -80,7 +80,12 @@
                 {% endfor %}
             </ul>
         </div>
+        {% if current_user.role == "teacher" %}
         <a href="{{ url_for('results', user_id=teacher_id) }}" class="back-btn">Back to Results</a>
+        {% endif %}
+                {% if current_user.role == "parent" %}
+        <a href="{{ url_for('results', user_id=user_id) }}" class="back-btn">Back to Results</a>
+        {% endif %}
     </div>
 </body>
 </html>

@@ -76,7 +76,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Quizzes of {{ teacher_name }}</h1>
+            <h1>Quizzes of {{ current_user.name }}</h1>
         </div>
         <div class="quiz-names">
             {% for quiz in quizzes %}

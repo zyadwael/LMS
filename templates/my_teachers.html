@@ -274,47 +274,11 @@
 
 </head>
 <body>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="container">
-        <div class="sidebar" id="sidebar">
-            <div class="logo-container">
-                <a href="../templates/index.html">
-                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
-                </a>
-            </div>
-            {% if current_user.role == "student" %}
-            <ul>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/view_timetable">Timetable</a></li>
-                <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/students">My Students</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
-                <li><a href="#">Assessments & Assignments</a></li>
-                <li><a href="#">Remarks & Actions</a></li>
-                <li><a href="/term_marks">Term Marks</a></li>
-                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
-                <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
-                <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
-            </ul>
-            {% elif current_user.role == "admin" %}
-                <ul>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/timetable">Timetable</a></li>
-                <li><a href="/my_subjects">My Subjects</a></li>
-                <li><a href="/my_teachers">My Teachers</a></li>
-                <li><a href="/students">My Students</a></li>
-                <li><a href="#">Attendance</a></li>
-                <li><a href="#">Sessions</a></li>
-                <li><a href="#">Assessments & Assignments</a></li>
-                <li><a href="#">Remarks & Actions</a></li>
-                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
-            </ul>
+{% extends "student_base.html" %}
 
-            {% endif %}
-        </div>
+{% block content %}
         <!-- cards for each subject -->
-        <div class="main-content" id="main-content">
+        <div>
     <div class="dashboard-header">
         <h1>My Teachers</h1>
     </div>
@@ -327,13 +291,12 @@
         <div class="section">
 
                             {% for teacher in teachers %}
-                                    <a href="/view_teacher/{{ teacher.id }}">
+                                    <a href="/teacher_details/{{ teacher.id }}">
             <h2>{{ teacher.name }} - Teaches {{ teacher.subject}}</h2>
             <ul>
                 <li><a href="/messages"><button class="message-btn">Message</button></a></li>
-                <!-- Add more details as needed -->
             </ul>
-                        </a>
+                                    </a>
             {% endfor %}
         </div>
         <br> <!-- Optional: Use CSS margin or padding for spacing instead -->
@@ -369,28 +332,6 @@
 </div>
 
 
-    <!-- js codes -->
-    <script src="../static/js/jquery.min.js"></script>
-    <script src="../static/js/popper.min.js"></script>
-    <script src="../static/js/moment.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/simplebar.min.js"></script>
-    <script src="../static/js/daterangepicker.js"></script>
-    <script src="../static/js/jquery.stickOnScroll.js"></script>
-    <script src="../static/js/tinycolor-min.js"></script>
-    <script src="../static/js/config.js"></script>
-    <script src="../static/js/fullcalendar.js"></script>
-    <script src="../static/js/fullcalendar.custom.js"></script>
-    <script src="../static/js/apps.js"></script>
-
-    <script>
-        function toggleSidebar() {
-            var sidebar = document.getElementById('sidebar');
-            var mainContent = document.getElementById('main-content');
-            sidebar.classList.toggle('closed');
-            sidebar.classList.toggle('open');
-            mainContent.classList.toggle('expanded');
-        }
-    </script>
+{% endblock %}
 </body>
 </html>

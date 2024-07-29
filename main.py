@@ -696,14 +696,6 @@ def delete_question(question_id):
 
 
 
-@app.route('/view_teacher/<int:id>')
-def view_teacher(id):
-    teacher = Teacher.query.filter_by(id=id).first()
-
-    if not teacher:
-        abort(404)  # If teacher is not found, return a 404
-
-    return render_template("view_teacher.html", teacher_name=teacher.name, teacher=teacher)
 
 
 @app.route("/profile")
@@ -1629,8 +1621,17 @@ def get_teachers():
 
 @app.route('/teacher_details/<int:teacher_id>', methods=['GET'])
 def teacher_details(teacher_id):
-    teacher = Teacher.query.get_or_404(teacher_id)
-    return render_template('teacher_details.html', teacher=teacher)
+    # Perform a join between the Users and Teacher tables based on the email and filter by teacher_id
+    result = db.session.query(
+        Teacher.id,
+        Teacher.name,
+        Teacher.subject,
+        Teacher.email,
+        Users.phone_number
+    ).join(Users, Teacher.email == Users.email).filter(Teacher.id == teacher_id).first_or_404()
+
+    # Pass the result to the template
+    return render_template('teacher_details.html', teacher=result)
 
 
 @app.route('/api/students', methods=['GET'])

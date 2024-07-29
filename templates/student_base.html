@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Subjects</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            z-index: 100;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+
+        .sidebar ul li {
+            margin: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        .sidebar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            border-radius: 5px;
+        }
+
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px);
+                margin: 10px 0;
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(0%);
+                width: 250px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0%);
+            }
+
+            .sidebar.closed {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+
+        .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .purchases-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .purchases-list li {
+            background: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchases-list li p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <a href="../templates/index.html">
+                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+                </a>
+            </div>
+            <ul>
+                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
+                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
+                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
+                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
+                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
+                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
+                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/student_marks/{{student_id}}"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
+            </ul>
+        </div>
+        <div class="main-content" id="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/popper.min.js"></script>
+    <script src="../static/js/moment.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/simplebar.min.js"></script>
+    <script src="../static/js/daterangepicker.js"></script>
+    <script src="../static/js/jquery.stickOnScroll.js"></script>
+    <script src="../static/js/tinycolor-min.js"></script>
+    <script src="../static/js/config.js"></script>
+    <script src="../static/js/fullcalendar.js"></script>
+    <script src="../static/js/fullcalendar.custom.js"></script>
+    <script src="../static/js/apps.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/interaction/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['interaction', 'dayGrid', 'timeGrid', 'list', 'bootstrap'],
+                themeSystem: 'bootstrap',
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                events: '/events', // Fetch events from the backend route
+                eventColor: '#378006' // Example color for events
+            });
+            calendar.render();
+        });
+
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            if (sidebar.classList.contains('closed')) {
+                sidebar.classList.remove('closed');
+                mainContent.classList.remove('expanded');
+                console.log("Sidebar opened");
+            } else {
+                sidebar.classList.add('closed');
+                mainContent.classList.add('expanded');
+                console.log("Sidebar closed");
+            }
+        }
+
+        function checkSidebarState() {
+            var sidebar = document.getElementById('sidebar');
+            var mainContent = document.getElementById('main-content');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('closed');
+                mainContent.classList.add('expanded');
+                console.log("Window resized to mobile view - Sidebar closed");
+            } else {
+                sidebar.classList.remove('closed');
+                mainContent.classList.remove('expanded');
+                console.log("Window resized to desktop view - Sidebar opened");
+            }
+        }
+
+        window.addEventListener('resize', checkSidebarState);
+
+        document.addEventListener('DOMContentLoaded', function() {
+    console.log("Document loaded");
+
+    // Function to fetch unread messages count from the backend
+    function fetchUnreadMessagesCount() {
+        console.log("Fetching unread messages count");
+        return fetch('/api/unread_messages_count')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Received data:", data);
+                return data.count;
+            })
+            .catch(error => {
+                console.error("Failed to fetch unread messages count:", error);
+                return 0;
+            });
+    }
+
+    // Function to update the message badge
+    function updateMessageBadge() {
+        fetchUnreadMessagesCount().then(count => {
+            console.log("Updating message badge with count:", count);
+            const messageBadge = document.getElementById('message-badge');
+            if (messageBadge) {
+                messageBadge.textContent = count;
+            }
+        });
+    }
+
+    // Initially update the badge when the page loads
+    updateMessageBadge();
+
+    // Periodically update the badge (e.g., every 10 seconds)
+    setInterval(updateMessageBadge, 10000); // Adjust the interval as needed
+});
+
+    </script>
+</body>
+</html>

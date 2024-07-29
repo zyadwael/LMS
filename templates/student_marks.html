@@ -276,26 +276,8 @@
 </head>
 
 <body>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="sidebar" id="sidebar">
-        <div class="logo-container">
-            <a href="../templates/index.html">
-                <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
-            </a>
-        </div>
-        <ul>
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="#">Timetable</a></li>
-            <li><a href="/my_subjects">My Subjects</a></li>
-            <li><a href="/my_teachers">My Teachers</a></li>
-            <li><a href="#">Attendance</a></li>
-            <li><a href="#">Sessions</a></li>
-            <li><a href="#">Assessments & Assignments</a></li>
-            <li><a href="#">Remarks & Actions</a></li>
-            <li><a href="#">Quizzes/Surveys</a></li>
-        </ul>
-    </div>
-
+{% extends "student_base.html" %}
+{% block content %}
     <div class="container">
         <div class="main-content">
             <div class="content">
@@ -354,13 +336,7 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function toggleSidebar() {
-            var sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('closed');
-        }
-    </script>
+{% endblock %}
 </body>
 
 </html>

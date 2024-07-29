@@ -211,44 +211,20 @@
     </style>
 </head>
 <body>
-    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <div class="container">
-        <div class="sidebar" id="sidebar">
-            <div class="logo-container">
-                <a href="../templates/index.html">
-                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
-                </a>
-            </div>
-            <ul>
-                <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
-                <li><a href="/view_timetable"><i class="feather icon-calendar"></i><span class="link-text">Timetable</span></a></li>
-                <li><a href="/my_subjects"><i class="feather icon-book"></i><span class="link-text">My Subjects</span></a></li>
-                <li><a href="/my_teachers"><i class="feather icon-user"></i><span class="link-text">My Teachers</span></a></li>
-                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Attendance</span></a></li>
-                <li><a href="/zoom"><i class="feather icon-users"></i><span class="link-text">Sessions</span></a></li>
-                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Assessments & Assignments</span></a></li>
-                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Remarks & Actions</span></a></li>
-                <li><a href="/quizzes_surveys"><i class="feather icon-list"></i><span class="link-text">Quizzes/Surveys</span></a></li>
-                <li class="notification"><a href="/messages"><i class="feather icon-list"></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
-                <li><a href="/student_marks"><i class="feather icon-file-text"></i><span class="link-text">Term Marks</span></a></li>
-            </ul>
-        </div>
+{% extends "student_base.html" %}
+
+{% block content %}
         <div class="main-content" id="main-content">
             <div class="dashboard">
                 <h2>View {{teacher_name}} INFO</h2>
                 <div class="section">
-                    <div class="post-content">Name : {{ teacher_name }}</div>
+                    <div class="post-content">Name : {{ teacher.name }}</div>
                     <div class="post-content">Email : {{ teacher.email }}</div>
                     <div class="post-content">Phone Number : {{teacher.phone}}</div>
                 </div>
             </div>
         </div>
     </div>
-    <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('closed');
-            document.getElementById('main-content').classList.toggle('expanded');
-        }
-    </script>
+{% endblock %}
 </body>
 </html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Term Marks</title>
     <style>
-        body {
+        .term-marks-body {
             background: #DFD3C3;
             font-family: Arial, sans-serif;
             margin: 0;
@@ -18,8 +18,8 @@
             color: #543310;
         }
 
-        .container {
-            width: 80%;
+        .term-marks-container {
+            width: 90%; /* Increased from 80% to 90% */
             background-color: #C7B198;
             padding: 20px;
             box-sizing: border-box;
@@ -27,27 +27,27 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        h1 {
+        .term-marks-container h1 {
             text-align: center;
         }
 
-        table {
+        .term-marks-container table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
         }
 
-        th, td {
+        .term-marks-container th, .term-marks-container td {
             padding: 12px;
             border-bottom: 1px solid #543310;
         }
 
-        th {
+        .term-marks-container th {
             background-color: #543310;
             color: #ecf0f1;
         }
 
-        td {
+        .term-marks-container td {
             background-color: #DFD3C3;
         }
 
@@ -65,8 +65,11 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="term-marks-body">
+{% extends "teacher_base.html" %}
+
+{% block content %}
+    <div class="term-marks-container">
         <h1>Term Marks</h1>
         <table>
             <thead>
@@ -96,7 +99,6 @@
             </tbody>
         </table>
     </div>
+{% endblock %}
 </body>
-
-
 </html>

@@ -58,7 +58,6 @@
             width: 100%;
         }
 
-
         .sidebar ul li {
             margin: 15px 0;
             border-bottom: 1px solid #ecf0f1;
@@ -102,7 +101,7 @@
 
             .sidebar {
                 position: fixed;
-                transform: translateX(0%);
+                transform: translateX(-100%);
                 width: 250px;
             }
 
@@ -167,6 +166,55 @@
 
         .purchases-list li p {
             margin: 5px 0;
+        }
+
+        .quizzes-surveys-body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        /* Quizzes/Surveys Styles */
+        .quizzes-surveys-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .quizzes-surveys-list li {
+            background-color: #C7B198;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quizzes-surveys-list li a {
+            text-decoration: none;
+            color: #543310;
+            font-size: 18px;
+            flex-grow: 1;
+            margin-right: 20px; /* Add some space between the title and the button */
+        }
+
+        .quizzes-surveys-list li form {
+            margin: 0;
+        }
+
+        .quizzes-surveys-list li button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .quizzes-surveys-list li button:hover {
+            background-color: #3e2715;
         }
     </style>
 </head>

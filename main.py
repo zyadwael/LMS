@@ -1121,7 +1121,7 @@ def timetable():
             day_of_week=day_of_week,
             time_of_day=time_of_day,
             grade=grade,
-            Class=Class,
+            Class=Class.upper(),
             teacher_email=teacher_email
         )
 
@@ -1340,7 +1340,7 @@ def grade_marks():
                 )
                 db.session.add(new_grade)
         db.session.commit()
-        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_))
+        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_ ,user=current_user))
 
     else:
         subject_id = request.args.get('subject_id')
@@ -1358,7 +1358,7 @@ def grade_marks():
             students = []
             grades = {}
 
-        return render_template('grade_marks.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class)
+        return render_template('grade_marks.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class.upper(),user=current_user)
 
 
 @app.route('/student_marks/<int:student_id>')
@@ -1481,7 +1481,7 @@ def add_user():
 
         # Create new user record
         new_user = Users(name=name, email=email, password=password, phone_number=phone_number, gender=gender,
-                         religion=religion, role=role.lower() ,grade=grade,Class=Class)
+                         religion=religion, role=role.lower() ,grade=grade,Class=Class.upper())
         db.session.add(new_user)
         db.session.commit()
 
@@ -1489,7 +1489,7 @@ def add_user():
             grade = request.form.get('grade')
             Class = request.form.get('class')
             parent_email = request.form.get('parent_email')
-            new_student = Students(name=name, email=email, grade=grade, Class=Class, parent_email=parent_email,
+            new_student = Students(name=name, email=email, grade=grade, Class=Class.upper(), parent_email=parent_email,
                                    user_id=new_user.id)
             db.session.add(new_student)
             db.session.commit()
@@ -1606,7 +1606,7 @@ def view_reports():
         flash('You do not have permission to view reports.', 'danger')
         return redirect(url_for('dashboard'))  # Adjust the redirection URL based on your app
 
-    return render_template('view_reports.html', reports=reports)
+    return render_template('view_reports.html', reports=reports,user=current_user)
 
 
 @app.route('/api/teachers', methods=['GET'])

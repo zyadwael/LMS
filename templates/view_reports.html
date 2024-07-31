@@ -83,8 +83,12 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="view-report-body">
+{% extends "teacher_base.html" %}
+
+{% block content %}
+<div>
+    <div >
         <h1>Reports</h1>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -95,7 +99,8 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <table>
+        <div>
+        <table      >
             <thead>
                 <tr>
                     <th>Subject Name</th>
@@ -121,7 +126,10 @@
                 {% endfor %}
             </tbody>
         </table>
+            </div>
         <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
     </div>
+    </div>
+{% endblock %}
 </body>
 </html>

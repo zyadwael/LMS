@@ -73,8 +73,13 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="quiz-body">
+{% extends "teacher_base.html" %}
+
+{% block content %}
+
+    <div class="quiz-box">
+
         <div class="header">
             <h1>Quizzes of {{ current_user.name }}</h1>
         </div>
@@ -87,5 +92,6 @@
         </div>
         <a href="/dashboard" class="back-btn">Back to Dashboard</a>
     </div>
+{% endblock %}
 </body>
 </html>

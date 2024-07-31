@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Base</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            z-index: 100;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .sidebar ul li {
+            margin: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        .sidebar ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                flex-basis: calc(100% - 20px);
+                margin: 10px 0;
+            }
+
+            .sidebar {
+                position: fixed;
+                transform: translateX(0%);
+                width: 250px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0%);
+            }
+
+            .sidebar.closed {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-sections {
+                flex-direction: column;
+            }
+
+            .section {
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+
+        .badge {
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .purchases-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .purchases-list li {
+            background: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .purchases-list li p {
+            margin: 5px 0;
+        }
+
+        .term-marks-container {
+            width: 500%;
+            max-width: 1200px;
+            background-color: #C7B198;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .term-marks-body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            height: 100vh;
+            color: #543310;
+            padding-left: 10%;
+        }
+
+        .term-marks-container h1 {
+            text-align: center;
+            color: #543310;
+        }
+
+        .term-marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .term-marks-table th,
+        .term-marks-table td {
+            padding: 12px;
+            border-bottom: 1px solid #543310;
+        }
+
+        .term-marks-table th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+
+        .term-marks-table td {
+            background-color: #DFD3C3;
+        }
+
+        .term-marks-button {
+            background-color: #543310;
+            color: #ecf0f1;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .term-marks-button:hover {
+            background-color: #3e260a;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #543310;
+        }
+
+                .quiz-body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-names {
+            background-color: #DFD3C3;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+        }
+
+        .quiz-names h2 {
+            text-align: center;
+        }
+
+        .quiz-box {
+            background-color: #C7B198;
+            color: #543310;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-box a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .quiz-box a:hover {
+            text-decoration: underline;
+        }
+
+        .back-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #543310;
+            color: #ecf0f1;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .back-btn:hover {
+            background-color: #3c250d;
+        }
+
+            .grade-marks-posts {
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        color: #543310;
+    }
+
+    .grade-marks-post {
+        background-color: #C7B198;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .grade-marks-post h2 {
+        margin: 0 0 30px 0;
+    }
+
+    .grade-marks-post a {
+        color: #543310;
+    }
+
+    .grade-marks-post a:hover {
+        text-decoration: none;
+    }
+
+
+    .grade-marks-add-lesson-btn {
+        background-color: #543310;
+        color: #ecf0f1;
+        border: none;
+        padding: 10px 20px;
+        margin-left: 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .grade-marks-add-lesson-btn:hover {
+        background-color: #3c250d;
+    }
+
+    .grade-marks-add-news-btn {
+        background-color: #543310;
+        color: #ecf0f1;
+        border: none;
+        padding: 10px 20px;
+        margin-left: 20px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .grade-marks-add-news-btn:hover {
+        background-color: #3c250d;
+    }
+
+    .grade-marks-header {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #543310;
+    }
+
+    .grade-marks-terms-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .grade-marks-terms-list li {
+        background: #C7B198;
+        margin: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        flex-basis: calc(50% - 20px);
+    }
+
+    .grade-marks-terms-list li p {
+        margin: 0;
+        color: #543310;
+    }
+
+    .grade-marks-terms-list li p:last-child {
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .grade-marks-terms-list li a {
+        color: #543310;
+        text-decoration: none;
+    }
+
+    .grade-marks-terms-list li a:hover {
+        text-decoration: underline;
+    }
+
+    .grade-marks-posts a {
+        color: #543310;
+        text-decoration: none;
+    }
+
+    .grade-marks-posts a:hover {
+        text-decoration: underline;
+    }
+
+    .grade-marks-header h1 {
+        color: #543310;
+    }
+                .grade-marks-table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #C7B198;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+    .view-report-body {
+        background: #DFD3C3;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center; /* Centers container horizontally */
+        align-items: center; /* Centers container vertically */
+        height: 100vh;
+    }
+
+    .view-report-container {
+        background-color: #C7B198;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 100%; /* Adjust as needed */
+        max-width: 2000px; /* Adjust as needed */
+
+        overflow-y:  center;
+        max-height: 90vh;
+    }
+
+    .view-report-table {
+        width: 100%; /* Ensure table takes full width of its container */
+        border-collapse: collapse;
+        margin-top: 50px;
+        font-size: 16px; /* Adjust font size if needed */
+    }
+
+    /* Optional: To ensure table is centered within the container */
+    .view-report-table-wrapper {
+        display: flex;
+        justify-content: center; /* Centers table horizontally */
+        overflow-x: auto; /* Adds horizontal scroll if needed */
+    }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="container">
+        <div class="sidebar" id="sidebar">
+            <div class="logo-container">
+                <a href="../templates/index.html">
+                    <img src="../static/assets/images/logo.png" alt="School Logo" style="width: 100px; height: auto;">
+                </a>
+            </div>
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/view_timetable">Timetable</a></li>
+                <li><a href="/my_subjects">My Subjects</a></li>
+                <li><a href="/students">My Students</a></li>
+                <li><a href="#">Attendance</a></li>
+                <li><a href="/zoom">Sessions</a></li>
+                <li><a href="#">Assessments & Assignments</a></li>
+                <li><a href="#">Remarks & Actions</a></li>
+                <li><a href="/term_marks">Term Marks</a></li>
+                <li><a href="/quizzes_surveys">Quizzes/Surveys</a></li>
+                <li><a href="/results/{{ user.id }}" onclick="showQuizResults()">Quiz Results</a></li>
+                <li><a href="/messages"><i ></i><span class="link-text">Messages</span><span class="badge" id="message-badge">0</span></a></li>
+                <li><a href="/view_reports">View Reports</a></li>
+            </ul>
+        </div>
+        <div class="main-content" id="main-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var container = document.getElementById('container');
+            if (sidebar.classList.contains('closed')) {
+                sidebar.classList.remove('closed');
+                container.classList.remove('expanded');
+                console.log("Sidebar opened");
+            } else {
+                sidebar.classList.add('closed');
+                container.classList.add('expanded');
+                console.log("Sidebar closed");
+            }
+        }
+
+        function showQuizResults() {
+            var quizResultsSection = document.getElementById('quiz-results');
+            var mainContent = document.getElementById('main-content');
+            if (quizResultsSection.style.display === 'none') {
+                quizResultsSection.style.display = 'block';
+                mainContent.style.marginLeft = '250px'; // Move main content to the right
+            } else {
+                quizResultsSection.style.display = 'none';
+                mainContent.style.marginLeft = '0'; // Move main content back to original position
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Document loaded");
+
+            // Function to fetch unread messages count from the backend
+            function fetchUnreadMessagesCount() {
+                console.log("Fetching unread messages count");
+                return fetch('/unread_messages_count')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Received data:", data);
+                        return data.unread_count;
+                    })
+                    .catch(error => {
+                        console.error("Failed to fetch unread messages count:", error);
+                        return 0;
+                    });
+            }
+
+            // Function to update the message badge
+            function updateMessageBadge() {
+                fetchUnreadMessagesCount().then(count => {
+                    console.log("Updating message badge with count:", count);
+                    const messageBadge = document.getElementById('message-badge');
+                    if (count > 0) {
+                        messageBadge.style.display = 'flex'; // Show the badge as a flexbox
+                        messageBadge.textContent = count;
+                    } else {
+                        messageBadge.style.display = 'none'; // Hide the badge
+                    }
+                });
+            }
+
+            // Call the updateMessageBadge function periodically
+            setInterval(updateMessageBadge, 5000); // Check every 5 seconds
+        });
+    </script>
+</body>
+</html>

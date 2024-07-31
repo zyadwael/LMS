@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -33,6 +33,9 @@ login_manager.init_app(app)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ATTENDANCE_FOLDER'] = os.path.join(app.config['UPLOAD_FOLDER'], 'attendance')
+os.makedirs(app.config['ATTENDANCE_FOLDER'], exist_ok=True)
+
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -162,8 +165,20 @@ with app.app_context():
         Class = db.Column(db.String(100))
         parent_email = db.Column(db.String(1000))
         user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+        attendances = db.relationship('Attendance', backref='student_record', lazy=True)
 
 
+    class Attendance(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+        date = db.Column(db.Date, nullable=False, default=date.today)
+        attended = db.Column(db.Boolean, nullable=False, default=True)
+        late = db.Column(db.Boolean, nullable=False, default=False)
+        absent = db.Column(db.Boolean, nullable=False, default=False)
+        permission = db.Column(db.Boolean, nullable=True)
+        image_filename = db.Column(db.String(256), nullable=True)
+        student_name = db.Column(db.String(100), nullable=False)
+        student = db.relationship('Students', backref='attendance_records')
 
     class News(UserMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -281,6 +296,7 @@ admin.add_view(MyModelView(Files, db.session))
 admin.add_view(MyModelView(Timetable, db.session))
 admin.add_view(MyModelView(Videos, db.session))
 admin.add_view(MyModelView(Grades, db.session))
+admin.add_view(MyModelView(Attendance, db.session))
 
 
 
@@ -356,35 +372,38 @@ def get_events():
     return jsonify(events_list)
 
 
-@app.route('/create_event', methods=['POST'])
+@app.route('/create_event', methods=['GET', 'POST'])
 def create_event():
-    title = request.form['title']
-    start_date_str = request.form['start_date']
-    end_date_str = request.form['end_date']
-    description = request.form['description']
+    if request.method == 'POST':
+        title = request.form['title']
+        start_date_str = request.form['start_date']
+        end_date_str = request.form['end_date']
+        description = request.form['description']
 
-    date_format = '%Y-%m-%d %H:%M:%S'
+        date_format = '%Y-%m-%dT%H:%M'  # Adjusted to match datetime-local input format
 
-    try:
-        start_date = datetime.strptime(start_date_str, date_format)
-        end_date = datetime.strptime(end_date_str, date_format)
+        try:
+            start_date = datetime.strptime(start_date_str, date_format)
+            end_date = datetime.strptime(end_date_str, date_format)
 
-        new_event = Event(
-            title=title,
-            start_date=start_date,
-            end_date=end_date,
-            description=description
-        )
+            new_event = Event(
+                title=title,
+                start_date=start_date,
+                end_date=end_date,
+                description=description
+            )
 
-        db.session.add(new_event)
-        db.session.commit()
+            db.session.add(new_event)
+            db.session.commit()
 
-        flash('Event created successfully!', 'success')
-        return redirect(url_for('some_page'))
+            flash('Event created successfully!', 'success')
+            return redirect(url_for('dashboard'))  # Adjust this as needed
 
-    except ValueError:
-        flash('Invalid date format. Please use YYYY-MM-DD HH:MM:SS.', 'error')
-        return redirect(url_for('create_event_page'))
+        except ValueError:
+            flash('Invalid date format. Please use YYYY-MM-DD HH:MM:SS.', 'error')
+            return redirect(url_for('create_event'))
+
+    return render_template('create_event.html')
 
 @app.route("/my_teachers")
 def my_teachers():
@@ -1108,7 +1127,6 @@ def index():
 @login_required
 def timetable():
     if request.method == 'POST':
-
         subject_name = request.form.get('subject_name')
         day_of_week = request.form.get('day_of_week')
         time_of_day = request.form.get('time_of_day')
@@ -1116,12 +1134,31 @@ def timetable():
         Class = request.form.get('Class')
         teacher_email = request.form.get('teacher_email')
 
+        # Check for overlapping sessions for the same teacher
+        teacher_overlap = Timetable.query.filter_by(
+            teacher_email=teacher_email,
+            day_of_week=day_of_week,
+            time_of_day=time_of_day
+        ).first()
+
+        # Check for overlapping sessions for the same class
+        class_overlap = Timetable.query.filter_by(
+            grade=grade,
+            Class=Class,
+            day_of_week=day_of_week,
+            time_of_day=time_of_day
+        ).first()
+
+        if teacher_overlap or class_overlap:
+            error_message = 'Overlap detected: The teacher or class is already scheduled for another session at this time.'
+            return render_template('create_timetable.html', error_message=error_message)
+
         new_timetable = Timetable(
             subject_name=subject_name,
             day_of_week=day_of_week,
             time_of_day=time_of_day,
             grade=grade,
-            Class=Class.upper(),
+            Class=Class,
             teacher_email=teacher_email
         )
 
@@ -1661,6 +1698,80 @@ def student_details(student_id):
     student = Students.query.get_or_404(student_id)
     return render_template('student_details.html', student=student)
 
+
+@app.route('/attendance', methods=['GET', 'POST'])
+@login_required
+def attendance():
+    if current_user.role == "teacher":
+        teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
+        teacher_subject_ids = [subject.id for subject in teacher_subjects]
+
+        students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
+                                         Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
+    attendance_dict = {}
+
+    # Fetch existing attendance records
+    for record in Attendance.query.filter_by(date=date.today()).all():
+        attendance_dict[record.student_id] = {
+            'attended': record.attended,
+            'late': record.late,
+            'absent': record.absent,
+            'permission': record.permission,
+            'image_filename': record.image_filename
+        }
+
+    if request.method == 'POST':
+        for student in students:
+            student_id = student.id
+            status = request.form.get(f'status_{student_id}')
+            attended = status == 'attended'
+            late = status == 'late'
+            absent = status == 'absent'
+            permission = request.form.get(f'permission_{student_id}') == 'on'
+
+            # Initialize image filename
+            image_filename = None
+
+            # Handle image upload if permission is given
+            if permission and f'image_{student_id}' in request.files:
+                image = request.files[f'image_{student_id}']
+                if image and image.filename:
+                    image_filename = secure_filename(image.filename)
+                    image_path = os.path.join(app.config['ATTENDANCE_FOLDER'], image_filename)
+                    image.save(image_path)
+
+            # Check if an existing record is available
+            existing_record = Attendance.query.filter_by(student_id=student_id, date=date.today()).first()
+            if existing_record:
+                existing_record.attended = attended
+                existing_record.late = late
+                existing_record.absent = absent
+                existing_record.permission = permission
+                if image_filename:
+                    existing_record.image_filename = image_filename
+                # Preserve existing photo if new one is not provided
+                if not image_filename:
+                    image_filename = existing_record.image_filename
+                existing_record.image_filename = image_filename
+            else:
+                # Create new attendance record
+                attendance_record = Attendance(
+                    student_id=student_id,
+                    date=date.today(),
+                    attended=attended,
+                    late=late,
+                    absent=absent,
+                    permission=permission,
+                    image_filename=image_filename,
+                    student_name=student.name
+                )
+                db.session.add(attendance_record)
+
+        db.session.commit()
+        flash('Attendance submitted successfully', 'success')
+        return redirect(url_for('attendance'))
+
+    return render_template('attendance.html', students=students, attendance_dict=attendance_dict)
 
 if __name__ == "__main__":
      app.run(debug=True)

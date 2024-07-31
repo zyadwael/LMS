@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #543310;
+            margin-bottom: 20px;
+        }
+        .attendance-form {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+            width: 80%;
+            max-width: 500px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #543310;
+        }
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+        input[type="radio"], input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        button {
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            width: 80%;
+            max-width: 500px;
+        }
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function togglePermission(studentId) {
+            const absentRadio = document.querySelector(`input[name="status_${studentId}"][value="absent"]`);
+            const permissionContainer = document.getElementById(`permission_container_${studentId}`);
+            if (absentRadio.checked) {
+                permissionContainer.classList.remove('hidden');
+            } else {
+                permissionContainer.classList.add('hidden');
+                document.getElementById(`permission_${studentId}`).checked = false;
+                document.getElementById(`image_upload_container_${studentId}`).classList.add('hidden');
+            }
+        }
+
+        function toggleImageUpload(studentId) {
+            const permissionCheckbox = document.getElementById(`permission_${studentId}`);
+            const imageUploadContainer = document.getElementById(`image_upload_container_${studentId}`);
+            if (permissionCheckbox.checked) {
+                imageUploadContainer.classList.remove('hidden');
+            } else {
+                imageUploadContainer.classList.add('hidden');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Attendance</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form class="attendance-form" method="POST" enctype="multipart/form-data">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Attended</th>
+                    <th>Late</th>
+                    <th>Absent</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    <td>
+                        <input type="radio" name="status_{{ student.id }}" value="attended"
+                            {% if attendance_dict.get(student.id, {}).get('attended') %}checked{% endif %}
+                            onchange="togglePermission({{ student.id }})">
+                    </td>
+                    <td>
+                        <input type="radio" name="status_{{ student.id }}" value="late"
+                            {% if attendance_dict.get(student.id, {}).get('late') %}checked{% endif %}
+                            onchange="togglePermission({{ student.id }})">
+                    </td>
+                    <td>
+                        <input type="radio" name="status_{{ student.id }}" value="absent"
+                            {% if attendance_dict.get(student.id, {}).get('absent') %}checked{% endif %}
+                            onchange="togglePermission({{ student.id }})">
+                    </td>
+                </tr>
+                <tr id="permission_container_{{ student.id }}" class="{% if attendance_dict.get(student.id, {}).get('absent') %}''{% else %}hidden{% endif %}">
+                    <td colspan="4">
+                        <label>
+                            <input type="checkbox" id="permission_{{ student.id }}" name="permission_{{ student.id }}"
+                                {% if attendance_dict.get(student.id, {}).get('permission') %}checked{% endif %}
+                                onchange="toggleImageUpload({{ student.id }})"> Have Permission
+                        </label>
+                        <div id="image_upload_container_{{ student.id }}" class="{% if attendance_dict.get(student.id, {}).get('permission') %}''{% else %}hidden{% endif %}">
+                            <label for="image_{{ student.id }}">Upload Permission Image:</label>
+                            <input type="file" id="image_{{ student.id }}" name="image_{{ student.id }}">
+                            {% if attendance_dict.get(student.id, {}).get('image_filename') %}
+                                <p>Chosen file: {{ attendance_dict[student.id]['image_filename'] }}</p>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Submit Attendance</button>
+    </form>
+</body>
+</html>

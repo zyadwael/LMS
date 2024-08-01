@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #543310;
+            margin-bottom: 20px;
+        }
+        .attendance-form, .summary-result, .filter-form {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+            width: 80%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #543310;
+        }
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+        button {
+            background-color: #543310;
+            color: #ecf0f1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            width: 80%;
+            max-width: 500px;
+        }
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form class="filter-form" method="GET" action="{{ url_for('attendance') }}">
+        <label for="grade">Select Grade:</label>
+        <select id="grade" name="grade" onchange="this.form.submit()">
+            <option value="">All Grades</option>
+            {% for grade in grades %}
+                <option value="{{ grade }}" {% if grade == selected_grade %}selected{% endif %}>Grade {{ grade }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <form class="attendance-form" method="POST" enctype="multipart/form-data">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Total Absences</th>
+                    <th>Total Permissions</th>
+                    <th>Total Attendance</th>
+                    <th>Total Late</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    <td>{{ absences_count[student.id] if student.id in absences_count else 0 }}</td>
+                    <td>{{ permissions_count[student.id] if student.id in permissions_count else 0 }}</td>
+                    <td>{{ total_attendance_count[student.id] if student.id in total_attendance_count else 0 }}</td>
+                    <td>{{ total_late_count[student.id] if student.id in total_late_count else 0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</body>
+</html>

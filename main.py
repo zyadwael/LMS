@@ -1702,23 +1702,39 @@ def student_details(student_id):
 @app.route('/attendance', methods=['GET', 'POST'])
 @login_required
 def attendance():
+    attendance_dict = {}
+    students = []
+    selected_grade = request.args.get('grade', type=int)
+
     if current_user.role == "teacher":
         teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
         teacher_subject_ids = [subject.id for subject in teacher_subjects]
 
         students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
                                          Students.Class.in_([subject.Class for subject in teacher_subjects])).all()
-    attendance_dict = {}
+    elif current_user.role == "admin":
+        grades = list(range(1, 13))  # Grades 1 to 12
+        if selected_grade:
+            students = Students.query.filter_by(grade=selected_grade).all()
+        else:
+            students = Students.query.all()
 
-    # Fetch existing attendance records
-    for record in Attendance.query.filter_by(date=date.today()).all():
-        attendance_dict[record.student_id] = {
-            'attended': record.attended,
-            'late': record.late,
-            'absent': record.absent,
-            'permission': record.permission,
-            'image_filename': record.image_filename
-        }
+    # Calculate total absences, permissions, total attendance, and total late from the beginning of the year for each student
+    start_of_year = date(date.today().year, 1, 1)
+    absences_count = {}
+    permissions_count = {}
+    total_attendance_count = {}
+    total_late_count = {}
+
+    for student in students:
+        absences_count[student.id] = Attendance.query.filter_by(student_id=student.id, absent=True)\
+                                                       .filter(Attendance.date >= start_of_year).count()
+        permissions_count[student.id] = Attendance.query.filter_by(student_id=student.id, permission=True)\
+                                                         .filter(Attendance.date >= start_of_year).count()
+        total_attendance_count[student.id] = Attendance.query.filter_by(student_id=student.id, attended=True)\
+                                                             .filter(Attendance.date >= start_of_year).count()
+        total_late_count[student.id] = Attendance.query.filter_by(student_id=student.id, late=True)\
+                                                        .filter(Attendance.date >= start_of_year).count()
 
     if request.method == 'POST':
         for student in students:
@@ -1727,13 +1743,12 @@ def attendance():
             attended = status == 'attended'
             late = status == 'late'
             absent = status == 'absent'
-            permission = request.form.get(f'permission_{student_id}') == 'on'
 
             # Initialize image filename
             image_filename = None
 
             # Handle image upload if permission is given
-            if permission and f'image_{student_id}' in request.files:
+            if f'image_{student_id}' in request.files:
                 image = request.files[f'image_{student_id}']
                 if image and image.filename:
                     image_filename = secure_filename(image.filename)
@@ -1746,7 +1761,6 @@ def attendance():
                 existing_record.attended = attended
                 existing_record.late = late
                 existing_record.absent = absent
-                existing_record.permission = permission
                 if image_filename:
                     existing_record.image_filename = image_filename
                 # Preserve existing photo if new one is not provided
@@ -1761,7 +1775,6 @@ def attendance():
                     attended=attended,
                     late=late,
                     absent=absent,
-                    permission=permission,
                     image_filename=image_filename,
                     student_name=student.name
                 )
@@ -1769,9 +1782,15 @@ def attendance():
 
         db.session.commit()
         flash('Attendance submitted successfully', 'success')
-        return redirect(url_for('attendance'))
+        return redirect(url_for('attendance', grade=selected_grade))
 
-    return render_template('attendance.html', students=students, attendance_dict=attendance_dict)
+    # Calculate total absences and permissions from the beginning of the year
+    absents_count = Attendance.query.filter(Attendance.date >= start_of_year, Attendance.absent == True).count()
+    permissions_count_total = Attendance.query.filter_by(date=date.today(), permission=True).count()
+
+    return render_template('admin_attendance.html', students=students, absences_count=absences_count, permissions_count=permissions_count, total_attendance_count=total_attendance_count, total_late_count=total_late_count, permissions_count_total=permissions_count_total, selected_date=date.today(), grades=list(range(1, 13)), selected_grade=selected_grade)
+
+
 
 if __name__ == "__main__":
      app.run(debug=True)

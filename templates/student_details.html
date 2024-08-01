@@ -26,6 +26,21 @@
         .student-details h1 {
             text-align: center;
         }
+                        .edit-student-btn {
+            background-color: #543310 !important;
+            color: #ecf0f1 !important;
+            border: none;
+            padding: 7px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .edit-student-btn:hover {
+            background-color: #725238 !important;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +52,7 @@
             <p><strong>Grade:</strong> {{ student.grade }}</p>
             <p><strong>Class:</strong> {{ student.Class }}</p>
             <p><strong>Parent Email:</strong> {{ student.parent_email }}</p>
+            <a href="/edit_student/{{ student_id }}" class="edit-student-btn">Edit Student</a>
         </div>
     </div>
 </body>

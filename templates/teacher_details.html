@@ -36,6 +36,22 @@
         .teacher-info strong {
             color: #333;
         }
+
+                .edit-teacher-btn {
+            background-color: #543310 !important;
+            color: #ecf0f1 !important;
+            border: none;
+            padding: 7px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .edit-teacher-btn:hover {
+            background-color: #725238 !important;
+        }
     </style>
 </head>
 <body>
@@ -47,6 +63,7 @@
                 <p><strong>Email:</strong> {{ teacher.email }}</p>
                 <p><strong>Phone:</strong> {{ teacher.phone_number }}</p>
                 <p><strong>Subject:</strong> {{ teacher.subject }}</p>
+                <a href="/edit_teacher/{{ teacher_id }}" class="edit-teacher-btn">Edit Teacher</a>
             </div>
         </div>
     </div>

@@ -345,7 +345,7 @@ def dashboard():
         filtered_subjects = Subjects.query.filter_by(grade=current_user.grade).all()
         teacher_ids = {subject.teacher_id for subject in filtered_subjects}  # Use a set to avoid duplicates
         teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
-        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers, unread_count=unread_count)
+        return render_template("student_dashboard.html", latest_news=latest_news, teachers=teachers, unread_count=unread_count, student_id=current_user.id)
     elif current_user.role == "teacher":
         teacher_subjects = Subjects.query.filter_by(teacher_email=current_user.email).all()
         students = Students.query.filter(Students.grade.in_([subject.grade for subject in teacher_subjects]),
@@ -415,7 +415,7 @@ def my_teachers():
         teacher_ids = {subject.teacher_id for subject in filtered_subjects}  # Use a set to avoid duplicates
         teachers = Teacher.query.filter(Teacher.id.in_(teacher_ids)).all()
 
-        return render_template("my_teachers.html", teachers=teachers,user=current_user)
+        return render_template("my_teachers.html", teachers=teachers,user=current_user,student_id=current_user.id)
     elif current_user.role == "admin":
         teachers = Teacher.query.all()
         return render_template("my_teachers.html",teachers=teachers)
@@ -460,7 +460,7 @@ def my_subjects():
         all_subjects = Subjects.query.all()
         current_user_grade = current_user.grade
         filtered_subjects = [subject for subject in all_subjects if subject.grade == current_user_grade]
-        return render_template("my_subjects.html", subjects=filtered_subjects, user=current_user)
+        return render_template("my_subjects.html", subjects=filtered_subjects, user=current_user,student_id=current_user.id)
 
     elif current_user.role == 'teacher':
         teacher = Users.query.filter_by(id=current_user.id).first()
@@ -534,7 +534,7 @@ def view_subject(subject_id):
     lesson_quizzes = {lesson.id: Quizzes.query.filter_by(lesson_id=lesson.id).all() for lesson in lessons}
 
     if current_user.role == "student":
-        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes, user=current_user)
+        return render_template("view_subject.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes, user=current_user,student_id=current_user.id)
     elif current_user.role == "teacher":
         if subject.teacher_id == current_user.id:
             return render_template("view_subject_teacher.html", subject=subject, lessons=lessons, lesson_videos=lesson_videos, lesson_files=lesson_files, lesson_quiz=lesson_quizzes, user=current_user)
@@ -952,7 +952,7 @@ def take_quiz(quiz_id):
             if question.options:
                 question.options = json.loads(question.options)
 
-        return render_template('take_quiz.html', quiz=quiz, questions=questions)
+        return render_template('take_quiz.html', quiz=quiz, questions=questions,student_id=current_user.id)
     else:
         return redirect()
 
@@ -1093,7 +1093,7 @@ def quizzes_surveys():
         # For teachers or admins, fetch all quizzes
         quizzes = Quizzes.query.all()
 
-    return render_template('quizzes_surveys.html', quizzes=quizzes, user=current_user)
+    return render_template('quizzes_surveys.html', quizzes=quizzes, user=current_user,student_id=current_user.id)
 
 
 # Replace the Twilio credentials with your actual credentials
@@ -1668,7 +1668,7 @@ def teacher_details(teacher_id):
     ).join(Users, Teacher.email == Users.email).filter(Teacher.id == teacher_id).first_or_404()
 
     # Pass the result to the template
-    return render_template('teacher_details.html', teacher=result)
+    return render_template('teacher_details.html', teacher=result,teacher_id=teacher_id)
 
 
 @app.route('/api/students', methods=['GET'])
@@ -1696,7 +1696,7 @@ def get_students():
 @app.route('/student_details/<int:student_id>')
 def student_details(student_id):
     student = Students.query.get_or_404(student_id)
-    return render_template('student_details.html', student=student)
+    return render_template('student_details.html', student=student,student_id=student_id)
 
 
 @app.route('/attendance', methods=['GET', 'POST'])

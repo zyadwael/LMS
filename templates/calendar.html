@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar</title>
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/bootstrap/main.min.css">
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+            justify-content: center;
+            align-items: center;
+        }
+        .calendar-container {
+            width: 70%; /* Adjust this percentage to make the calendar larger or smaller */
+            max-width: 800px;
+            margin: auto;
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .fc {
+            background-color: #f0f4f8; /* Change this to the desired background color */
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .create-event-button {
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+        .create-event-button a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #543310;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .create-event-button a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="create-event-button">
+            <a href="/create_event">Create New Event</a>
+        </div>
+        <div id="calendar"></div> <!-- Calendar container -->
+        <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <!-- Modal content here if needed -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/popper.min.js"></script>
+    <script src="../static/js/moment.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/simplebar.min.js"></script>
+    <script src="../static/js/daterangepicker.js"></script>
+    <script src="../static/js/jquery.stickOnScroll.js"></script>
+    <script src="../static/js/tinycolor-min.js"></script>
+    <script src="../static/js/config.js"></script>
+    <script src="../static/js/fullcalendar.js"></script>
+    <script src="../static/js/fullcalendar.custom.js"></script>
+    <script src="../static/js/apps.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/interaction/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                plugins: ['interaction', 'dayGrid', 'timeGrid', 'list', 'bootstrap'],
+                themeSystem: 'bootstrap',
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                },
+                events: '/events', // Fetch events from the backend route
+                eventColor: '#378006' // Example color for events
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

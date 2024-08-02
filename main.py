@@ -1790,6 +1790,11 @@ def attendance():
 
     return render_template('admin_attendance.html', students=students, absences_count=absences_count, permissions_count=permissions_count, total_attendance_count=total_attendance_count, total_late_count=total_late_count, permissions_count_total=permissions_count_total, selected_date=date.today(), grades=list(range(1, 13)), selected_grade=selected_grade)
 
+@app.route("/calendar")
+def calendar():
+    events = Event.query.all()
+    events_list = [event.to_dict() for event in events]
+    return render_template("calendar.html")
 
 
 if __name__ == "__main__":

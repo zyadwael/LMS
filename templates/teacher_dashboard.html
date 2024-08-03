@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard</title>
+    <link rel="stylesheet" href="../static/css/simplebar.css">
+    <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@100;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/feather.css">
+    <link rel="stylesheet" href="../static/css/fullcalendar.css">
+    <link rel="stylesheet" href="../static/css/select2.css">
+    <link rel="stylesheet" href="../static/css/dropzone.css">
+    <link rel="stylesheet" href="../static/css/uppy.min.css">
+    <link rel="stylesheet" href="../static/css/jquery.steps.css">
+    <link rel="stylesheet" href="../static/css/jquery.timepicker.css">
+    <link rel="stylesheet" href="../static/css/quill.snow.css">
+    <link rel="stylesheet" href="../static/css/daterangepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/core/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/daygrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/timegrid/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/list/main.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.4.2/bootstrap/main.min.css">
     <style>
         body {
             background: #DFD3C3;
@@ -232,6 +248,11 @@
             background-image: url("static/assets/images/notification.png");
             background-size: contain; /* Maintain aspect ratio */
         }
+        #calendar {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
 
     </style>
 </head>
@@ -261,7 +282,14 @@
                 <p>My Students</p>
             </div>
         </div>
-    </div>
+                <hr>
+            <div id="calendar"></div> <!-- Calendar container -->
+            <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <!-- Modal content here if needed -->
+                </div>
+            </div>
+            </div>
 
 {% endblock %}
 </body>

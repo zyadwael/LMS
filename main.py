@@ -624,7 +624,6 @@ def edit_lesson(lesson_id):
     return render_template("edit_lesson.html", lesson=lesson, video=video, files=files,user=current_user)
 
 
-# app.py
 
 @app.route('/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
@@ -637,14 +636,15 @@ def edit_quiz(quiz_id):
 
     if request.method == 'POST':
         # Update quiz details
-        quiz.name = request.form['name']
-        quiz.description = request.form['description']
+        quiz.name = request.form.get('name', '')
+        quiz.description = request.form.get('description', '')
         db.session.commit()
 
         # Process each question
         for question in quiz_questions:
-            question_text = request.form.get(f'questionText{question.id}', '')
-            question_type = request.form.get(f'questionType{question.id}', '')
+            question_id = question.id
+            question_text = request.form.get(f'questionText{question_id}', '')
+            question_type = request.form.get(f'questionType{question_id}', '')
 
             # Update question attributes
             question.question_text = question_text
@@ -652,24 +652,33 @@ def edit_quiz(quiz_id):
 
             if question_type == 'multiple':
                 choices = [
-                    request.form.get(f'choice{question.id}_{i + 1}', '')
+                    request.form.get(f'choice{question_id}_{i + 1}', '')
                     for i in range(4)  # Assuming maximum 4 choices
                 ]
                 question.options = json.dumps(choices) if choices else json.dumps([])
-                correct_answer_index = request.form.get(f'correct_answer{question.id}', '1')
-                question.correct_answer = choices[int(correct_answer_index) - 1]
+                correct_answer_index = request.form.get(f'correct_answer{question_id}', '0')
+                question.correct_answer = choices[int(correct_answer_index)] if choices else ''
 
             elif question_type == 'true_false':
                 question.options = json.dumps(['True', 'False'])
-                question.correct_answer = request.form.get(f'trueFalse{question.id}', 'true')
+                question.correct_answer = request.form.get(f'trueFalse{question_id}', 'True')
 
             elif question_type == 'short_answer':
                 question.options = json.dumps([])
-                question.correct_answer = request.form.get(f'short_answer{question.id}', '')
+                question.correct_answer = request.form.get(f'short_answer{question_id}', '')
+
+            elif question_type == 'complete':
+                question.options = json.dumps([])
+                question.correct_answer = request.form.get(f'complete_answer{question_id}', '')
 
         db.session.commit()
         flash("Quiz updated successfully!", "success")
         return redirect(url_for('edit_quiz', quiz_id=quiz_id))
+
+    # Convert options from JSON string to Python list for the template
+    for question in quiz_questions:
+        if question.options:
+            question.options = json.loads(question.options)
 
     return render_template('edit_quiz.html', quiz=quiz, quiz_questions=quiz_questions)
 
@@ -1737,6 +1746,14 @@ def attendance():
         else:
             students = Students.query.all()
 
+    elif current_user.role == "student":
+        # If the current user is a student, we get their student record
+        student_record = Students.query.filter_by(user_id=current_user.id).first()
+        if student_record:
+            students.append(student_record)
+        else:
+            return redirect(url_for('dashboard'))
+
     # Fetch the attendance record for today
     start_of_year = date(date.today().year, 1, 1)
     absences_count = {}
@@ -1754,16 +1771,24 @@ def attendance():
         total_late_count[student.id] = Attendance.query.filter_by(student_id=student.id, late=True)\
                                                         .filter(Attendance.date >= start_of_year).count()
 
-        # Fetch the attendance record for today
-        attendance_record = Attendance.query.filter_by(student_id=student.id, date=date.today()).first()
-        if attendance_record:
-            attendance_records[student.id] = {
-                'attended': attendance_record.attended,
-                'late': attendance_record.late,
-                'absent': attendance_record.absent,
-                'permission': attendance_record.permission,
-                'image_filename': attendance_record.image_filename
-            }
+        # Fetch all attendance records where the student was absent
+        absence_records = Attendance.query.filter_by(student_id=student.id, absent=True)\
+                                          .filter(Attendance.date >= start_of_year).all()
+        attendance_records[student.id] = []
+        for record in absence_records:
+            attendance_records[student.id].append({
+                'date': record.date,
+                'attended': record.attended,
+                'late': record.late,
+                'absent': record.absent,
+                'permission': record.permission,
+                'image_filename': record.image_filename
+            })
+
+    if current_user.role == "student":
+        return render_template('student_attendance.html', student=students[0], attendance_records=attendance_records,
+                               absences_count=absences_count, permissions_count=permissions_count,
+                               total_attendance_count=total_attendance_count, total_late_count=total_late_count)
 
     if request.method == 'POST':
         for student in students:
@@ -1811,9 +1836,27 @@ def attendance():
         flash('Attendance records updated successfully.', 'success')
         return redirect(url_for('attendance'))
 
-    return render_template('attendance.html', students=students, attendance_records=attendance_records,
-                           absences_count=absences_count, permissions_count=permissions_count,
-                           total_attendance_count=total_attendance_count, total_late_count=total_late_count)
+    if current_user.role == 'teacher':
+        template = 'attendance.html'
+    else:
+        template = 'admin_attendance.html'
+
+    logging.info(f"Using template: {template}")
+
+    return render_template(
+        template,
+        students=students,
+        attendance_records=attendance_records,
+        absences_count=absences_count,
+        permissions_count=permissions_count,
+        total_attendance_count=total_attendance_count,
+        total_late_count=total_late_count,
+        selected_date=date.today(),
+        grades=list(range(1, 13)),
+        selected_grade=selected_grade
+    )
+
+
 
 @app.route("/calendar")
 def calendar():

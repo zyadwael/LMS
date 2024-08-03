@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance</title>
+    <style>
+        body {
+            background: #DFD3C3;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow-x: hidden;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #543310;
+            margin-bottom: 20px;
+        }
+        .attendance-container {
+            background-color: #C7B198;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #543310;
+            width: 100%;
+            max-width: 3000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: auto;
+            justify-content: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #543310;
+        }
+        th {
+            background-color: #543310;
+            color: #ecf0f1;
+        }
+        .summary {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+{% extends "student_base.html" %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+    <h1>My Attendance</h1>
+    <div class="attendance-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records[student.id] %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>
+                            {% if record.attended %}Attended{% elif record.late %}Late{% elif record.absent %}Absent{% endif %}
+                            {% if record.permission %}(Permission){% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Total</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Attended</td>
+                    <td>{{ total_attendance_count[student.id] }}</td>
+                </tr>
+                <tr>
+                    <td>Late</td>
+                    <td>{{ total_late_count[student.id] }}</td>
+                </tr>
+                <tr>
+                    <td>Absent</td>
+                    <td>{{ absences_count[student.id] }}</td>
+                </tr>
+                <tr>
+                    <td>With Permission</td>
+                    <td>{{ permissions_count[student.id] }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+</body>
+</html>

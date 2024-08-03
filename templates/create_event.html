@@ -20,7 +20,7 @@
             overflow: hidden; /* Prevent scrolling */
         }
 
-        .container {
+        .create-event-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -64,7 +64,7 @@
             resize: vertical;
         }
 
-        button {
+        .create-event-button {
             background-color: #543310;
             color: #ecf0f1;
             border: none;
@@ -75,7 +75,7 @@
             width: 100%;
         }
 
-        button:hover {
+        create-event-button:hover {
             background-color: #3c2b1f;
         }
 
@@ -95,8 +95,12 @@
 </head>
 
 <body>
+{% extends "admin_base.html" %}
 
-    <div class="container">
+{% block title %}Create Event{% endblock %}
+
+{% block content %}
+    <div class="create-event-container">
         <h1>Create Event</h1>
 
         <form action="{{ url_for('create_event') }}" method="POST">
@@ -112,15 +116,12 @@
             <label for="description">Description:</label>
             <textarea id="description" name="description"></textarea><br>
 
-            <button type="submit">Create Event</button>
+            <button class="create-event-button" type="submit">Create Event</button>
         </form>
 
     </div>
 
-    <script>
-        // Optionally, you can add some JavaScript for form validation or date pickers
-    </script>
-
+{% endblock %}
 
 </body>
 </html>

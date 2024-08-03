@@ -5,21 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance</title>
     <style>
-        body {
-            background: #DFD3C3;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow-x: hidden;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+
         h1 {
             color: #543310;
             margin-bottom: 20px;
+            text-align: center;
+
         }
         .attendance-form, .summary-result, .filter-form {
             background-color: #C7B198;
@@ -30,6 +21,8 @@
             width: 80%;
             max-width: 500px;
             margin-bottom: 20px;
+                        margin: auto;
+
         }
         table {
             width: 100%;
@@ -72,7 +65,10 @@
     </style>
 </head>
 <body>
-    <h1>Attendance</h1>
+{% extends "admin_base.html" %}
+
+{% block content %}
+    <h1 class="h1">Attendance</h1>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -115,5 +111,6 @@
             </tbody>
         </table>
     </form>
+{% endblock %}
 </body>
 </html>

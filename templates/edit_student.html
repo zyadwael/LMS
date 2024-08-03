@@ -21,6 +21,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: 300px;
+            margin: auto;
         }
 
         .edit-form h2 {
@@ -60,6 +61,11 @@
     </style>
 </head>
 <body>
+{% extends "admin_base.html" %}
+
+{% block title %}Edit Student{% endblock %}
+
+{% block content %}
     <form class="edit-form" action="{{ url_for('edit_student', student_id=student.id) }}" method="POST">
         <h2>Edit Student</h2>
         <label for="name">Name</label>
@@ -74,5 +80,6 @@
         <input type="email" id="parent_email" name="parent_email" value="{{ student.parent_email }}" required>
         <button type="submit">Save Changes</button>
     </form>
+{% endblock %}
 </body>
 </html>

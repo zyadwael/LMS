@@ -23,6 +23,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: 300px;
             box-sizing: border-box;
+            margin: auto;
         }
 
         .form-container h2 {
@@ -63,6 +64,11 @@
     </style>
 </head>
 <body>
+{% extends "admin_base.html" %}
+
+{% block title %}Edit News{% endblock %}
+
+{% block content %}
     <div class="form-container">
         <h2>Edit News</h2>
         <form action="/edit_news/{{ news_item.id }}" method="POST">
@@ -77,5 +83,6 @@
             <button type="submit">Update News</button>
         </form>
     </div>
+{% endblock %}
 </body>
 </html>

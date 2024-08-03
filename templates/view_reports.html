@@ -14,6 +14,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            position: relative; /* Add relative positioning for the button */
         }
 
         .container {
@@ -81,14 +82,31 @@
         .alert-danger {
             background-color: #f44336;
         }
+
+        .edit-student-btn {
+            background-color: #543310 !important;
+            color: #ecf0f1 !important;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .edit-student-btn:hover {
+            background-color: #725238 !important;
+        }
     </style>
 </head>
-<body class="view-report-body">
-{% extends "teacher_base.html" %}
-
-{% block content %}
-<div>
-    <div >
+<body>
+    <a href="{{ url_for('dashboard') }}" class="edit-student-btn">Dashboard</a>
+    <div class="container">
         <h1>Reports</h1>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -99,13 +117,12 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <div>
-        <table      >
+        <table>
             <thead>
                 <tr>
                     <th>Subject Name</th>
                     <th>Teacher's Email</th>
-                    <th>Student's Email</th>  <!-- Added column for student's email -->
+                    <th>Student's Email</th>
                     <th>Content</th>
                     <th>Timestamp</th>
                 </tr>
@@ -115,7 +132,7 @@
                     <tr>
                         <td>{{ report.subject_name }}</td>
                         <td>{{ report.subject_teacher_email }}</td>
-                        <td>{{ report.student_email }}</td>  <!-- Display student's email -->
+                        <td>{{ report.student_email }}</td>
                         <td>{{ report.content }}</td>
                         <td>{{ report.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
                     </tr>
@@ -126,10 +143,7 @@
                 {% endfor %}
             </tbody>
         </table>
-            </div>
         <button onclick="window.location.href='{{ url_for('dashboard') }}'">Back to Dashboard</button>
     </div>
-    </div>
-{% endblock %}
 </body>
 </html>

@@ -35,40 +35,15 @@
             width: 70%; /* Adjust this percentage to make the calendar larger or smaller */
             max-width: 800px;
             margin: auto;
-            background: #f0f4f8;
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .fc {
-            background-color: #f0f4f8; /* Change this to the desired background color */
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .create-event-button {
-            margin-bottom: 20px;
-            display: block;
-            text-align: center;
-        }
-        .create-event-button a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #543310;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 16px;
-        }
-        .create-event-button a:hover {
-            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="calendar-container">
-        <div class="create-event-button">
-            <a href="/create_event">Create New Event</a>
-        </div>
         <div id="calendar"></div> <!-- Calendar container -->
         <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">

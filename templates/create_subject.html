@@ -5,67 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Subject</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #DFD3C3; /* Updated background color */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #DFD3C3;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .container {
+        background-color:#DFD3C3;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
 
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #8B4513; /* Updated button color to brown */
-            border: none;
-            color: #fff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #A0522D; /* Darker brown for hover effect */
-        }
-
-        #message {
-            margin-top: 15px;
-            text-align: center;
-        }
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+    }
     </style>
 </head>
 <body>
-    <div class="container">
+{% extends "admin_base.html" %}
+
+{% block title %}Create Subject{% endblock %}
+
+{% block content %}
+    <div class="timetable-container">
         <h1>Create Subject</h1>
         <form id="subjectForm">
             <div class="form-group">
@@ -107,7 +90,7 @@
                 <input type="text" id="Class" name="Class" required>
             </div>
 
-            <button type="submit">Create</button>
+            <button class="timetable-button" type="submit">Create</button>
         </form>
         <div id="message"></div>
     </div>
@@ -146,5 +129,6 @@
             .catch(error => console.error('Error:', error));
         });
     </script>
+{% endblock %}
 </body>
 </html>

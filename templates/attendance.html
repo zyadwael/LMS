@@ -75,6 +75,14 @@
         .hidden {
             display: none;
         }
+        .permission-container, .image-upload-container {
+            margin-top: 10px;
+        }
+        .file-label {
+            display: block;
+            margin-top: 10px;
+            color: #543310;
+        }
     </style>
     <script>
         function togglePermission(studentId) {
@@ -86,6 +94,7 @@
                 permissionContainer.classList.add('hidden');
                 document.getElementById(`permission_${studentId}`).checked = false;
                 document.getElementById(`image_upload_container_${studentId}`).classList.add('hidden');
+                document.getElementById(`file_label_${studentId}`).textContent = "";
             }
         }
 
@@ -96,6 +105,17 @@
                 imageUploadContainer.classList.remove('hidden');
             } else {
                 imageUploadContainer.classList.add('hidden');
+                document.getElementById(`file_label_${studentId}`).textContent = "";
+            }
+        }
+
+        function showFileName(studentId) {
+            const fileInput = document.querySelector(`input[name="image_${studentId}"]`);
+            const fileLabel = document.getElementById(`file_label_${studentId}`);
+            if (fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+            } else {
+                fileLabel.textContent = "";
             }
         }
     </script>
@@ -109,7 +129,7 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <form class="attendance-form" method="POST" enctype="multipart/form-data">
+    <form method="POST" class="attendance-form" enctype="multipart/form-data">
         <table>
             <thead>
                 <tr>
@@ -121,44 +141,66 @@
             </thead>
             <tbody>
                 {% for student in students %}
-                <tr>
-                    <td>{{ student.name }}</td>
-                    <td>
-                        <input type="radio" name="status_{{ student.id }}" value="attended"
-                            {% if attendance_dict.get(student.id, {}).get('attended') %}checked{% endif %}
-                            onchange="togglePermission({{ student.id }})">
-                    </td>
-                    <td>
-                        <input type="radio" name="status_{{ student.id }}" value="late"
-                            {% if attendance_dict.get(student.id, {}).get('late') %}checked{% endif %}
-                            onchange="togglePermission({{ student.id }})">
-                    </td>
-                    <td>
-                        <input type="radio" name="status_{{ student.id }}" value="absent"
-                            {% if attendance_dict.get(student.id, {}).get('absent') %}checked{% endif %}
-                            onchange="togglePermission({{ student.id }})">
-                    </td>
-                </tr>
-                <tr id="permission_container_{{ student.id }}" class="{% if attendance_dict.get(student.id, {}).get('absent') %}''{% else %}hidden{% endif %}">
-                    <td colspan="4">
-                        <label>
-                            <input type="checkbox" id="permission_{{ student.id }}" name="permission_{{ student.id }}"
-                                {% if attendance_dict.get(student.id, {}).get('permission') %}checked{% endif %}
-                                onchange="toggleImageUpload({{ student.id }})"> Have Permission
-                        </label>
-                        <div id="image_upload_container_{{ student.id }}" class="{% if attendance_dict.get(student.id, {}).get('permission') %}''{% else %}hidden{% endif %}">
-                            <label for="image_{{ student.id }}">Upload Permission Image:</label>
-                            <input type="file" id="image_{{ student.id }}" name="image_{{ student.id }}">
-                            {% if attendance_dict.get(student.id, {}).get('image_filename') %}
-                                <p>Chosen file: {{ attendance_dict[student.id]['image_filename'] }}</p>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            <input type="radio" name="status_{{ student.id }}" value="attended"
+                                   {% if attendance_records[student.id] and attendance_records[student.id].attended %}checked{% endif %}
+                                   onclick="togglePermission({{ student.id }})">
+                        </td>
+                        <td>
+                            <input type="radio" name="status_{{ student.id }}" value="late"
+                                   {% if attendance_records[student.id] and attendance_records[student.id].late %}checked{% endif %}
+                                   onclick="togglePermission({{ student.id }})">
+                        </td>
+                        <td>
+                            <input type="radio" name="status_{{ student.id }}" value="absent"
+                                   {% if attendance_records[student.id] and attendance_records[student.id].absent %}checked{% endif %}
+                                   onclick="togglePermission({{ student.id }})">
+                        </td>
+                    </tr>
+                    <tr id="permission_container_{{ student.id }}" class="hidden permission-container">
+                        <td colspan="4">
+                            <label>
+                                <input type="checkbox" id="permission_{{ student.id }}" name="permission_{{ student.id }}"
+                                       {% if attendance_records[student.id] and attendance_records[student.id].permission %}checked{% endif %}
+                                       onclick="toggleImageUpload({{ student.id }})"> Have Permission
+                            </label>
+                        </td>
+                    </tr>
+                    <tr id="image_upload_container_{{ student.id }}" class="hidden image-upload-container">
+                        <td colspan="4">
+                            <input type="file" name="image_{{ student.id }}" onchange="showFileName({{ student.id }})">
+                            <label id="file_label_{{ student.id }}" class="file-label"></label>
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
         <button type="submit">Submit Attendance</button>
     </form>
+    <script>
+        // Ensure the correct state of the permission and image upload containers on page load
+        document.querySelectorAll('input[type="radio"][value="absent"]').forEach((radio) => {
+            if (radio.checked) {
+                const studentId = radio.name.split('_')[1];
+                togglePermission(studentId);
+            }
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+            if (checkbox.checked) {
+                const studentId = checkbox.id.split('_')[1];
+                toggleImageUpload(studentId);
+            }
+        });
+
+        document.querySelectorAll('input[type="file"]').forEach((fileInput) => {
+            fileInput.addEventListener('change', (event) => {
+                const studentId = event.target.name.split('_')[1];
+                showFileName(studentId);
+            });
+        });
+    </script>
 </body>
 </html>

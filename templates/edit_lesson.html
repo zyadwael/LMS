@@ -1,24 +1,19 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Edit Lesson</title>
     <style>
-        body {
+        .edit-lesson-body {
             font-family: Arial, sans-serif;
             background-color: #DFD3C3;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
+            margin: auto;
             align-items: center;
             height: 100vh;
-        }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
         }
         h1 {
             text-align: center;
@@ -36,7 +31,7 @@
             padding: 8px;
             box-sizing: border-box;
         }
-        button {
+        .edit-lesson-button {
             width: 100%;
             padding: 10px;
             background-color: #8B4513;
@@ -45,37 +40,63 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        button:hover {
+        .edit-lesson-button:hover {
             background-color: #A0522D;
+        }
+        .edit-lesson-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px; /* Set a fixed width for the container */
+            margin: auto;
+            max-width: 100%; /* Prevents overflow on smaller screens */
+            box-sizing: border-box; /* Ensures padding is included in width */
         }
         #message {
             margin-top: 15px;
             text-align: center;
         }
     </style>
+    <script>
+        function updateFileName(input) {
+            var fileName = input.files.length > 0 ? input.files[0].name : 'No file chosen';
+            document.getElementById('current-file-name').innerText = fileName;
+        }
+    </script>
 </head>
-<body>
-    <div class="main_content">
 
-    <h1>Edit Lesson</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    {% endwith %}
-    <form method="POST">
-        <div class="container">
-        <label for="name">Lesson Name:</label>
-        <input type="text" name="name" id="name" value="{{ lesson.name }}">
-        </div>
-        <div class="container">
-        <label for="video">Lesson Video:</label>
-        <input type="text" name="video" id="video" value="{{ video.url }}">
+{% extends "teacher_base.html" %}
+
+{% block content %}
+<body class="edit-lesson-body">
+    <div class="edit-lesson-container">
+        <h1>Edit Lesson</h1>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
             </div>
-    <button type="submit" class="button">Save Changes</button>
-    </form>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Lesson Name:</label>
+                <input type="text" name="name" id="name" value="{{ lesson.name }}">
             </div>
+            <div class="form-group">
+                <label for="video">Lesson Video:</label>
+                <input type="text" name="video" id="video" value="{{ video.url }}">
+            </div>
+            <div class="form-group">
+                <label for="file">Upload File</label>
+                <input type="file" id="file" name="file" onchange="updateFileName(this)">
+                <p>Current file: <span id="current-file-name">{% if files %}{{ files[0].name }}{% else %}No file chosen{% endif %}</span></p>
+            </div>
+            <button type="submit" class="edit-lesson-button">Save Changes</button>
+        </form>
+    </div>
+
+{% endblock %}
 </body>
 </html>

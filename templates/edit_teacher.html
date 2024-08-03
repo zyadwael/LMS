@@ -5,20 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Teacher</title>
     <style>
-        body {
-            background: #DFD3C3;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow-x: hidden;
-        }
 
-        .container {
+
+        .edit-teacher-container {
             background-color: #C7B198;
             padding: 20px;
             border-radius: 8px;
@@ -26,6 +15,7 @@
             width: 100%;
             max-width: 600px;
             box-sizing: border-box;
+            margin: auto;
         }
 
         h1 {
@@ -42,6 +32,7 @@
         label {
             color: #543310;
             margin-bottom: 5px;
+            margin-top: 10px;
         }
 
         input[type="text"],
@@ -72,7 +63,12 @@
     </style>
 </head>
 <body>
-    <div class="container">
+{% extends "admin_base.html" %}
+
+{% block title %}Edit Teacher{% endblock %}
+
+{% block content %}
+    <div class="edit-teacher-container">
         <h1>Edit Teacher</h1>
         <form action="{{ url_for('edit_teacher', teacher_id=teacher.id) }}" method="POST">
             <label for="name">Name:</label>
@@ -87,5 +83,6 @@
             <button type="submit">Update</button>
         </form>
     </div>
+{% endblock %}
 </body>
 </html>

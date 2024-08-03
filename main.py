@@ -355,7 +355,13 @@ def dashboard():
                                user=current_user, number=number_of_students)
     elif current_user.role == "parent":
         my_students = Students.query.filter_by(parent_email=current_user.email).all()
-        return render_template("parent_dashboard.html", children=my_students)
+        latest_news = News.query.all()
+        child = Students.query.filter_by(parent_email=current_user.email).first_or_404()
+        child_grade = child.grade
+        child_subjects = Subjects.query.filter_by(grade=child_grade).all()
+        return render_template("parent_dashboard.html", children=my_students, child=child,
+                               child_subjects=child_subjects,
+                               latest_news=latest_news)
     elif current_user.role == "admin":
         return render_template("admin_dashboard.html",latest_news=latest_news)
     else:

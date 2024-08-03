@@ -6,78 +6,196 @@
     <title>Edit Quiz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #DFD3C3;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #8B4513;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #A0522D;
+        }
+
+        .options-container {
+            margin-top: 10px;
+        }
+
+        .question-container {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+    .true-false-options {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+
+    .true-false-option {
+        display: flex;
+        align-items: center;
+        margin-right: 20px;
+    }
+
+    .true-false-option input[type="radio"] {
+        appearance: none; /* Remove default styling */
+        width: 20px;
+        height: 20px;
+        border: 2px solid #8B4513;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+        margin-right: 10px;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .true-false-option input[type="radio"]:checked {
+        background-color: #8B4513; /* Background color when selected */
+        border-color: #8B4513;
+    }
+
+    .true-false-option input[type="radio"]:checked::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        background-color: #fff; /* Dot color inside the radio button */
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .true-false-option label {
+        font-weight: bold;
+        margin: 0;
+        cursor: pointer;
+    }
+    </style>
 </head>
 <body>
-    <h1>Edit Quiz: {{ quiz.name }}</h1>
+    <div class="form-wrapper">
+        <h1>Edit Quiz: {{ quiz.name }}</h1>
 
-    <!-- Quiz Details Form -->
-    <form action="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" method="post">
-        <label for="name">Quiz Name:</label>
-        <input type="text" id="name" name="name" value="{{ quiz.name }}" required>
+        <!-- Quiz Details and Questions Form -->
+        <form id="quiz-form" action="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" method="post">
+            <label for="name">Quiz Name:</label>
+            <input type="text" id="name" name="name" value="{{ quiz.name }}" required aria-label="Quiz Name">
 
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" rows="4" required>{{ quiz.description }}</textarea>
+            <!-- Questions List -->
+            <h2>Questions</h2>
+            {% for question in quiz_questions %}
+                <fieldset class="question-container">
+                    <legend>Question {{ loop.index }}</legend>
 
-        <input type="submit" value="Update Quiz">
-    </form>
+                    <input type="hidden" name="questionId{{ question.id }}" value="{{ question.id }}">
 
-    <!-- Questions List -->
-    <h2>Questions</h2>
-    <form id="questions-form" action="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" method="post">
-        {% for question in quiz_questions %}
-            <fieldset>
-                <legend>Question {{ loop.index }}</legend>
+                    <label for="questionText{{ question.id }}">Question Text:</label>
+                    <input type="text" id="questionText{{ question.id }}" name="questionText{{ question.id }}" value="{{ question.question_text }}" required>
 
-                <input type="hidden" name="questionId{{ question.id }}" value="{{ question.id }}">
+                    <label for="questionType{{ question.id }}">Question Type:</label>
+                    <select id="questionType{{ question.id }}" name="questionType{{ question.id }}" class="question-type" required>
+                        <option value="multiple" {% if question.question_type == 'multiple' %}selected{% endif %}>Multiple Choice</option>
+                        <option value="true_false" {% if question.question_type == 'true_false' %}selected{% endif %}>True/False</option>
+                        <option value="complete" {% if question.question_type == 'complete' %}selected{% endif %}>Complete</option>
+                    </select>
 
-                <label for="questionText{{ question.id }}">Question Text:</label>
-                <input type="text" id="questionText{{ question.id }}" name="questionText{{ question.id }}" value="{{ question.question_text }}" required>
-
-                <label for="questionType{{ question.id }}">Question Type:</label>
-                <select id="questionType{{ question.id }}" name="questionType{{ question.id }}" class="question-type" required>
-                    <option value="multiple" {% if question.question_type == 'multiple' %}selected{% endif %}>Multiple Choice</option>
-                    <option value="true_false" {% if question.question_type == 'true_false' %}selected{% endif %}>True/False</option>
-                    <option value="complete" {% if question.question_type == 'complete' %}selected{% endif %}>Complete</option>
-                </select>
-
-                <div id="options{{ question.id }}" class="question-options">
-                    <!-- Multiple Choice Options -->
-                    {% if question.question_type == 'multiple' %}
-                        {% for i in range(4) %}
-                            <label for="choice{{ question.id }}_{{ i + 1 }}">Option {{ i + 1 }}:</label>
-                            <input type="text" id="choice{{ question.id }}_{{ i + 1 }}" name="choice{{ question.id }}_{{ i + 1 }}" value="{{ question.options[i] if i < question.options | length else '' }}" style="display: block;">
-                        {% endfor %}
-                        <label for="correct_answer{{ question.id }}">Correct Answer:</label>
-                        <select id="correct_answer{{ question.id }}" name="correct_answer{{ question.id }}">
-                            {% for i in range(question.options | length) %}
-                                <option value="{{ i }}" {% if question.correct_answer == question.options[i] %}selected{% endif %}>Option {{ i + 1 }}</option>
+                    <div id="options{{ question.id }}" class="options-container">
+                        <!-- Multiple Choice Options -->
+                        {% if question.question_type == 'multiple' %}
+                            {% for i in range(4) %}
+                                <label for="choice{{ question.id }}_{{ i + 1 }}">Option {{ i + 1 }}:</label>
+                                <input type="text" id="choice{{ question.id }}_{{ i + 1 }}" name="choice{{ question.id }}_{{ i + 1 }}" value="{{ question.options[i] if i < question.options | length else '' }}" style="display: block;">
                             {% endfor %}
-                        </select>
-                    <!-- True/False Options -->
-                    {% elif question.question_type == 'true_false' %}
-                        <label for="trueFalse{{ question.id }}_true">True:</label>
-                        <input type="radio" id="trueFalse{{ question.id }}_true" name="trueFalse{{ question.id }}" value="True" {% if question.correct_answer == 'True' %}checked{% endif %}>
-                        <label for="trueFalse{{ question.id }}_false">False:</label>
-                        <input type="radio" id="trueFalse{{ question.id }}_false" name="trueFalse{{ question.id }}" value="False" {% if question.correct_answer == 'False' %}checked{% endif %}>
-                    <!-- Complete Options -->
-                    {% elif question.question_type == 'complete' %}
-                        <label for="complete_answer{{ question.id }}">Complete Answer:</label>
-                        <textarea id="complete_answer{{ question.id }}" name="complete_answer{{ question.id }}" rows="4" style="display: block;">{{ question.correct_answer }}</textarea>
-                    {% endif %}
-                </div>
+                            <label for="correct_answer{{ question.id }}">Correct Answer:</label>
+                            <select id="correct_answer{{ question.id }}" name="correct_answer{{ question.id }}">
+                                {% for i in range(question.options | length) %}
+                                    <option value="{{ i }}" {% if question.correct_answer == question.options[i] %}selected{% endif %}>Option {{ i + 1 }}</option>
+                                {% endfor %}
+                            </select>
+                        <!-- True/False Options -->
+                        {% elif question.question_type == 'true_false' %}
+                            <div class="true-false-options">
+                                <div class="true-false-option">
+                                    <input type="radio" id="trueFalse{{ question.id }}_true" name="trueFalse{{ question.id }}" value="True" {% if question.correct_answer == 'True' %}checked{% endif %}>
+                                </div>
+                                <div class="true-false-option">
+                                    <input type="radio" id="trueFalse{{ question.id }}_false" name="trueFalse{{ question.id }}" value="False" {% if question.correct_answer == 'False' %}checked{% endif %}>
+                                </div>
+                            </div>
+                        <!-- Complete Options -->
+                        {% elif question.question_type == 'complete' %}
+                            <label for="complete_answer{{ question.id }}">Complete Answer:</label>
+                            <textarea id="complete_answer{{ question.id }}" name="complete_answer{{ question.id }}" rows="4" style="display: block;">{{ question.correct_answer }}</textarea>
+                        {% endif %}
+                    </div>
 
-                <input type="hidden" name="score{{ question.id }}" value="{{ question.score }}">
+                    <input type="hidden" name="score{{ question.id }}" value="{{ question.score }}">
 
-                <!-- Delete Button -->
-                <button type="button" class="delete-button" data-question-id="{{ question.id }}">Delete Question</button>
-            </fieldset>
-        {% endfor %}
+                    <!-- Delete Button -->
+                    <button type="button" class="delete-button" data-question-id="{{ question.id }}">Delete Question</button>
+                </fieldset>
+            {% endfor %}
 
-        <input type="submit" value="Update Questions">
-    </form>
+            <button type="submit">Update Quiz and Questions</button>
+        </form>
 
-    <!-- Add Question Button -->
-    <a href="{{ url_for('add_quiz_question', quiz_id=quiz.id) }}">Add New Question</a>
+        <!-- Add Question Button -->
+        <a href="{{ url_for('add_quiz_question', quiz_id=quiz.id) }}">
+            <button type="button">Add New Question</button>
+        </a>
+    </div>
+
 
 <script>
     $(document).ready(function() {
@@ -127,9 +245,9 @@
                 const checkedValue = choicesInput.true_false[0];
                 optionsDiv.append(`
                     <label for="trueFalse${questionId}_true">True:</label>
-                    <input type="radio" id="trueFalse${questionId}_true" name="trueFalse${questionId}" value="True" ${checkedValue === 'True' ? 'checked' : ''}> True
+                    <input type="radio" id="trueFalse${questionId}_true" name="trueFalse${questionId}" value="True" ${checkedValue === 'True' ? 'checked' : ''}>
                     <label for="trueFalse${questionId}_false">False:</label>
-                    <input type="radio" id="trueFalse${questionId}_false" name="trueFalse${questionId}" value="False" ${checkedValue === 'False' ? 'checked' : ''}> False
+                    <input type="radio" id="trueFalse${questionId}_false" name="trueFalse${questionId}" value="False" ${checkedValue === 'False' ? 'checked' : ''}>
                 `);
             } else if (questionType === 'complete') {
                 const completeAnswerValue = choicesInput.complete[0];
@@ -192,7 +310,6 @@
         });
     });
 </script>
-
 
 </body>
 </html>

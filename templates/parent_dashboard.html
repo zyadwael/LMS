@@ -203,11 +203,14 @@
             </div>
             <ul>
                 <li><a href="/dashboard"><i class="feather icon-home"></i><span class="link-text">Dashboard</span></a></li>
-                <li><a href="/calender"><i class="feather icon-home"></i><span class="link-text">Calender</span></a></li>
-                <li><a href="/parent_exams"><i class="feather icon-edit"></i><span class="link-text">View Exam Requests</span></a></li>
-                <li><a href="/term_marks"><i class="feather icon-edit"></i><span class="link-text">Term Marks</span></a></li>
-                <li><a href="/notifications"><i class="feather icon-edit"></i><span class="link-text">Notifications</span></a></li>
-                                <li><a href="/send_report">Reports</a></li>
+                <li><a href="{{ url_for('view_timetable', child_id=child.id) }}"><i class="feather icon-calendar"></i><span class="link-text">Child's Timetable</span></a></li>
+                <li><a href="{{ url_for('my_subjects', child_id=child.id) }}"><i class="feather icon-book"></i><span class="link-text">Child's Subjects</span></a></li>
+                <!--<li><a href="{{ url_for('my_teachers', child_id=child.id) }}"><i class="feather icon-user"></i><span class="link-text">Child's Teachers</span></a></li> -->
+                <li><a href="#"><i class="feather icon-check-square"></i><span class="link-text">Child's Attendance</span></a></li>
+                <li><a href="/child_sessions"><i class="feather icon-users"></i><span class="link-text">Child's Sessions</span></a></li>
+                <li><a href="#"><i class="feather icon-file-text"></i><span class="link-text">Child's Assessments & Assignments</span></a></li>
+                <li><a href="#"><i class="feather icon-alert-circle"></i><span class="link-text">Child's Remarks & Actions</span></a></li>
+                <li><a href="{{ url_for('quizzes_surveys', child_id=child.id) }}"><i class="feather icon-list"></i><span class="link-text">Child's Quizzes/Surveys</span></a></li>
 
                 <!-- Add more customized buttons here -->
             </ul>

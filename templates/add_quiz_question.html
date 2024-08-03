@@ -149,6 +149,12 @@
             }
         }
 
+        // Ensure the correct input fields are displayed based on the pre-selected question type when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            var questionTypeSelect = document.getElementById('question_type');
+            handleQuestionTypeChange(questionTypeSelect);
+        });
+
         function addQuestion() {
             var form = document.getElementById('addQuestionForm');
             form.submit();

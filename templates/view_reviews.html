@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ type.capitalize() }} Reviews</title>
+    <!-- Include your CSS here -->
+</head>
+<body>
+    <div class="container">
+        <h1>Reviews for {{ type.capitalize() }}: {{ entity.name }}</h1>
+        <ul class="list-group">
+            {% for review in reviews %}
+            <li class="list-group-item">
+                <strong>Rating:</strong> {{ review.rating }}/5 <br>
+                <strong>Review:</strong> {{ review.review_text }} <br>
+                <em>Reviewed by : {{ review.admin.name }} on {{ review.timestamp }}</em>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('review_entity', type=type, id=entity.id) }}" class="btn btn-primary">Add a Review</a>
+    </div>
+</body>
+</html>

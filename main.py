@@ -270,6 +270,18 @@ with app.app_context():
                 'description': self.description
             }
 
+
+    class Review(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        review_text = db.Column(db.Text, nullable=False)
+        rating = db.Column(db.Integer, nullable=False)
+        attendance_rating = db.Column(db.Integer, nullable=False)
+        grade_rating = db.Column(db.Integer, nullable=False)
+        teacher_id = db.Column(db.Integer, db.ForeignKey('teacher.id'), nullable=True)  # Corrected
+        student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=True)
+
+
     db.create_all()
 
 
@@ -1408,7 +1420,7 @@ def grade_marks():
                 )
                 db.session.add(new_grade)
         db.session.commit()
-        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_ ,user=current_user))
+        return redirect(url_for('grade_marks', subject_id=subject_id, grade=grade, class_=class_, user=current_user))
 
     else:
         subject_id = request.args.get('subject_id')
@@ -1426,7 +1438,10 @@ def grade_marks():
             students = []
             grades = {}
 
-        return render_template('grade_marks.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class.upper(),user=current_user)
+        # Only call .upper() if Class is not None
+        Class_display = Class.upper() if Class else None
+
+        return render_template('grade_marks.html', students=students, grades=grades, subjects=subjects, subject_id=subject_id, grade=grade, Class=Class_display, user=current_user)
 
 
 @app.route('/student_marks/<int:student_id>')
@@ -1799,6 +1814,7 @@ def attendance():
     if request.method == 'POST':
         for student in students:
             student_id = student.id
+            student_name = student.name
             status = request.form.get(f'status_{student_id}')
             attended = status == 'attended'
             late = status == 'late'
@@ -1829,6 +1845,7 @@ def attendance():
             else:
                 attendance_record = Attendance(
                     student_id=student_id,
+                    student_name=student_name,
                     date=date.today(),
                     attended=attended,
                     late=late,
@@ -1869,6 +1886,89 @@ def calendar():
     events = Event.query.all()
     events_list = [event.to_dict() for event in events]
     return render_template("calendar.html")
+
+
+@app.route('/review/<string:type>/<int:id>', methods=['GET', 'POST'])
+@login_required
+def review_entity(type, id):
+    if type not in ['teacher', 'student']:
+        flash('Invalid type specified.', 'danger')
+        return redirect(url_for('index'))
+
+    if type == 'teacher':
+        teacher = Teacher.query.get_or_404(id)
+        # Get grade rating by averaging grades for students taught by this teacher
+        subjects = Subjects.query.filter_by(teacher_id=teacher.user_id).all()
+        grades = Grades.query.filter(Grades.subject_id.in_([subject.id for subject in subjects])).all()
+        if grades:
+            grade_rating = sum(float(grade.total) for grade in grades) / len(grades)
+        else:
+            grade_rating = 0
+
+        # Get attendance rating for students taught by this teacher
+        students = Students.query.filter(Students.grade.in_([subject.grade for subject in subjects])).all()
+        attendance_records = Attendance.query.filter(
+            Attendance.student_id.in_([student.id for student in students])).all()
+        if attendance_records:
+            attendance_rating = (sum(record.attended for record in attendance_records) / len(attendance_records)) * 100
+        else:
+            attendance_rating = 0
+
+    elif type == 'student':
+        student = Students.query.get_or_404(id)
+        # Calculate grade rating directly from the student's grades
+        grades = Grades.query.filter_by(student_id=student.user_id).all()
+        if grades:
+            grade_rating = sum(float(grade.total) for grade in grades) / len(grades)
+        else:
+            grade_rating = 0
+
+        # Get attendance rating directly from the student's attendance records
+        attendance_records = Attendance.query.filter_by(student_id=student.id).all()
+        if attendance_records:
+            attendance_rating = (sum(record.attended for record in attendance_records) / len(attendance_records)) * 100
+        else:
+            attendance_rating = 0
+
+    if request.method == 'POST':
+        review_text = request.form['review_text']
+        rating = int(request.form['rating'])
+
+        # Create and save the review
+        review = Review(
+            admin_id=current_user.id,
+            review_text=review_text,
+            rating=rating,
+            attendance_rating=int(attendance_rating),
+            grade_rating=int(grade_rating),
+            teacher_id=id if type == 'teacher' else None,
+            student_id=id if type == 'student' else None
+        )
+        db.session.add(review)
+        db.session.commit()
+
+        flash('Review submitted successfully!', 'success')
+        return redirect(url_for('index'))  # Redirect to the appropriate page
+
+    return render_template('review_entity.html', type=type, grade_rating=round(grade_rating, 2),
+                           attendance_rating=round(attendance_rating, 2))
+
+
+@app.route('/view_reviews/<string:type>/<int:id>')
+@login_required
+def view_reviews(type, id):
+    if type == 'teacher':
+        entity = Teacher.query.get_or_404(id)
+        reviews = Review.query.filter_by(teacher_id=id).all()
+    elif type == 'student':
+        entity = Students.query.get_or_404(id)
+        reviews = Review.query.filter_by(student_id=id).all()
+    else:
+        flash('Invalid type specified.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    return render_template('view_reviews.html', entity=entity, reviews=reviews, type=type)
+
 
 
 if __name__ == "__main__":
